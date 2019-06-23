@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+script_path="$( cd "$(dirname "$0")" ; pwd -P )";
+source "${script_path}/library";
+
+# Push feature branches remotely.
+if [ "${current_branch_prefix}" == "feature" ]; then
+  treeish="$(git rev-parse --verify HEAD --short)";
+  new_version="$(git semver build -b "${treeish}" --dryrun)";
+  git tag -a "${new_version}" -m "${new_version}";
+  git push -u origin HEAD;
+fi;

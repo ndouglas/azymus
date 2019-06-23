@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+VERSION=$1
+ORIGIN=$2
+BRANCH=$3
+
+# Implement your script here.
+new_version="$(git semver patch --dryrun)";
+git tag -a "${new_version}" -m "${new_version}" "${MASTER_BRANCH}";
+git push --tags;
+
+exit 0

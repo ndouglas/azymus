@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+VERSION=$1
+ORIGIN=$2
+BRANCH=$3
+BASE=$4
+
+# Implement your script here.
+new_version="$(git semver patch --dryrun)";
+version_file="$(git rev-parse --show-toplevel)/.version";
+echo "${new_version}" > "${version_file}" \
+  && git add "${version_file}" \
+  && git commit -m "Release: ${new_version}" --no-verify;
+
+exit 0
