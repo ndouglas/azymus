@@ -1,0 +1,7 @@
+[package]
+name = "azymus"
+version = "0.1.0"
+authors = ["Nathan Douglas <github@tenesm.us>"]
+edition = "2018"
+
+[dependencies]
