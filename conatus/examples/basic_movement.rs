@@ -1,5 +1,6 @@
 /// An experimental roguelike (library), written in Rust.
 extern crate azymus;
+use azymus::component::renderable::*;
 
 /// Testing scaffolds for Azymus.
 extern crate conatus;
@@ -20,12 +21,22 @@ fn main() {
     pretty_env_logger::init();
     trace!("Entering main().");
     let mut root_console = conatus::console::get_root_console(160, 100);
+    let mut map_console = conatus::console::get_map_console(160, 95);
+    let mut x = 80;
+    let mut y = 50;
     while !root_console.window_closed() {
-        root_console.set_default_foreground(WHITE);
-        root_console.clear();
-        root_console.put_char(1, 1, '@', BackgroundFlag::None);
+        map_console.clear();
+        map_console.render_renderable(x, y, &Renderable {
+            char: Some('@'),
+            foreground_color: Some(WHITE),
+            background_color: None,
+        });
+        conatus::console::blit_map_console(&mut map_console, &mut root_console);
         root_console.flush();
-        root_console.wait_for_keypress(true);
+        let exit = conatus::console::handle_keys(&mut root_console, &mut x, &mut y);
+        if exit {
+            break
+        }
     }
     trace!("Exiting main().");
 }
