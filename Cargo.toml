@@ -1,11 +1,5 @@
-[package]
-name = "azymus"
-version = "0.1.0"
-authors = ["Nathan Douglas <github@tenesm.us>"]
-repository = "https://github.com/ndouglas/azymus.git"
-edition = "2018"
-readme = "README.md"
-
-[dependencies]
-log = "0.4"
-pretty_env_logger = "0.3"
+[workspace]
+members = [
+    "azymus",
+    "conatus",
+]
