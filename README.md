@@ -16,3 +16,12 @@ I'm interested in the idea of the "pure," "uncorrupted," thing in this game bein
 That might seem a bit too preciously postmodern or political.  I'm not really trying to draw any equivalences between one thing and any other thing, or make some kind of point, or allude to anything.  I like a little subversive deconstruction as much as the next guy, but that's not the major focus.  I'm more interested in trying to set up some good procedural generation and decent AI agents and be able to watch them do their thing.
 
 So let's see how it goes.
+
+## Azymus (Library)
+
+Azymus is just a library at this point.  That might be all that it ever is.  I'm not sure that I want to make a game or just tinker around with something vaguely roguelike in my spare time.
+
+## Conatus (Library)
+
+"Conatus" came up when I Google Translated "attempt".  I never took Latin and don't know how accurate that is.  Anyway, it's a library that I'm building to enable interactive tests of for Azymus.  It should be easy to write tiny example roguelikes demonstrating some particular idea and permitting me to develop things easily in Azymus without having a long startup process.
+
