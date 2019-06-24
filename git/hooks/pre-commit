@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -uo pipefail;
+IFS=$'\n\t';
+
+script_path="$( cd "$(dirname "$0")" ; pwd -P )";
+source "${script_path}/library";
+
+# Prevent commits to master branch.
+if [ "${current_branch_name}" == "${master_branch_name}" ]; then
+  echo -e "${failure_icon} Direct commits to this branch are not allowed." 1>&2;
+  exit 1;
+fi
+
+# Prevent commits to develop branch.
+if [ "${current_branch_name}" == "${develop_branch_name}" ]; then
+  echo -e "${failure_icon} Direct commits to this branch are not allowed." 1>&2;
+  exit 1;
+fi
+
+marker_found=0;
+for this_file in $(git diff-index --diff-filter=ACM --cached --name-only HEAD --); do
+  if egrep -rls "^<<<<<<< |^>>>>>>> $" "${this_file}" > /dev/null; then
+    if ! cnc_file_is_binary "${this_file}"; then
+      echo -e "${failure_icon} Merge marker found in ${this_file}!" 1>&2;
+      marker_found=$((marker_found+1));
+    fi
+  fi
+done
+if [ "${marker_found}" -gt 0 ]; then
+  exit "${marker_found}";
+fi
+
+# Run <cargo test>.
+cargo test;
+test_exit=$?;
+if [ ${test_exit} -eq 0 ]; then
+  echo -e "${success_icon} Tests passed";
+else
+  echo -e "${failure_icon} Tests failed!" 1>&2;
+  exit ${test_exit};
+fi

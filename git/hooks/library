@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+script_path="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )";
+color_restore='\033[0m';
+color_red='\033[00;31m';
+color_green='\033[00;32m';
+color_yellow='\033[00;33m';
+color_blue='\033[00;34m';
+color_purple='\033[00;35m';
+color_cyan='\033[00;36m';
+color_lgray='\033[00;37m';
+color_lred='\033[01;31m';
+color_lgreen='\033[01;32m';
+color_lyellow='\033[01;33m';
+color_lblue='\033[01;34m';
+color_lpurple='\033[01;35m';
+color_lcyan='\033[01;36m';
+color_white='\033[01;37m';
+success_icon="${color_green}✓${color_restore}";
+failure_icon="${color_red}✘${color_restore}";
+current_branch_name="$(git symbolic-ref --short HEAD)";
+master_branch_name="$(git config --get gitflow.branch.master)";
+develop_branch_name="$(git config --get gitflow.branch.develop)";
+feature_branch_prefix="$(git config --get gitflow.prefix.feature)";
+hotfix_branch_prefix="$(git config --get gitflow.prefix.hotfix)";
+release_branch_prefix="$(git config --get gitflow.prefix.release)";
+current_branch_prefix="$(echo "${current_branch_name}" | cut -d"/" -f1)";
+repository_root="$(git rev-parse --show-toplevel)";
