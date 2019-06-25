@@ -1,6 +1,6 @@
 use tcod::colors::*;
 use tcod::console::*;
-use specs::{Component, VecStorage};
+use specs::*;
 
 /// Something that can be drawn to a console.
 #[derive(Clone, Component, Copy, Debug)]

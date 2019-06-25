@@ -45,10 +45,24 @@ pub fn handle_keys(root: &mut Root, x: &mut i32, y: &mut i32) -> bool {
             root.set_fullscreen(!fullscreen);
         }
         Key { code: Escape, .. } => return true, // exit game
-        Key { code: Up, .. } => *y -= 1,
-        Key { code: Down, .. } => *y += 1,
-        Key { code: Left, .. } => *x -= 1,
-        Key { code: Right, .. } => *x += 1,
+        Key { code: Up, .. } => {
+            if *y <= 0 {
+                return false;
+            }
+            *y -= 1
+        },
+        Key { code: Down, .. } => {
+            *y += 1
+        },
+        Key { code: Left, .. } => {
+            if *x <= 0 {
+                return false;
+            }
+            *x -= 1
+        },
+        Key { code: Right, .. } => {
+            *x += 1
+        },
         _ => {},
     }
    false
