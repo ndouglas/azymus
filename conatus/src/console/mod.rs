@@ -1,3 +1,8 @@
+use azymus::action::*;
+use azymus::command::*;
+use azymus::input::*;
+use azymus::world::*;
+use specs::*;
 use tcod::console::*;
 
 /// Create a root console with a specified height and width.
@@ -9,4 +14,36 @@ pub fn get_root_console(width: i32, height: i32) -> Root {
         .title("Conatus")
         .init();
     root
+}
+
+/// Create a map console with a specified height and width.
+pub fn get_map_console(width: i32, height: i32) -> Offscreen {
+    let map = Offscreen::new(width, height);
+    map
+}
+
+/// Blit map console to root console.
+pub fn blit_map_console(map: &mut Offscreen, root: &mut Root) {
+    blit(
+        map,
+        (0, 0),
+        (map.width(), map.height()),
+        root,
+        (0, 0),
+        1.0,
+        1.0,
+    );
+}
+
+/// Handle input.
+pub fn handle_keys(entity: Entity, world: &mut World) -> bool {
+    let event = world.wait_for_keypress();
+    if let Some(command) = get_event_command(Domain::Explore, event) {
+        if let Some(action) = get_command_action(command, entity, world) {
+            if let Some(action) = get_permitted_action(action, entity, world) {
+                action.execute(entity, world);
+            }
+        }
+    }
+   false
 }
