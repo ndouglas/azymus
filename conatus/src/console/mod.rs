@@ -1,4 +1,8 @@
-use azymus::component::position::Position;
+use azymus::action::*;
+use azymus::command::*;
+use azymus::input::*;
+use azymus::world::*;
+use specs::*;
 use tcod::console::*;
 
 /// Create a root console with a specified height and width.
@@ -32,45 +36,14 @@ pub fn blit_map_console(map: &mut Offscreen, root: &mut Root) {
 }
 
 /// Handle input.
-pub fn handle_keys(root: &mut Root, map: &Offscreen, position: &mut Position) -> bool {
-    use tcod::input::Key;
-    use tcod::input::KeyCode::*;
-    let key = root.wait_for_keypress(true);
-    match key {
-        Key {
-            code: Enter,
-            alt: true,
-            ..
-        } => {
-            let fullscreen = root.is_fullscreen();
-            root.set_fullscreen(!fullscreen);
+pub fn handle_keys(entity: Entity, world: &mut World) -> bool {
+    let event = world.wait_for_keypress();
+    if let Some(command) = get_event_command(Domain::Explore, event) {
+        if let Some(action) = get_command_action(command, entity, world) {
+            if let Some(action) = get_permitted_action(action, entity, world) {
+                action.execute(entity, world);
+            }
         }
-        Key { code: Escape, .. } => return true, // exit game
-        Key { code: Up, .. } => {
-            if position.y <= 0 {
-                return false;
-            }
-            position.y -= 1
-        },
-        Key { code: Down, .. } => {
-            if position.y >= map.height() - 1 {
-                return false;
-            }
-            position.y += 1
-        },
-        Key { code: Left, .. } => {
-            if position.x <= 0 {
-                return false;
-            }
-            position.x -= 1
-        },
-        Key { code: Right, .. } => {
-            if position.x >= map.width() - 1 {
-                return false;
-            }
-            position.x += 1
-        },
-        _ => {},
     }
    false
 }
