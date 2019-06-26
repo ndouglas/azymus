@@ -23,7 +23,7 @@ Azymus is just a library at this point.  That might be all that it ever is.  I'm
 
 ## Conatus (Library)
 
-"Conatus" came up when I Google Translated "attempt".  I never took Latin and don't know how accurate that is.  Anyway, it's a library that I'm building to enable interactive tests of for Azymus.  It should be easy to write tiny example roguelikes demonstrating some particular idea and permitting me to develop things easily in Azymus without having a long startup process.
+"Conatus" came up when I Google Translated "attempt".  I never took Latin and don't know how accurate that is.  Anyway, it's a library that I'm building to enable interactive tests for Azymus.  It should be easy to write tiny example roguelikes demonstrating some particular idea and permitting me to develop things easily in Azymus without having a long startup process.
 
 ## Things That Work
 - screen opens (`examples/basic_runloop.rs`)
