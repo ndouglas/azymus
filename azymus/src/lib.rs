@@ -50,6 +50,9 @@ pub mod component;
 /// Input.
 pub mod input;
 
+/// Map.
+pub mod map;
+
 /// Resource.
 pub mod resource;
 
