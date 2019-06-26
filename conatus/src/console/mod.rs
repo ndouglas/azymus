@@ -22,19 +22,6 @@ pub fn get_map_console(width: i32, height: i32) -> Offscreen {
     map
 }
 
-/// Blit map console to root console.
-pub fn blit_map_console(map: &mut Offscreen, root: &mut Root) {
-    blit(
-        map,
-        (0, 0),
-        (map.width(), map.height()),
-        root,
-        (0, 0),
-        1.0,
-        1.0,
-    );
-}
-
 /// Handle input.
 pub fn handle_keys(entity: Entity, world: &mut World) -> bool {
     let event = world.wait_for_keypress();

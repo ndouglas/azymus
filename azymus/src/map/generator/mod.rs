@@ -1,0 +1,2 @@
+/// Algorithms.
+pub mod algorithm;

@@ -44,10 +44,6 @@ fn main() {
     world.add_resource(MapConsoleResource(Arc::new(Mutex::new(map_console))));
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(ContinueFlagResource::default());
-    let position = Position {
-        x: 80,
-        y: 50,
-    };
     let player = world.create_entity()
         .with(Position {
             x: 80,

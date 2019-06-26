@@ -6,6 +6,7 @@ use azymus::component::occupant::Occupant;
 use azymus::component::opaque::Opaque;
 use azymus::component::position::Position;
 use azymus::component::renderable::*;
+use azymus::map::generator::algorithm::Algorithm;
 use azymus::resource::continue_flag::ContinueFlagResource;
 use azymus::resource::map_console::MapConsoleResource;
 use azymus::resource::root_console::RootConsoleResource;
@@ -38,8 +39,8 @@ fn main() {
     let screen_width = 160;
     let map_width = 160;
     let map_height = screen_height - 5;
-    let root_console = conatus::console::get_root_console(screen_width, screen_height);
-    let map_console = conatus::console::get_map_console(map_width, map_height);
+    let mut root_console = conatus::console::get_root_console(screen_width, screen_height);
+    let mut map_console = conatus::console::get_map_console(map_width, map_height);
     let mut world = World::new();
     world.register::<Occupant>();
     world.register::<Opaque>();
@@ -48,48 +49,12 @@ fn main() {
     world.add_resource(MapConsoleResource(Arc::new(Mutex::new(map_console))));
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(ContinueFlagResource::default());
-    let position = Position {
-        x: map_width / 2,
-        y: map_height / 2,
-    };
-    for y in 0..map_height {
-        for x in 0..map_width {
-            let is_wall = y == map_height / 2 && ( x == map_width / 3 || x == map_width * 2 / 3 );
-            let color = if is_wall {
-                DARK_BLUE
-            } else {
-                LIGHT_BLUE
-            };
-            if is_wall {
-                world.create_entity()
-                    .with(Occupant)
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
-            } else {
-                world.create_entity()
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
-            }
-        }
-    }
+    let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, 0);
     let player = world.create_entity()
-        .with(position)
+        .with(Position {
+            x: starting_position.0,
+            y: starting_position.1,
+        })
         .with(Renderable {
             char: Some('@'),
             foreground_color: Some(WHITE),
