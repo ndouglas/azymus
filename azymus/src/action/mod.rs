@@ -1,5 +1,6 @@
 use specs::*;
 use crate::component;
+use component::actor::Actor;
 use component::position::Position;
 use crate::rule::ActionRule;
 
@@ -31,7 +32,13 @@ impl Action {
     /// Execute the action.
     pub fn execute(self, entity: Entity, world: &mut World) {
         if let Some(action) = self.get_permitted_action(entity, world) {
+            let cost = action.get_cost(entity, world);
             action.inner_execute(entity, world);
+            let actor_storage = &mut (world.write_storage::<Actor>());
+            if let Some(actor) = actor_storage.get_mut(entity) {
+                trace!("Deducting {} energy from actor ({} -> {}).", cost, actor.energy, actor.energy - cost);
+                actor.energy -= cost;
+            }
         }
     }
 

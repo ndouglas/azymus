@@ -27,6 +27,8 @@ Azymus is just a library at this point.  That might be all that it ever is.  I'm
 
 ## Things That Work
 
+_These examples are going to be broken a lot while I figure out the basic public API for the libraries... sorry._
+
 - screen opens (`examples/basic_runloop.rs`)
 - little `@` bro moves around the screen (`examples/basic_movement.rs`)
 - little `@` stops walking when face meets wall (`examples/simple_map.rs`)

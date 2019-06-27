@@ -1,5 +1,7 @@
 use specs::*;
+use crate::component::actor::Actor;
 use crate::component::field_of_view::FieldOfView;
+use crate::component::name::Name;
 use crate::component::occupant::Occupant;
 use crate::component::player::Player;
 use crate::component::position::Position;
@@ -11,7 +13,15 @@ use tcod::map::FovAlgorithm;
 pub fn get_player(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
     let entity = world.create_entity()
         .with(Player)
+        .with(Name {
+            name: "Player".to_string(),
+        })
         .with(Occupant)
+        .with(Actor {
+            energy: 0,
+            speed: 100,
+            queue: vec![],
+        })
         .with(Position {
             x: x,
             y: y,

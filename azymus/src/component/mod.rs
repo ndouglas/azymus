@@ -1,5 +1,9 @@
-/// The field of view.
+/// Something that can act independently.
+pub mod actor;
+/// Something representing an entity's ability to perceive.
 pub mod field_of_view;
+/// Something that has a name.
+pub mod name;
 /// Something that is the sole occupant of its position.
 pub mod occupant;
 /// Something that blocks light.
