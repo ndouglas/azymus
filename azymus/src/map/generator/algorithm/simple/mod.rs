@@ -7,6 +7,9 @@ use component::opaque::Opaque;
 use component::position::Position;
 use component::renderable::Renderable;
 use component::tile::Tile;
+use crate::entity;
+use entity::npc::get_orc;
+use entity::npc::get_troll;
 use crate::resource;
 use resource::map::MapResource;
 use crate::map::MapType;
@@ -15,6 +18,7 @@ use crate::map::tile::preset::*;
 const ROOM_MAX_SIZE: i32 = 25;
 const ROOM_MIN_SIZE: i32 = 6;
 const MAX_ROOMS: i32 = 40;
+const MAX_ROOM_MONSTERS: i32 = 3;
 
 #[derive(Clone, Copy, Debug)]
 struct Rect {
@@ -71,6 +75,21 @@ fn create_v_tunnel(y1: i32, y2: i32, x: i32, map: &mut Vec<Vec<bool>>) {
     }
 }
 
+fn place_objects(world: &mut World, room: Rect, seed: i64) {
+    let in_seed: &[_] = &[ seed as usize ];
+    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
+    let num_monsters = rng.gen_range(0, MAX_ROOM_MONSTERS + 1);
+    for _ in 0..num_monsters {
+        let x = rng.gen_range(room.x1 + 1, room.x2);
+        let y = rng.gen_range(room.y1 + 1, room.y2);
+        if rng.gen::<f32>() < 0.8 {
+            get_orc(world, x, y, seed);
+        } else {
+            get_troll(world, x, y, seed);
+        };
+    }
+}
+
 /// Generate the map.
 pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i32, i32) {
     let in_seed: &[_] = &[ seed as usize ];
@@ -89,6 +108,7 @@ pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i
             .any(|other_room| new_room.intersects_with(other_room));
         if !failed {
             create_room(new_room, &mut map);
+            place_objects(world, new_room, seed);
             let (new_x, new_y) = new_room.center();
             if rooms.is_empty() {
                 starting_position = (new_x, new_y);

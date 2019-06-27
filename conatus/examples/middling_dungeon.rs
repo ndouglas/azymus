@@ -61,8 +61,9 @@ fn main() {
     world.add_resource(MapConsoleResource(Arc::new(Mutex::new(map_console))));
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(SeedResource(0));
-    let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, 0);
-    let player = get_player(&mut world, starting_position.0, starting_position.1);
+    let seed: i64 = 0;
+    let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, seed);
+    let player = get_player(&mut world, starting_position.0, starting_position.1, seed);
     let mut dispatcher = DispatcherBuilder::new()
         .with(FieldOfViewSystem, "field_of_view", &[])
         .with(PlayerExploredMarkerSystem, "player_explored_marker", &[

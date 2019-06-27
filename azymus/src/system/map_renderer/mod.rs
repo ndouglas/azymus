@@ -55,18 +55,19 @@ impl<'a> System<'a> for MapRendererSystem {
             trace!("Found a player!");
             if let Some(fov_map) = &fov.map {
                 trace!("Found a FOV!");
-                if let fov_map = fov_map.lock().unwrap() {
-                    trace!("FOV is valid");
-                    for (_, _, position, renderable) in (&tile_storage, &player_explored_storage, &position_storage, &renderable_storage).join() {
-                        trace!("Processing renderable at ({}, {})...", position.x, position.y);
-                        if fov_map.is_in_fov(position.x, position.y) {
-                            map_console.render_renderable(position.x, position.y, renderable);
-                        } else {
-                            map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
-                        }
+                let fov_map = fov_map.lock().unwrap();
+                trace!("FOV is valid");
+                for (_, _, position, renderable) in (&tile_storage, &player_explored_storage, &position_storage, &renderable_storage).join() {
+                    trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                    if fov_map.is_in_fov(position.x, position.y) {
+                        map_console.render_renderable(position.x, position.y, renderable);
+                    } else {
+                        map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                     }
-                    for (_, position, renderable) in (!&tile_storage, &position_storage, &renderable_storage).join() {
-                        trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                }
+                for (_, _, position, renderable) in (!&tile_storage, !&player_explored_storage, &position_storage, &renderable_storage).join() {
+                    trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                    if fov_map.is_in_fov(position.x, position.y) {
                         map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                     }
                 }
