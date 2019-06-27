@@ -5,10 +5,10 @@ use component::name::Name;
 
 /// Renderer.
 #[derive(Clone, Copy, Debug)]
-pub struct TurnFeederSystem;
+pub struct ActorFeederSystem;
 
 /// Renderer.
-impl<'a> System<'a> for TurnFeederSystem {
+impl<'a> System<'a> for ActorFeederSystem {
 
     type SystemData = (
         ReadStorage<'a, Name>,
@@ -16,7 +16,7 @@ impl<'a> System<'a> for TurnFeederSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        trace!("Entering TurnFeederSystem::run().");
+        trace!("Entering ActorFeederSystem::run().");
         let (
             name_storage,
             mut actor_storage,
@@ -25,6 +25,6 @@ impl<'a> System<'a> for TurnFeederSystem {
             trace!("Feeding {} {} energy ({} -> {}).", name.name, actor.speed, actor.energy, actor.speed + actor.energy);
             actor.energy += actor.speed;
         }
-        trace!("Exiting TurnFeederSystem::run().");
+        trace!("Exiting ActorFeederSystem::run().");
     }
 }

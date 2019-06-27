@@ -18,10 +18,10 @@ use azymus::resource::continue_flag::ContinueFlagResource;
 use azymus::resource::map_console::MapConsoleResource;
 use azymus::resource::root_console::RootConsoleResource;
 use azymus::resource::seed::SeedResource;
+use azymus::system::actor_feeder::ActorFeederSystem;
 use azymus::system::field_of_view::FieldOfViewSystem;
 use azymus::system::map_renderer::MapRendererSystem;
 use azymus::system::player_explored_marker::PlayerExploredMarkerSystem;
-use azymus::system::turn_feeder::TurnFeederSystem;
 use azymus::world::*;
 
 
@@ -70,7 +70,7 @@ fn main() {
     let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, seed);
     let player = get_player(&mut world, starting_position.0, starting_position.1, seed);
     let mut dispatcher = DispatcherBuilder::new()
-        .with(TurnFeederSystem, "turn_feeder", &[])
+        .with(ActorFeederSystem, "actor_feeder", &[])
         .with(FieldOfViewSystem, "field_of_view", &[])
         .with(PlayerExploredMarkerSystem, "player_explored_marker", &[
             "field_of_view",
