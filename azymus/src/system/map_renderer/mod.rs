@@ -52,6 +52,7 @@ impl<'a> System<'a> for MapRendererSystem {
             1.0,
         );
         root_console.flush();
+        tcod::system::set_fps(60);
         trace!("Exiting MapRendererSystem::run().");
     }
 

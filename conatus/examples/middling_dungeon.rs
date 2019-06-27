@@ -5,6 +5,7 @@ extern crate azymus;
 use azymus::component::field_of_view::FieldOfView;
 use azymus::component::occupant::Occupant;
 use azymus::component::opaque::Opaque;
+use azymus::component::player::Player;
 use azymus::component::position::Position;
 use azymus::component::renderable::*;
 use azymus::component::tile::Tile;
@@ -48,6 +49,7 @@ fn main() {
     world.register::<FieldOfView>();
     world.register::<Occupant>();
     world.register::<Opaque>();
+    world.register::<Player>();
     world.register::<Position>();
     world.register::<Renderable>();
     world.register::<Tile>();
@@ -57,6 +59,7 @@ fn main() {
     world.add_resource(SeedResource(0));
     let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, 0);
     let player = world.create_entity()
+        .with(Player)
         .with(Position {
             x: starting_position.0,
             y: starting_position.1,
@@ -68,6 +71,7 @@ fn main() {
         })
         .build();
     while world.should_continue() {
+        println!("{} FPS", tcod::system::get_fps());
         let mut map_renderer = MapRendererSystem;
         map_renderer.run_now(&world.res);
         world.maintain();

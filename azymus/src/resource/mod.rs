@@ -1,5 +1,7 @@
 /// The continue flag.
 pub mod continue_flag;
+/// The map.
+pub mod map;
 /// The map console.
 pub mod map_console;
 /// The root console.

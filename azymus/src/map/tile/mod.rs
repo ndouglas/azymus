@@ -1,36 +1,8 @@
-use specs::*;
 use tcod::colors::*;
-use crate::component::occupant::Occupant;
-use crate::component::position::Position;
 use crate::component::renderable::Renderable;
-use crate::component::tile::Tile;
 
 /// Presets.
 pub mod preset;
-use preset::*;
-
-/// Create a tile that may or may not be a wall.
-pub fn get_tile(world: &mut World, is_wall: bool, x: i32, y: i32) -> Entity {
-    let mut entity_builder = world.create_entity();
-    let mut color = FLOOR_LIT_COLOR;
-    if is_wall {
-        entity_builder = entity_builder.with(Occupant);
-        color = WALL_LIT_COLOR;
-    }
-    let entity = entity_builder
-        .with(Tile)
-        .with(Position {
-            x: x,
-            y: y,
-        })
-        .with(Renderable {
-            char: None,
-            foreground_color: None,
-            background_color: Some(color),
-        })
-        .build();
-    entity
-}
 
 /// Returns the "unlit" version of a color.
 pub fn obscure_color(color: &Color) -> Color {

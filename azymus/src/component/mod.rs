@@ -4,6 +4,8 @@ pub mod field_of_view;
 pub mod occupant;
 /// Something that blocks light.
 pub mod opaque;
+/// Something currently controlled by the player.
+pub mod player;
 /// Something that can be positioned in the world.
 pub mod position;
 /// Something that can be drawn to a console.

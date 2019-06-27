@@ -12,7 +12,7 @@
     unstable_features,
     unused_import_braces,
     unused_qualifications,
-    warnings
+//    warnings
 )]
 
 //! Azymus is nominally a roguelike game.

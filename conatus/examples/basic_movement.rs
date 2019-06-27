@@ -44,6 +44,10 @@ fn main() {
     world.add_resource(MapConsoleResource(Arc::new(Mutex::new(map_console))));
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(ContinueFlagResource::default());
+    let position = Position {
+        x: 80,
+        y: 50,
+    };
     let player = world.create_entity()
         .with(Position {
             x: 80,
@@ -59,6 +63,15 @@ fn main() {
         (world.read_resource::<MapConsoleResource>().0)
             .lock().unwrap()
             .clear();
+        for (position, renderable) in (&world.read_storage::<Position>(), &world.read_storage::<Renderable>()).join() {
+            (world.read_resource::<MapConsoleResource>().0)
+                .lock().unwrap()
+                .render_renderable(position.x, position.y, renderable);
+        }
+        world.blit_map_console();
+        (world.read_resource::<RootConsoleResource>().0)
+            .lock().unwrap()
+            .flush();
         let exit = conatus::console::handle_keys(player, &mut world);
         if exit {
             break
