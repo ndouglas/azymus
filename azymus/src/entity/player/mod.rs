@@ -4,7 +4,6 @@ use crate::component::occupant::Occupant;
 use crate::component::player::Player;
 use crate::component::position::Position;
 use crate::component::renderable::Renderable;
-use crate::resource::seed::SeedResource;
 use tcod::colors::*;
 use tcod::map::FovAlgorithm;
 

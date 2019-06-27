@@ -1,5 +1,4 @@
 use crate::component;
-use component::position::Position;
 use component::renderable::Renderable;
 
 /// Map generators.

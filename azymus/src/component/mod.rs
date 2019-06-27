@@ -6,6 +6,8 @@ pub mod occupant;
 pub mod opaque;
 /// Something currently controlled by the player.
 pub mod player;
+/// Something we've encountered.
+pub mod player_explored;
 /// Something that can be positioned in the world.
 pub mod position;
 /// Something that can be drawn to a console.

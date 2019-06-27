@@ -1,9 +1,6 @@
 use specs::*;
 use tcod::console::*;
 use crate::action::Action;
-use crate::component;
-use component::occupant::Occupant;
-use component::position::Position;
 use crate::resource;
 use resource::map::MapResource;
 
