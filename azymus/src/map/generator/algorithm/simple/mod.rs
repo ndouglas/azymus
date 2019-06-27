@@ -132,7 +132,7 @@ pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i
                 .with(position)
                 .with(renderable)
                 .build();
-            resource_map[x as usize][y as usize].push((true, is_wall, position, renderable));
+            resource_map[x as usize][y as usize].push((true, is_wall, is_wall, renderable));
         }
     }
     world.add_resource(MapResource(resource_map));

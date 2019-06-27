@@ -47,6 +47,9 @@ pub mod command;
 /// Components.
 pub mod component;
 
+/// Entities.
+pub mod entity;
+
 /// Input.
 pub mod input;
 

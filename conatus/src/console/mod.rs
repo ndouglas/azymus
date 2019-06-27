@@ -3,6 +3,7 @@ use azymus::input::*;
 use azymus::world::*;
 use specs::*;
 use tcod::console::*;
+use tcod::system::set_fps;
 
 /// Create a root console with a specified height and width.
 pub fn get_root_console(width: i32, height: i32) -> Root {
@@ -12,6 +13,7 @@ pub fn get_root_console(width: i32, height: i32) -> Root {
         .size(width, height)
         .title("Conatus")
         .init();
+    set_fps(60);
     root
 }
 

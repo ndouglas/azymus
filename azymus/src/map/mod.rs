@@ -8,8 +8,8 @@ pub mod generator;
 pub mod tile;
 
 /// The type of thing we use for map tiles.
-/// tile, occupant, position, renderable
-pub type MapTileType = (bool, bool, Position, Renderable);
+/// tile, occupant, opaque, position, renderable
+pub type MapTileType = (bool, bool, bool, Renderable);
 
 /// The type of thing we use for maps.
 pub type MapType = Vec<Vec<Vec<MapTileType>>>;
