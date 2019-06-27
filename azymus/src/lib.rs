@@ -12,7 +12,7 @@
     unstable_features,
     unused_import_braces,
     unused_qualifications,
-    warnings
+//    warnings
 )]
 
 //! Azymus is nominally a roguelike game.
@@ -47,6 +47,9 @@ pub mod command;
 /// Components.
 pub mod component;
 
+/// Entities.
+pub mod entity;
+
 /// Input.
 pub mod input;
 
@@ -58,6 +61,9 @@ pub mod resource;
 
 /// Rules.
 pub mod rule;
+
+/// Systems.
+pub mod system;
 
 /// World.
 pub mod world;
