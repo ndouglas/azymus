@@ -1,18 +1,14 @@
 use specs::*;
 use crate::component;
 use component::position::Position;
-use crate::resource;
-use resource::continue_flag::ContinueFlagResource;
-use resource::root_console::RootConsoleResource;
 use crate::rule::ActionRule;
+
+const DEFAULT_ACTION_COST: i32 = 100;
+//const NO_ACTION_COST: i32 = 0;
 
 /// The actions.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Action {
-    /// Quits the game.
-    QuitGame,
-    /// Toggles fullscreen.
-    ToggleFullscreen,
     /// Walk in some direction.
     Walk((i32, i32),(i32,i32)),
 }
@@ -23,17 +19,6 @@ impl Action {
     pub fn execute(self, entity: Entity, world: &mut World) {
         use Action::*;
         match self {
-            QuitGame => {
-                trace!("Quitting game!");
-                let continue_flag_resource = &mut world.write_resource::<ContinueFlagResource>().0;
-                *continue_flag_resource = false;
-            },
-            ToggleFullscreen => {
-                let root_console_resource = &mut world.write_resource::<RootConsoleResource>().0;
-                let root_console = &mut root_console_resource.lock().unwrap();
-                let fullscreen = root_console.is_fullscreen();
-                root_console.set_fullscreen(!fullscreen);
-            },
             Walk((_x1, _y1), (x2, y2)) => {
                 let position_storage = &mut (world.write_storage::<Position>());
                 if let Some(position) = &mut position_storage.get_mut(entity) {
@@ -52,8 +37,6 @@ impl Action {
 pub fn get_action_rules(action: Action) -> Vec<ActionRule> {
     use ActionRule::*;
     match action {
-        Action::ToggleFullscreen                            =>  { [].to_vec() }
-        Action::QuitGame                                    =>  { [].to_vec() },
         Action::Walk((_x1, _y1), (x2, y2))                  =>  {
                                                                     [
                                                                         CheckMapBoundaries(x2, y2),
@@ -85,4 +68,14 @@ pub fn get_permitted_action(action: Action, entity: Entity, world: &World) -> Op
         }
     }
     return Some(action);
+}
+
+/// Get action cost.
+///
+/// Returns the cost of an action.
+pub fn get_action_cost(action: Action, _entity: Entity, _world: &World) -> i32 {
+    use Action::*;
+    match action {
+        Walk((_, _), (_, _))                                => DEFAULT_ACTION_COST,
+    }
 }

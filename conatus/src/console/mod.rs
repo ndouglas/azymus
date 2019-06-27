@@ -1,4 +1,3 @@
-use azymus::command::*;
 use azymus::input::*;
 use azymus::world::*;
 use specs::*;
@@ -26,8 +25,6 @@ pub fn get_map_console(width: i32, height: i32) -> Offscreen {
 /// Handle input.
 pub fn handle_keys(entity: Entity, world: &mut World) -> bool {
     let event = world.wait_for_keypress();
-    if let Some(command) = get_event_command(Domain::Explore, event) {
-        handle_command(command, entity, world);
-    }
+    Domain::Explore.handle_event(event, entity, world);
    false
 }
