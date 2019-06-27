@@ -60,7 +60,7 @@ fn main() {
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(SeedResource(0));
     let starting_position = Algorithm::None.generate_map(&mut world, map_width, map_height, 0);
-    let player = get_player(&mut world, starting_position.0, starting_position.1);
+    let player = get_player(&mut world, starting_position.0, starting_position.1, 0);
     let mut dispatcher = DispatcherBuilder::new()
         .with(FieldOfViewSystem, "field_of_view", &[])
         .with(MapRendererSystem, "map_renderer", &[
