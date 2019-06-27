@@ -29,3 +29,4 @@ Azymus is just a library at this point.  That might be all that it ever is.  I'm
 - screen opens (`examples/basic_runloop.rs`)
 - little `@` bro moves around the screen (`examples/basic_movement.rs`)
 - little `@` stops walking when face meets wall (`examples/simple_map.rs`)
+- little `@` is surrounded by a two-color dungeon with actual rooms (`examples/middling_dungeon.rs`)

@@ -1,11 +1,16 @@
 use specs::*;
 use std::cmp;
 use rand::*;
-use tcod::colors::*;
 use crate::component;
 use component::occupant::Occupant;
+use component::opaque::Opaque;
 use component::position::Position;
 use component::renderable::Renderable;
+use component::tile::Tile;
+use crate::resource;
+use resource::map::MapResource;
+use crate::map::MapType;
+use crate::map::tile::preset::*;
 
 const ROOM_MAX_SIZE: i32 = 25;
 const ROOM_MIN_SIZE: i32 = 6;
@@ -19,8 +24,6 @@ struct Rect {
     y2: i32,
 }
 
-/// Very simple, just "is this a wall or not?"
-pub type MapType = Vec<Vec<bool>>;
 
 impl Rect {
 
@@ -48,7 +51,7 @@ impl Rect {
 
 }
 
-fn create_room(room: Rect, map: &mut MapType) {
+fn create_room(room: Rect, map: &mut Vec<Vec<bool>>) {
     for x in (room.x1 + 1)..room.x2 {
         for y in (room.y1 + 1)..room.y2 {
             map[x as usize][y as usize] = false;
@@ -56,13 +59,13 @@ fn create_room(room: Rect, map: &mut MapType) {
     }
 }
 
-fn create_h_tunnel(x1: i32, x2: i32, y: i32, map: &mut MapType) {
+fn create_h_tunnel(x1: i32, x2: i32, y: i32, map: &mut Vec<Vec<bool>>) {
     for x in cmp::min(x1, x2)..(cmp::max(x1, x2) + 1) {
         map[x as usize][y as usize] = false;
     }
 }
 
-fn create_v_tunnel(y1: i32, y2: i32, x: i32, map: &mut MapType) {
+fn create_v_tunnel(y1: i32, y2: i32, x: i32, map: &mut Vec<Vec<bool>>) {
     for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
         map[x as usize][y as usize] = false;
     }
@@ -102,41 +105,36 @@ pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i
             rooms.push(new_room);
         }
     }
+    let mut resource_map: MapType = vec![vec![Vec::new(); height as usize]; width as usize];
     for y in 0..height {
         for x in 0..width {
             let is_wall = map[x as usize][y as usize];
-            let color = if is_wall {
-                DARK_BLUE
-            } else {
-                LIGHT_BLUE
-            };
+            let mut entity_builder = world.create_entity();
+            let mut color = FLOOR_LIT_COLOR;
             if is_wall {
-                world.create_entity()
+                entity_builder = entity_builder
                     .with(Occupant)
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
-            } else {
-                world.create_entity()
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
+                    .with(Opaque);
+                color = WALL_LIT_COLOR;
             }
+            let tile = Tile;
+            let position = Position {
+                x: x,
+                y: y,
+            };
+            let renderable = Renderable {
+                char: None,
+                foreground_color: None,
+                background_color: Some(color),
+            };
+            entity_builder
+                .with(tile)
+                .with(position)
+                .with(renderable)
+                .build();
+            resource_map[x as usize][y as usize].push((true, is_wall, is_wall, renderable));
         }
     }
+    world.add_resource(MapResource(resource_map));
     starting_position
 }

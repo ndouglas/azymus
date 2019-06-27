@@ -4,6 +4,8 @@ use crate::action::Action;
 use crate::component;
 use component::occupant::Occupant;
 use component::position::Position;
+use crate::resource;
+use resource::map::MapResource;
 
 /// Returns none.  Like, all the time.
 pub fn none_callback() -> Option<Action> {
@@ -35,6 +37,15 @@ pub fn check_map_boundaries(action: Action, x: i32, y: i32, map_console: &Offscr
 /// Checks a specific position in the map to see if there's an Occupant there.
 pub fn check_map_occupied(action: Action, x: i32, y: i32, world: &World) -> Option<Action> {
     trace!("Checking if coordinates ({}, {}) are occupied...", x, y);
+    let map_resource = & world.read_resource::<MapResource>().0;
+    for tile in &map_resource[x as usize][y as usize] {
+        if tile.1 {
+            trace!("Occupant found at ({}, {}).", x, y);
+            return None;
+        }
+    }
+    return Some(action);
+    /*
     let occupant_storage = world.read_storage::<Occupant>();
     let position_storage = world.read_storage::<Position>();
     let occupant_count = (&occupant_storage, &position_storage)
@@ -47,4 +58,5 @@ pub fn check_map_occupied(action: Action, x: i32, y: i32, world: &World) -> Opti
     }
     trace!("No occupant found at ({}, {}).", x, y);
     return Some(action);
+    */
 }
