@@ -18,7 +18,7 @@ impl Domain {
     /// Input mapper.
     ///
     /// Returns a command if the input event could be successfully mapped to one.
-    pub fn get_command(&self, event: Event, entity: Entity, world: &mut World) -> Option<Command> {
+    pub fn get_command(self, event: Event, entity: Entity, world: &mut World) -> Option<Command> {
         match self {
             Domain::Explore => {
                 match event {
@@ -54,9 +54,9 @@ impl Domain {
     /// Input mapper.
     ///
     /// Returns a command if the input event could be successfully mapped to one.
-    pub fn handle_event(&self, event: Event, entity: Entity, world: &mut World) {
+    pub fn handle_event(self, event: Event, entity: Entity, world: &mut World) {
         if let Some(command) = self.get_command(event, entity, world) {
-            handle_command(command, entity, world);
+            command.execute(entity, world);
         }
     }
 
