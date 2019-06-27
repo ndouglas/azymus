@@ -2,9 +2,11 @@ use specs::*;
 use crate::component;
 use component::field_of_view::FieldOfView;
 use component::player::Player;
+use component::player_explored::PlayerExplored;
 use component::position::Position;
 use component::renderable::Renderable;
 use component::renderable::*;
+use component::tile::Tile;
 use crate::map;
 use map::tile::obscure_renderable;
 use crate::resource;
@@ -28,6 +30,8 @@ impl<'a> System<'a> for MapRendererSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, Renderable>,
         ReadStorage<'a, FieldOfView>,
+        ReadStorage<'a, Tile>,
+        ReadStorage<'a, PlayerExplored>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -39,6 +43,8 @@ impl<'a> System<'a> for MapRendererSystem {
             position_storage,
             renderable_storage,
             fov_storage,
+            tile_storage,
+            player_explored_storage,
         ) = data;
         let map_console = &mut (map_console_resource.0).lock().unwrap();
         let width = map_console.width();
@@ -51,13 +57,17 @@ impl<'a> System<'a> for MapRendererSystem {
                 trace!("Found a FOV!");
                 if let fov_map = fov_map.lock().unwrap() {
                     trace!("FOV is valid");
-                    for (position, renderable) in (&position_storage, &renderable_storage).join() {
+                    for (_, _, position, renderable) in (&tile_storage, &player_explored_storage, &position_storage, &renderable_storage).join() {
                         trace!("Processing renderable at ({}, {})...", position.x, position.y);
                         if fov_map.is_in_fov(position.x, position.y) {
                             map_console.render_renderable(position.x, position.y, renderable);
                         } else {
                             map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                         }
+                    }
+                    for (_, position, renderable) in (!&tile_storage, &position_storage, &renderable_storage).join() {
+                        trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                        map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                     }
                 }
             }

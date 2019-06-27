@@ -5,7 +5,6 @@ use component::position::Position;
 use super::super::resource;
 use resource::map::MapResource;
 use tcod::map::*;
-use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 /// Renderer.
@@ -28,7 +27,7 @@ impl<'a> System<'a> for FieldOfViewSystem {
             position_storage,
             mut fov_storage,
         ) = data;
-        let mut map = &map_resource.0;
+        let map = &map_resource.0;
         let width = map.len() as i32;
         let height = map[0].len() as i32;
         for (position, fov) in (&position_storage, &mut fov_storage).join() {

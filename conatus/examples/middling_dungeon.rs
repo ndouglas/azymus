@@ -2,6 +2,7 @@ use std::sync::{Arc,Mutex};
 
 /// An experimental roguelike (library), written in Rust.
 extern crate azymus;
+use azymus::component::player_explored::PlayerExplored;
 use azymus::component::field_of_view::FieldOfView;
 use azymus::component::occupant::Occupant;
 use azymus::component::opaque::Opaque;
@@ -17,6 +18,7 @@ use azymus::resource::root_console::RootConsoleResource;
 use azymus::resource::seed::SeedResource;
 use azymus::system::field_of_view::FieldOfViewSystem;
 use azymus::system::map_renderer::MapRendererSystem;
+use azymus::system::player_explored_marker::PlayerExploredMarkerSystem;
 use azymus::world::*;
 
 
@@ -36,7 +38,6 @@ use specs::*;
 
 /// Bindings for the tcod library.
 extern crate tcod;
-use tcod::colors::*;
 
 fn main() {
     pretty_env_logger::init();
@@ -48,6 +49,7 @@ fn main() {
     let root_console = conatus::console::get_root_console(screen_width, screen_height);
     let map_console = conatus::console::get_map_console(map_width, map_height);
     let mut world = World::new();
+    world.register::<PlayerExplored>();
     world.register::<FieldOfView>();
     world.register::<Occupant>();
     world.register::<Opaque>();
@@ -63,8 +65,11 @@ fn main() {
     let player = get_player(&mut world, starting_position.0, starting_position.1);
     let mut dispatcher = DispatcherBuilder::new()
         .with(FieldOfViewSystem, "field_of_view", &[])
-        .with(MapRendererSystem, "map_renderer", &[
+        .with(PlayerExploredMarkerSystem, "player_explored_marker", &[
             "field_of_view",
+        ])
+        .with(MapRendererSystem, "map_renderer", &[
+            "player_explored_marker",
         ])
         .build();
     dispatcher.setup(&mut world.res);
