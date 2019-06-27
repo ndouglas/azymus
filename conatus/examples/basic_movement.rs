@@ -59,15 +59,6 @@ fn main() {
         (world.read_resource::<MapConsoleResource>().0)
             .lock().unwrap()
             .clear();
-        for (position, renderable) in (&world.read_storage::<Position>(), &world.read_storage::<Renderable>()).join() {
-            (world.read_resource::<MapConsoleResource>().0)
-                .lock().unwrap()
-                .render_renderable(position.x, position.y, renderable);
-        }
-        world.blit_map_console();
-        (world.read_resource::<RootConsoleResource>().0)
-            .lock().unwrap()
-            .flush();
         let exit = conatus::console::handle_keys(player, &mut world);
         if exit {
             break

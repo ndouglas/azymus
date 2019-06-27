@@ -1,5 +1,5 @@
 use specs::*;
-use crate::action::Action;
+use crate::action::*;
 use crate::component;
 use component::position::Position;
 
@@ -55,5 +55,14 @@ pub fn get_command_action(command: Command, entity: Entity, world: &World) -> Op
             }
             None
         },
+    }
+}
+
+/// Handle a command.
+pub fn handle_command(command: Command, entity: Entity, world: &mut World) {
+    if let Some(action) = get_command_action(command, entity, world) {
+        if let Some(action) = get_permitted_action(action, entity, world) {
+            action.execute(entity, world);
+        }
     }
 }

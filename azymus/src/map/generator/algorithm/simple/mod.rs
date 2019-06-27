@@ -1,11 +1,7 @@
 use specs::*;
 use std::cmp;
 use rand::*;
-use tcod::colors::*;
-use crate::component;
-use component::occupant::Occupant;
-use component::position::Position;
-use component::renderable::Renderable;
+use crate::map::tile::get_tile;
 
 const ROOM_MAX_SIZE: i32 = 25;
 const ROOM_MIN_SIZE: i32 = 6;
@@ -105,37 +101,7 @@ pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i
     for y in 0..height {
         for x in 0..width {
             let is_wall = map[x as usize][y as usize];
-            let color = if is_wall {
-                DARK_BLUE
-            } else {
-                LIGHT_BLUE
-            };
-            if is_wall {
-                world.create_entity()
-                    .with(Occupant)
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
-            } else {
-                world.create_entity()
-                    .with(Position {
-                        x: x,
-                        y: y,
-                    })
-                    .with(Renderable {
-                        char: None,
-                        foreground_color: None,
-                        background_color: Some(color),
-                    })
-                    .build();
-            }
+            get_tile(world, is_wall, x, y);
         }
     }
     starting_position

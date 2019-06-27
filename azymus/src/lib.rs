@@ -59,6 +59,9 @@ pub mod resource;
 /// Rules.
 pub mod rule;
 
+/// Systems.
+pub mod system;
+
 /// World.
 pub mod world;
 

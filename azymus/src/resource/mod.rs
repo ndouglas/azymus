@@ -4,3 +4,5 @@ pub mod continue_flag;
 pub mod map_console;
 /// The root console.
 pub mod root_console;
+/// The seed.
+pub mod seed;
