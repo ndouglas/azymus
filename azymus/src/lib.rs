@@ -41,6 +41,9 @@ extern crate tcod;
 /// Actions.
 pub mod action;
 
+/// Agents.
+pub mod agent;
+
 /// Commands.
 pub mod command;
 

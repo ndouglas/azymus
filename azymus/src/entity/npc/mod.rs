@@ -1,10 +1,14 @@
 use specs::*;
-use crate::component::actor::Actor;
-use crate::component::field_of_view::FieldOfView;
-use crate::component::name::Name;
-use crate::component::occupant::Occupant;
-use crate::component::position::Position;
-use crate::component::renderable::Renderable;
+use crate::agent;
+use agent::Agent as AgentType;
+use crate::component;
+use component::actor::Actor;
+use component::agent::Agent;
+use component::field_of_view::FieldOfView;
+use component::name::Name;
+use component::occupant::Occupant;
+use component::position::Position;
+use component::renderable::Renderable;
 use tcod::colors::*;
 use tcod::map::FovAlgorithm;
 
@@ -17,8 +21,11 @@ pub fn get_orc(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         })
         .with(Actor {
             energy: 0,
-            speed: 100,
+            speed: 10,
             queue: vec![],
+        })
+        .with(Agent {
+            agent: AgentType::Orc,
         })
         .with(Position {
             x: x,
@@ -47,9 +54,12 @@ pub fn get_troll(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Name {
             name: "Troll".to_string(),
         })
+        .with(Agent {
+            agent: AgentType::Orc,
+        })
         .with(Actor {
             energy: 0,
-            speed: 70,
+            speed: 9,
             queue: vec![],
         })
         .with(Position {

@@ -3,6 +3,7 @@ use std::sync::{Arc,Mutex};
 /// An experimental roguelike (library), written in Rust.
 extern crate azymus;
 use azymus::component::actor::Actor;
+use azymus::component::agent::Agent;
 use azymus::component::player_explored::PlayerExplored;
 use azymus::component::field_of_view::FieldOfView;
 use azymus::component::name::Name;
@@ -53,6 +54,7 @@ fn main() {
     let map_console = conatus::console::get_map_console(map_width, map_height);
     let mut world = World::new();
     world.register::<Actor>();
+    world.register::<Agent>();
     world.register::<FieldOfView>();
     world.register::<Name>();
     world.register::<Occupant>();
@@ -70,8 +72,8 @@ fn main() {
     let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, seed);
     let player = get_player(&mut world, starting_position.0, starting_position.1, seed);
     let mut dispatcher = DispatcherBuilder::new()
-        .with(ActorFeederSystem, "actor_feeder", &[])
         .with(FieldOfViewSystem, "field_of_view", &[])
+        .with(ActorFeederSystem, "actor_feeder", &[])
         .with(PlayerExploredMarkerSystem, "player_explored_marker", &[
             "field_of_view",
         ])
@@ -82,6 +84,7 @@ fn main() {
     dispatcher.setup(&mut world.res);
     while world.should_continue() {
         dispatcher.dispatch(&mut world.res);
+        world.tick();
         world.maintain();
         let exit = conatus::console::handle_keys(player, &mut world);
         if exit {

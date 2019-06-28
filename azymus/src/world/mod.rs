@@ -1,7 +1,14 @@
 use specs::*;
-use crate::resource::continue_flag::ContinueFlagResource;
-use crate::resource::map_console::MapConsoleResource;
-use crate::resource::root_console::RootConsoleResource;
+use crate::component;
+use component::actor::Actor;
+use component::agent::Agent;
+use component::name::Name;
+use component::player::Player;
+use crate::resource;
+use resource::continue_flag::ContinueFlagResource;
+use resource::map_console::MapConsoleResource;
+use resource::root_console::RootConsoleResource;
+use resource::seed::SeedResource;
 use tcod::input::Event;
 use tcod::console::*;
 use std::ops::DerefMut;
@@ -17,6 +24,9 @@ pub trait WorldExtension {
 
     /// Blit map console to root console.
     fn blit_map_console(&mut self);
+
+    /// Tick.
+    fn tick(&mut self);
 
 }
 
@@ -50,6 +60,10 @@ impl WorldExtension for World {
         let mut root_console = root_console_resource.lock().unwrap();
         let coordinates = (map_console.width(), map_console.height());
         blit(map_console.deref_mut(), (0, 0), coordinates, root_console.deref_mut(), (0, 0), 1.0, 1.0);
+    }
+
+    /// Tick.
+    fn tick(&mut self) {
     }
 
 }

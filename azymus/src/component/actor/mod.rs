@@ -1,7 +1,7 @@
 use specs::*;
 use crate::action::Action;
 
-/// The position of an object in the world.
+/// Something that can act.
 #[derive(Clone, Component, Debug)]
 #[storage(VecStorage)]
 pub struct Actor {

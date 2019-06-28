@@ -1,5 +1,7 @@
-/// Something that can act independently.
+/// Something that can act.
 pub mod actor;
+/// Something with the ability to act independently.
+pub mod agent;
 /// Something representing an entity's ability to perceive.
 pub mod field_of_view;
 /// Something that has a name.

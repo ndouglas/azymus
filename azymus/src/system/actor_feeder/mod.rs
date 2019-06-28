@@ -1,5 +1,5 @@
 use specs::*;
-use super::super::component;
+use crate::component;
 use component::actor::Actor;
 use component::name::Name;
 

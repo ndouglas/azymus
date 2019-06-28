@@ -19,7 +19,7 @@ pub fn get_player(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Occupant)
         .with(Actor {
             energy: 0,
-            speed: 100,
+            speed: 12,
             queue: vec![],
         })
         .with(Position {

@@ -4,7 +4,7 @@ use component::actor::Actor;
 use component::position::Position;
 use crate::rule::ActionRule;
 
-const DEFAULT_ACTION_COST: i32 = 100;
+const DEFAULT_ACTION_COST: i32 = 120;
 
 /// The actions.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
