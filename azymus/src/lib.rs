@@ -68,6 +68,9 @@ pub mod rule;
 /// Systems.
 pub mod system;
 
+/// User Interface.
+pub mod ui;
+
 /// World.
 pub mod world;
 
