@@ -25,11 +25,4 @@ Azymus is just a library at this point.  That might be all that it ever is.  I'm
 
 "Conatus" came up when I Google Translated "attempt".  I never took Latin and don't know how accurate that is.  Anyway, it's a library that I'm building to enable interactive tests for Azymus.  It should be easy to write tiny example roguelikes demonstrating some particular idea and permitting me to develop things easily in Azymus without having a long startup process.
 
-## Things That Work
-
-_These examples are going to be broken a lot while I figure out the basic public API for the libraries... sorry._
-
-- screen opens (`examples/basic_runloop.rs`)
-- little `@` bro moves around the screen (`examples/basic_movement.rs`)
-- little `@` stops walking when face meets wall (`examples/simple_map.rs`)
-- little `@` is surrounded by a two-color dungeon with actual rooms (`examples/middling_dungeon.rs`)
+Eh.  This idea is sort of falling by the wayside while I figure out all this structural crap.  IDK if it'll stay in.
