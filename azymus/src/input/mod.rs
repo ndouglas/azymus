@@ -18,7 +18,7 @@ impl Domain {
     /// Input mapper.
     ///
     /// Returns a command if the input event could be successfully mapped to one.
-    pub fn get_command(self, event: Event, entity: Entity, world: &mut World) -> Option<Command> {
+    pub fn get_command(self, event: Event, _entity: Entity, world: &mut World) -> Option<Command> {
         match self {
             Domain::Explore => {
                 match event {

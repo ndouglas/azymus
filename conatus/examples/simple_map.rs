@@ -36,7 +36,6 @@ use specs::*;
 
 /// Bindings for the tcod library.
 extern crate tcod;
-use tcod::colors::*;
 
 fn main() {
     pretty_env_logger::init();

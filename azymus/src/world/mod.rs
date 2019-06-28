@@ -1,14 +1,8 @@
 use specs::*;
-use crate::component;
-use component::actor::Actor;
-use component::agent::Agent;
-use component::name::Name;
-use component::player::Player;
 use crate::resource;
 use resource::continue_flag::ContinueFlagResource;
 use resource::map_console::MapConsoleResource;
 use resource::root_console::RootConsoleResource;
-use resource::seed::SeedResource;
 use tcod::input::Event;
 use tcod::console::*;
 use std::ops::DerefMut;
