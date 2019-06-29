@@ -6,3 +6,5 @@ pub mod field_of_view;
 pub mod map_renderer;
 /// Marks tiles as explored.
 pub mod player_explored_marker;
+/// Receives and acts on player input.
+pub mod player_input;

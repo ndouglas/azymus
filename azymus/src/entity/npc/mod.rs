@@ -22,7 +22,6 @@ pub fn get_orc(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Actor {
             energy: 0,
             speed: 10,
-            queue: vec![],
         })
         .with(Agent {
             agent: AgentType::Orc,
@@ -60,7 +59,6 @@ pub fn get_troll(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Actor {
             energy: 0,
             speed: 9,
-            queue: vec![],
         })
         .with(Position {
             x: x,

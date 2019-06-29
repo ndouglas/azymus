@@ -2,6 +2,8 @@
 pub mod actor;
 /// Something with the ability to act independently.
 pub mod agent;
+/// Something that can take and execute a list of commands.
+pub mod command_queue;
 /// Something representing an entity's ability to perceive.
 pub mod field_of_view;
 /// Something that has a name.
