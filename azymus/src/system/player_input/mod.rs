@@ -35,7 +35,9 @@ impl<'a> System<'a> for PlayerInputSystem {
             if let Some(command) = input_domain.get_command(event) {
                 for (_, command_queue) in (&player_storage, &mut command_queue_storage).join() {
                     trace!("Inserting command {:?} in player command queue.", command);
-                    command_queue.queue.push_back(command);
+                    command_queue
+                        .queue
+                        .push_back(command);
                 }
             }
         }
