@@ -7,11 +7,11 @@ use resource::map::MapResource;
 use tcod::map::*;
 use std::sync::{Arc, Mutex};
 
-/// Renderer.
+/// The FOV system.
 #[derive(Clone, Copy, Debug)]
 pub struct FieldOfViewSystem;
 
-/// Renderer.
+/// The FOV system.
 impl<'a> System<'a> for FieldOfViewSystem {
 
     type SystemData = (
@@ -33,7 +33,7 @@ impl<'a> System<'a> for FieldOfViewSystem {
         for (position, fov) in (&position_storage, &mut fov_storage).join() {
             trace!("Found position and FOV at ({}, {}).", position.x, position.y);
             if fov.map.is_none() {
-                trace!("Creating new FOV for ({}, {}).", position.x, position.y);
+                debug!("Creating new FOV for ({}, {}).", position.x, position.y);
                 let mut fov_map = Map::new(width, height);
                 for y in 0..height {
                     for x in 0..width {
@@ -49,7 +49,7 @@ impl<'a> System<'a> for FieldOfViewSystem {
             }
             let dirty = position.x != fov.x || position.y != fov.y;
             if dirty {
-                trace!("Recalculating FOV for ({}, {}).", position.x, position.y);
+                debug!("Recalculating FOV for ({}, {}).", position.x, position.y);
                 let fov_map = &mut fov.map.as_mut().unwrap();
                 let mut fov_map = fov_map.lock().unwrap();
                 fov_map.compute_fov(

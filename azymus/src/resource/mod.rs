@@ -2,6 +2,8 @@
 pub mod continue_flag;
 /// The current input domain.
 pub mod input_domain;
+/// When we're waiting for input.
+pub mod input_flag;
 /// The map.
 pub mod map;
 /// The map console.

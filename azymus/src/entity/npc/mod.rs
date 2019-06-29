@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use specs::*;
+use rand::*;
 use crate::agent;
 use agent::Agent as AgentType;
 use crate::component;
@@ -14,15 +15,17 @@ use tcod::colors::*;
 use tcod::map::FovAlgorithm;
 
 /// Create an orc entity and return it.
-pub fn get_orc(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
+pub fn get_orc(world: &mut World, x: i32, y: i32, seed: i64) -> Entity {
+    let in_seed: &[_] = &[ seed as usize ];
+    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
     let entity = world.create_entity()
         .with(Occupant)
         .with(Name {
-            name: "Orc".to_string(),
+            name: format!("Orc ({}, {})", x, y),
         })
         .with(Actor {
-            energy: 0,
-            speed: 10,
+            energy: rng.gen_range(0, 3) + x % 3 + y % 3,
+            speed: rng.gen_range(6, 8) + x % 3 + y % 3,
             command_queue: VecDeque::new(),
         })
         .with(Agent {
@@ -49,18 +52,20 @@ pub fn get_orc(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
 }
 
 /// Create a troll entity and return it.
-pub fn get_troll(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
+pub fn get_troll(world: &mut World, x: i32, y: i32, seed: i64) -> Entity {
+    let in_seed: &[_] = &[ seed as usize ];
+    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
     let entity = world.create_entity()
         .with(Occupant)
         .with(Name {
-            name: "Troll".to_string(),
+            name: format!("Troll ({}, {})", x, y),
         })
         .with(Agent {
             agent: AgentType::Orc,
         })
         .with(Actor {
-            energy: 0,
-            speed: 9,
+            energy: rng.gen_range(0, 3) + x % 3 + y % 3,
+            speed: rng.gen_range(3, 6) + x % 3 + y % 3,
             command_queue: VecDeque::new(),
         })
         .with(Position {

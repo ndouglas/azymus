@@ -20,10 +20,10 @@ impl Domain {
                 match event {
                     Event::Key(key) => {
                         match key {
-                            Key { code: Up, .. }                => { Some(Command::MoveNorth) },
-                            Key { code: Down, .. }              => { Some(Command::MoveSouth) },
-                            Key { code: Left, .. }              => { Some(Command::MoveWest) },
-                            Key { code: Right, .. }             => { Some(Command::MoveEast) },
+                            Key { code: Up, .. }                => { Some(Command::Move(CompassDirection::North)) },
+                            Key { code: Down, .. }              => { Some(Command::Move(CompassDirection::South)) },
+                            Key { code: Left, .. }              => { Some(Command::Move(CompassDirection::West)) },
+                            Key { code: Right, .. }             => { Some(Command::Move(CompassDirection::East)) },
                             _                                   => { None },
                         }
                     },

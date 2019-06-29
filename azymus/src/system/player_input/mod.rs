@@ -4,17 +4,19 @@ use component::actor::Actor;
 use component::player::Player;
 use crate::resource;
 use resource::input_domain::InputDomainResource;
+use resource::input_flag::InputFlagResource;
 use resource::player_input::PlayerInputResource;
 
-/// Renderer.
+/// Receives and acts on player input.
 #[derive(Clone, Copy, Debug)]
 pub struct PlayerInputSystem;
 
-/// Renderer.
+/// Receives and acts on player input.
 impl<'a> System<'a> for PlayerInputSystem {
 
     type SystemData = (
         Read<'a, InputDomainResource>,
+        Write<'a, InputFlagResource>,
         Write<'a, PlayerInputResource>,
         ReadStorage<'a, Player>,
         WriteStorage<'a, Actor>,
@@ -24,17 +26,19 @@ impl<'a> System<'a> for PlayerInputSystem {
         trace!("Entering PlayerInputSystem::run().");
         let (
             input_domain_resource,
+            mut input_flag_resource,
             mut player_input_resource,
             player_storage,
             mut actor_storage,
         ) = data;
         let input_domain = input_domain_resource.0;
         if let Some(event) = player_input_resource.0 {
-            trace!("Found event {:?} in player input resource.", event);
+            debug!("Found event {:?} in player input resource.", event);
             player_input_resource.0 = None;
+            input_flag_resource.0 = false;
             if let Some(command) = input_domain.get_command(event) {
                 for (_, actor) in (&player_storage, &mut actor_storage).join() {
-                    trace!("Inserting command {:?} in player command queue.", command);
+                    debug!("Inserting command {:?} in player command queue.", command);
                     actor
                         .command_queue
                         .push_back(command);

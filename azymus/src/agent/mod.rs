@@ -1,5 +1,5 @@
-use specs::*;
-use crate::action::Action;
+use crate::command::Command;
+use crate::command::CompassDirection;
 
 /// Orc behavior.
 pub mod orc;
@@ -9,6 +9,8 @@ pub mod orc;
 pub enum Agent {
     /// Classic orc.
     Orc,
+    /// Stupid troll.
+    Troll,
 }
 
 impl Agent {
@@ -16,12 +18,21 @@ impl Agent {
     /// Get action.
     ///
     /// Returns the action that the entity would like to perform next.
-    pub fn get_action(self, _seed: i64, _energy: i32, _entity: Entity, _world: &World) -> Option<Action> {
+    pub fn get_next_command(self, _seed: i64, energy: i32) -> Option<Command> {
         use Agent::*;
         match self {
             Orc                  => {
                 println!("rawr");
-                None
+                if energy < 120 {
+                    return None;
+                }
+                return Some(Command::Move(CompassDirection::South));
+            },
+            Troll                => {
+                println!("Mrf.");
+                if energy < 120 {
+                }
+                return Some(Command::Move(CompassDirection::South));
             },
         }
     }

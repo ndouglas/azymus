@@ -6,11 +6,11 @@ use component::player_explored::PlayerExplored;
 use component::position::Position;
 use component::tile::Tile;
 
-/// Renderer.
+/// Marks tiles as explored.
 #[derive(Clone, Copy, Debug)]
 pub struct PlayerExploredMarkerSystem;
 
-/// Renderer.
+/// Marks tiles as explored.
 impl<'a> System<'a> for PlayerExploredMarkerSystem {
 
     type SystemData = (
