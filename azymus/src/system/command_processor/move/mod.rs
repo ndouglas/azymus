@@ -106,13 +106,13 @@ impl<'a> System<'a> for MoveSystem {
                     debug!("Inserting action component {:?} for actor {}.", action, name.name);
                     if let Ok(_) = action_storage.insert(entity, action) {
                         debug!("Inserted an action component {:?} for actor {}.", action, name.name);
-                        let cost = DEFAULT_ACTION_COST;
-                        debug!("Removing {:?} command from actor {}.", actor.command_queue.front(), name.name);
-                        actor.command_queue.pop_front();
-                        debug!("Removing {} energy from actor {} ({} -> {}).", cost, name.name, actor.energy, actor.energy - cost);
-                        actor.energy -= cost;
                     }
                 }
+                let cost = DEFAULT_ACTION_COST;
+                debug!("Removing {} energy from actor {} ({} -> {}).", cost, name.name, actor.energy, actor.energy - cost);
+                actor.energy -= cost;
+                debug!("Removing {:?} command from actor {}.", actor.command_queue.front(), name.name);
+                actor.command_queue.pop_front();
             }
         }
         trace!("Exiting MoveSystem::run().");

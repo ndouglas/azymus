@@ -22,15 +22,14 @@ impl Agent {
         use Agent::*;
         match self {
             Orc                  => {
-                println!("rawr");
                 if energy < 120 {
                     return None;
                 }
                 return Some(Command::Move(CompassDirection::South));
             },
             Troll                => {
-                println!("Mrf.");
                 if energy < 120 {
+                    return None;
                 }
                 return Some(Command::Move(CompassDirection::South));
             },
