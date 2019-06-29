@@ -12,6 +12,11 @@ use component::occupant::Occupant;
 use component::position::Position;
 use crate::resource;
 use resource::seed::SeedResource;
+use crate::rule;
+use rule::action::check_map_boundaries;
+use rule::action::check_map_occupied;
+// fn check_map_boundaries(x: i32, y: i32, map_height: i32, map_width: i32) -> Option<Action>
+// fn check_map_occupied<'a>(x: i32, y: i32, occupant_storage: &ReadStorage<'a, Occupant>, position_storage: &ReadStorage<'a, Position>) -> Option<Action> {
 
 const DEFAULT_ACTION_COST: i32 = 120;
 
@@ -41,7 +46,7 @@ impl<'a> System<'a> for MoveSystem {
             mut actor_storage,
             name_storage,
             baton_storage,
-            _occupant_storage,
+            occupant_storage,
             position_storage,
             mut action_storage,
         ) = data;
@@ -53,32 +58,48 @@ impl<'a> System<'a> for MoveSystem {
                 use CompassDirection::*;
                 let action_option = match compass_direction {
                     North => {
-                        //if (&occupant_storage, &position_storage).join().collect::<Vec<_>>().len() > 0 {
-                        //    Some(Action::Wait)
-                        //} else {
-                            Some(Action::Walk((position.x, position.y), (position.x, position.y - 1)))
-                        //}
+                        let x2 = position.x;
+                        let y2 = position.y - 1;
+                        if !check_map_boundaries(x2, y2, 100, 160) {
+                            None
+                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                            None
+                        } else {
+                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                        }
                     },
                     South => {
-                        //if (&occupant_storage, &position_storage).join().collect::<Vec<_>>().len() > 0 {
-                        //    Some(Action::Wait)
-                        //} else {
-                            Some(Action::Walk((position.x, position.y), (position.x, position.y + 1)))
-                        //}
+                        let x2 = position.x;
+                        let y2 = position.y + 1;
+                        if !check_map_boundaries(x2, y2, 100, 160) {
+                            None
+                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                            None
+                        } else {
+                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                        }
                     },
                     West => {
-                        //if (&occupant_storage, &position_storage).join().collect::<Vec<_>>().len() > 0 {
-                        //    Some(Action::Wait)
-                        //} else {
-                            Some(Action::Walk((position.x - 1, position.y), (position.x, position.y)))
-                        //}
+                        let x2 = position.x - 1;
+                        let y2 = position.y;
+                        if !check_map_boundaries(x2, y2, 100, 160) {
+                            None
+                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                            None
+                        } else {
+                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                        }
                     },
                     East => {
-                        //if (&occupant_storage, &position_storage).join().collect::<Vec<_>>().len() > 0 {
-                        //    Some(Action::Wait)
-                        //} else {
-                            Some(Action::Walk((position.x + 1, position.y), (position.x, position.y)))
-                        //}
+                        let x2 = position.x + 1;
+                        let y2 = position.y;
+                        if !check_map_boundaries(x2, y2, 100, 160) {
+                            None
+                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                            None
+                        } else {
+                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                        }
                     },
                 };
                 if let Some(action) = action_option {
