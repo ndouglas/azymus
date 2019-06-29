@@ -4,7 +4,6 @@ use specs::*;
 use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
-use component::command_queue::CommandQueue;
 use component::player_explored::PlayerExplored;
 use component::field_of_view::FieldOfView;
 use component::name::Name;
@@ -86,7 +85,6 @@ pub fn run_game_loop() {
     let seed: i64 = 0;
     world.register::<Actor>();
     world.register::<Agent>();
-    world.register::<CommandQueue>();
     world.register::<FieldOfView>();
     world.register::<Name>();
     world.register::<Occupant>();

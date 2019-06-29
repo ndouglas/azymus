@@ -1,6 +1,6 @@
+use std::collections::VecDeque;
 use specs::*;
 use crate::component::actor::Actor;
-use crate::component::command_queue::CommandQueue;
 use crate::component::field_of_view::FieldOfView;
 use crate::component::name::Name;
 use crate::component::occupant::Occupant;
@@ -21,8 +21,8 @@ pub fn get_player(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Actor {
             energy: 0,
             speed: 12,
+            command_queue: VecDeque::new(),
         })
-        .with(CommandQueue::default())
         .with(Position {
             x: x,
             y: y,
