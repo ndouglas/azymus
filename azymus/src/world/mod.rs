@@ -1,5 +1,6 @@
 use std::sync::{Arc,Mutex};
-use tcod::input::Event;
+use tcod::input::*;
+use tcod::input::KeyCode::*;
 use specs::*;
 use crate::action;
 use action::Action;
@@ -79,6 +80,21 @@ impl WorldExtension for World {
             .lock()
             .unwrap()
             .wait_for_keypress(true);
+        match key {
+            Key { code: Enter, alt: true, .. } => {
+                let root_console_resource = &self.write_resource::<RootConsoleResource>().0;
+                let mut root_console = root_console_resource.lock().unwrap();
+                let fullscreen = root_console.is_fullscreen();
+                root_console.set_fullscreen(!fullscreen);
+                return;
+            },
+            Key { code: Escape, .. } => {
+                let mut continue_flag_resource = self.write_resource::<ContinueFlagResource>();
+                continue_flag_resource.0 = false;
+                return;
+            },
+            _ => {},
+        }
         trace!("Exiting World::wait_for_keypress().");
         let mut player_input = self.write_resource::<PlayerInputResource>();
         player_input.0 = Some(Event::Key(key));
