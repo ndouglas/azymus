@@ -31,11 +31,11 @@ use resource::root_console::RootConsoleResource;
 use resource::seed::SeedResource;
 use resource::turn_flag::TurnFlagResource;
 use crate::system;
-use system::action_processor::walk::WalkSystem;
+use system::action_processor;
 use system::actor_feeder::ActorFeederSystem;
 use system::baton_passer::BatonPasserSystem;
 use system::baton_remover::BatonRemoverSystem;
-use system::command_processor::r#move::MoveSystem;
+use system::command_processor;
 use system::command_processor::wait::WaitSystem;
 use system::command_selector::CommandSelectorSystem;
 use system::field_of_view::FieldOfViewSystem;
@@ -162,14 +162,14 @@ pub fn run_game_loop() {
         .with(CommandSelectorSystem, "command_selector", &[
             "baton_passer",
         ])
-        .with(MoveSystem, "command_processor__move", &[
+        .with(command_processor::walk::WalkSystem, "command_processor__walk", &[
             "command_selector",
         ])
         .with(WaitSystem, "command_processor__wait", &[
             "command_selector",
         ])
-        .with(WalkSystem, "action_processor__walk", &[
-            "command_processor__move",
+        .with(action_processor::walk::WalkSystem, "action_processor__walk", &[
+            "command_processor__walk",
         ])
         .with(BatonRemoverSystem, "baton_remover", &[
             "action_processor__walk",

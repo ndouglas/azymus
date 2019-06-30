@@ -15,15 +15,17 @@ impl Domain {
     ///
     /// Returns a command if the input event could be successfully mapped to one.
     pub fn get_command(self, event: Event) -> Option<Command> {
+        use Command::*;
+        use CompassDirection::*;
         match self {
             Domain::Explore => {
                 match event {
                     Event::Key(key) => {
                         match key {
-                            Key { code: Up, .. }                => { Some(Command::Move(CompassDirection::North)) },
-                            Key { code: Down, .. }              => { Some(Command::Move(CompassDirection::South)) },
-                            Key { code: Left, .. }              => { Some(Command::Move(CompassDirection::West)) },
-                            Key { code: Right, .. }             => { Some(Command::Move(CompassDirection::East)) },
+                            Key { code: Up, .. }                => { Some(Walk(North)) },
+                            Key { code: Down, .. }              => { Some(Walk(South)) },
+                            Key { code: Left, .. }              => { Some(Walk(West)) },
+                            Key { code: Right, .. }             => { Some(Walk(East)) },
                             _                                   => { None },
                         }
                     },

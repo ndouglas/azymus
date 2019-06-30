@@ -1,4 +1,4 @@
-/// Processes move commands.
-pub mod r#move;
+/// Processes walk commands.
+pub mod walk;
 /// Processes wait commands.
 pub mod wait;

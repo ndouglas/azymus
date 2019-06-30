@@ -25,13 +25,13 @@ impl Agent {
                 if energy < 120 {
                     return None;
                 }
-                return Some(Command::Move(CompassDirection::South));
+                return Some(Command::Walk(CompassDirection::South));
             },
             Troll                => {
                 if energy < 120 {
                     return None;
                 }
-                return Some(Command::Move(CompassDirection::South));
+                return Some(Command::Walk(CompassDirection::South));
             },
         }
     }

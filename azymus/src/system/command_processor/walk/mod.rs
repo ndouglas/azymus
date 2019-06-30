@@ -22,10 +22,10 @@ const DEFAULT_ACTION_COST: i32 = 120;
 
 /// Processes move commands.
 #[derive(Clone, Copy, Debug)]
-pub struct MoveSystem;
+pub struct WalkSystem;
 
 /// Processes move commands.
-impl<'a> System<'a> for MoveSystem {
+impl<'a> System<'a> for WalkSystem {
 
     type SystemData = (
         Entities<'a>,
@@ -54,8 +54,8 @@ impl<'a> System<'a> for MoveSystem {
         let occupant_map = & occupant_map_resource.0;
         for (entity, _, name, actor, position) in (&entities, &baton_storage, &name_storage, &mut actor_storage, &position_storage).join() {
             debug!("Found WTF ({:?}) command on actor {}...", actor.command_queue.front(), name.name);
-            if let Some(Command::Move(compass_direction)) = actor.command_queue.front() {
-                debug!("Found Move({:?}) command on actor {}...", compass_direction, name.name);
+            if let Some(Command::Walk(compass_direction)) = actor.command_queue.front() {
+                debug!("Found Walk({:?}) command on actor {}...", compass_direction, name.name);
                 use CompassDirection::*;
                 let action_option = match compass_direction {
                     North => {
@@ -116,41 +116,6 @@ impl<'a> System<'a> for MoveSystem {
                 actor.command_queue.pop_front();
             }
         }
-        trace!("Exiting MoveSystem::run().");
+        trace!("Exiting WalkSystem::run().");
     }
 }
-
-
-/*
-/// Checks the map boundaries to make sure we aren't moving something off the map.
-pub fn check_map_boundaries(action: Action, x: i32, y: i32, map_console: &Offscreen) -> Option<Action> {
-    trace!("Checking if coordinates ({}, {}) are outside map boundaries...", x, y);
-    if x <= 0 || y <= 0 {
-        trace!("Coordinates ({}, {}) were out of bounds.", x, y);
-        return None;
-    }
-    if x >= map_console.width() - 1 || y >= map_console.height() - 1 {
-        trace!("Coordinates ({}, {}) were out of bounds.", x, y);
-        return None;
-    }
-    trace!("Coordinates ({}, {}) were not out of bounds.", x, y);
-    Some(action)
-}
-
-/// Checks a specific position in the map to see if there's an Occupant there.
-pub fn check_map_occupied(action: Action, x: i32, y: i32, world: &World) -> Option<Action> {
-    trace!("Checking if coordinates ({}, {}) are occupied...", x, y);
-    let occupant_storage = world.read_storage::<Occupant>();
-    let position_storage = world.read_storage::<Position>();
-    let occupant_count = (&occupant_storage, &position_storage)
-        .join()
-        .filter(|(_, position)| position.x == x && position.y == y)
-        .count();
-    if occupant_count > 0 {
-        trace!("Occupant found at ({}, {}).", x, y);
-        return None;
-    }
-    trace!("No occupant found at ({}, {}).", x, y);
-    return Some(action);
-}
-*/
