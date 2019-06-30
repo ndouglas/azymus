@@ -82,7 +82,7 @@ fn place_objects(world: &mut World, room: Rect, seed: i64, occupant_map: &mut Ve
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
-        if rng.gen::<f32>() < 0.8 {
+        if (rng.gen_range(0, 10) + x + y) % 10 < 8 {
             occupant_map[x as usize][y as usize] = true;
             get_orc(world, x, y, seed);
         } else {
