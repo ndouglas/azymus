@@ -27,9 +27,6 @@ extern crate pretty_env_logger;
 /// Bindings for the tcod library.
 extern crate tcod;
 
-/// Console.
-pub mod console;
-
 #[cfg(test)]
 mod tests {
 

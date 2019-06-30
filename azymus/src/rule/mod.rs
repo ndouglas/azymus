@@ -1,7 +1,4 @@
-use specs::*;
 use crate::action::Action;
-use crate::resource;
-use resource::map_console::MapConsoleResource;
 
 /// Action Rule callbacks.
 pub mod action;
@@ -22,7 +19,7 @@ pub enum ActionRule {
 impl ActionRule {
 
     /// Execute the rule.
-    pub fn callback(self, action: Action, _entity: Entity, world: &World) -> Option<Action> {
+    pub fn callback(self) -> Option<Action> {
         use ActionRule::*;
         use action::*;
         match self {
@@ -34,16 +31,7 @@ impl ActionRule {
                 trace!("Executing the identity rule.");
                 return identity_callback(action);
             },
-            CheckMapBoundaries(x, y) => {
-                trace!("Executing the check-map-boundaries rule.");
-                let map_console_resource = & world.read_resource::<MapConsoleResource>().0;
-                let map_console = map_console_resource.lock().unwrap();
-                return check_map_boundaries(action, x, y, &map_console);
-            },
-            CheckMapOccupied(x, y) => {
-                trace!("Executing the check-map-occupied rule.");
-                return check_map_occupied(action, x, y, world);
-            },
+            _ => { return none_callback(); }
         };
     }
 

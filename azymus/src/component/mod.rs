@@ -1,5 +1,13 @@
-/// The field of view.
+/// Something that can act.
+pub mod actor;
+/// Something with the ability to act independently.
+pub mod agent;
+/// Something whose turn it is.
+pub mod baton;
+/// Something representing an entity's ability to perceive.
 pub mod field_of_view;
+/// Something that has a name.
+pub mod name;
 /// Something that is the sole occupant of its position.
 pub mod occupant;
 /// Something that blocks light.
