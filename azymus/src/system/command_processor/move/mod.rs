@@ -8,9 +8,9 @@ use crate::component;
 use component::actor::Actor;
 use component::baton::Baton;
 use component::name::Name;
-use component::occupant::Occupant;
 use component::position::Position;
 use crate::resource;
+use resource::occupant_map::OccupantMapResource;
 use resource::seed::SeedResource;
 use crate::rule;
 use rule::action::check_map_boundaries;
@@ -30,10 +30,10 @@ impl<'a> System<'a> for MoveSystem {
     type SystemData = (
         Entities<'a>,
         Read<'a, SeedResource>,
+        ReadExpect<'a, OccupantMapResource>,
         WriteStorage<'a, Actor>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Baton>,
-        ReadStorage<'a, Occupant>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, Action>,
     );
@@ -43,14 +43,15 @@ impl<'a> System<'a> for MoveSystem {
         let (
             entities,
             seed_resource,
+            occupant_map_resource,
             mut actor_storage,
             name_storage,
             baton_storage,
-            occupant_storage,
             position_storage,
             mut action_storage,
         ) = data;
         let _seed = seed_resource.0;
+        let occupant_map = & occupant_map_resource.0;
         for (entity, _, name, actor, position) in (&entities, &baton_storage, &name_storage, &mut actor_storage, &position_storage).join() {
             debug!("Found WTF ({:?}) command on actor {}...", actor.command_queue.front(), name.name);
             if let Some(Command::Move(compass_direction)) = actor.command_queue.front() {
@@ -62,7 +63,7 @@ impl<'a> System<'a> for MoveSystem {
                         let y2 = position.y - 1;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                        } else if !check_map_occupied(x2, y2, &occupant_map) {
                             None
                         } else {
                             Some(Action::Walk((position.x, position.y), (x2, y2)))
@@ -73,7 +74,7 @@ impl<'a> System<'a> for MoveSystem {
                         let y2 = position.y + 1;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                        } else if !check_map_occupied(x2, y2, &occupant_map) {
                             None
                         } else {
                             Some(Action::Walk((position.x, position.y), (x2, y2)))
@@ -84,7 +85,7 @@ impl<'a> System<'a> for MoveSystem {
                         let y2 = position.y;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                        } else if !check_map_occupied(x2, y2, &occupant_map) {
                             None
                         } else {
                             Some(Action::Walk((position.x, position.y), (x2, y2)))
@@ -95,7 +96,7 @@ impl<'a> System<'a> for MoveSystem {
                         let y2 = position.y;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if !check_map_occupied(x2, y2, &occupant_storage, &position_storage) {
+                        } else if !check_map_occupied(x2, y2, &occupant_map) {
                             None
                         } else {
                             Some(Action::Walk((position.x, position.y), (x2, y2)))

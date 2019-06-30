@@ -3,7 +3,8 @@ use super::super::component;
 use component::field_of_view::FieldOfView;
 use component::position::Position;
 use super::super::resource;
-use resource::map::MapResource;
+use resource::occupant_map::OccupantMapResource;
+use resource::opaque_map::OpaqueMapResource;
 use tcod::map::*;
 use std::sync::{Arc, Mutex};
 
@@ -15,7 +16,8 @@ pub struct FieldOfViewSystem;
 impl<'a> System<'a> for FieldOfViewSystem {
 
     type SystemData = (
-        ReadExpect<'a, MapResource>,
+        ReadExpect<'a, OccupantMapResource>,
+        ReadExpect<'a, OpaqueMapResource>,
         ReadStorage<'a, Position>,
         WriteStorage<'a, FieldOfView>,
     );
@@ -23,13 +25,15 @@ impl<'a> System<'a> for FieldOfViewSystem {
     fn run(&mut self, data: Self::SystemData) {
         trace!("Entering FieldOfViewSystem::run().");
         let (
-            map_resource,
+            occupant_map_resource,
+            opaque_map_resource,
             position_storage,
             mut fov_storage,
         ) = data;
-        let map = &map_resource.0;
-        let width = map.len() as i32;
-        let height = map[0].len() as i32;
+        let occupant_map = &occupant_map_resource.0;
+        let opaque_map = &opaque_map_resource.0;
+        let width = opaque_map.len() as i32;
+        let height = opaque_map[0].len() as i32;
         for (position, fov) in (&position_storage, &mut fov_storage).join() {
             trace!("Found position and FOV at ({}, {}).", position.x, position.y);
             if fov.map.is_none() {
@@ -40,8 +44,8 @@ impl<'a> System<'a> for FieldOfViewSystem {
                         fov_map.set(
                             x,
                             y,
-                            !map[x as usize][y as usize][0].1,
-                            !map[x as usize][y as usize][0].2,
+                            !opaque_map[x as usize][y as usize],
+                            !occupant_map[x as usize][y as usize],
                         );
                     }
                 }

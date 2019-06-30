@@ -1,8 +1,4 @@
-use specs::*;
 use crate::action::Action;
-use crate::component;
-use component::occupant::Occupant;
-use component::position::Position;
 
 /// Returns none.  Like, all the time.
 pub fn none_callback() -> Option<Action> {
@@ -32,13 +28,9 @@ pub fn check_map_boundaries(x: i32, y: i32, map_height: i32, map_width: i32) -> 
 }
 
 /// Checks a specific position in the map to see if there's an Occupant there.
-pub fn check_map_occupied<'a>(x: i32, y: i32, occupant_storage: &ReadStorage<'a, Occupant>, position_storage: &ReadStorage<'a, Position>) -> bool {
+pub fn check_map_occupied<'a>(x: i32, y: i32, occupant_map: &Vec<Vec<bool>>) -> bool {
     trace!("Checking if coordinates ({}, {}) are occupied...", x, y);
-    let occupant_count = (occupant_storage, position_storage)
-        .join()
-        .filter(|(_, position)| position.x == x && position.y == y)
-        .count();
-    if occupant_count > 0 {
+    if occupant_map[x as usize][y as usize] {
         trace!("Occupant found at ({}, {}).", x, y);
         return false;
     }
