@@ -29,6 +29,7 @@ use resource::map_console::MapConsoleResource;
 use resource::player_input::PlayerInputResource;
 use resource::root_console::RootConsoleResource;
 use resource::seed::SeedResource;
+use resource::turn_flag::TurnFlagResource;
 use crate::system;
 use system::action_processor::walk::WalkSystem;
 use system::actor_feeder::ActorFeederSystem;
@@ -41,6 +42,7 @@ use system::field_of_view::FieldOfViewSystem;
 use system::map_renderer::MapRendererSystem;
 use system::player_explored_marker::PlayerExploredMarkerSystem;
 use system::player_input::PlayerInputSystem;
+use system::turn_flag_resetter::TurnFlagResetterSystem;
 use crate::ui::*;
 
 
@@ -142,6 +144,7 @@ pub fn run_game_loop() {
     world.add_resource(PlayerInputResource::default());
     world.add_resource(RootConsoleResource(Arc::new(Mutex::new(root_console))));
     world.add_resource(SeedResource(seed));
+    world.add_resource(TurnFlagResource::default());
     let starting_position = Algorithm::Simple.generate_map(&mut world, map_width, map_height, seed);
     let _player = get_player(&mut world, starting_position.0, starting_position.1, seed);
     let mut frame_dispatcher = DispatcherBuilder::new()
@@ -182,6 +185,9 @@ pub fn run_game_loop() {
         .with(PlayerExploredMarkerSystem, "player_explored_marker", &[])
         .with(MapRendererSystem, "map_renderer", &[
             "field_of_view",
+        ])
+        .with(TurnFlagResetterSystem, "turn_flag_resetter", &[
+            "map_renderer",
         ])
         .build();
     turn_dispatcher.setup(&mut world.res);

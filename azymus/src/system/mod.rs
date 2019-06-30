@@ -18,3 +18,5 @@ pub mod map_renderer;
 pub mod player_explored_marker;
 /// Receives and acts on player input.
 pub mod player_input;
+/// Resets the turn flag.
+pub mod turn_flag_resetter;

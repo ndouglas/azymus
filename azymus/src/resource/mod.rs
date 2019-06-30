@@ -16,3 +16,5 @@ pub mod player_input;
 pub mod root_console;
 /// The seed.
 pub mod seed;
+/// The turn flag.
+pub mod turn_flag;
