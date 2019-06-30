@@ -16,11 +16,11 @@ use tcod::console::*;
 use tcod::colors::*;
 use std::ops::DerefMut;
 
-/// Renderer.
+/// The map renderer.
 #[derive(Clone, Copy, Debug)]
 pub struct MapRendererSystem;
 
-/// Renderer.
+/// The map renderer.
 impl<'a> System<'a> for MapRendererSystem {
 
     type SystemData = (
@@ -52,21 +52,22 @@ impl<'a> System<'a> for MapRendererSystem {
         map_console.set_default_foreground(WHITE);
         map_console.clear();
         for (_, fov) in (&player_storage, &fov_storage).join() {
-            trace!("Found a player!");
+            debug!("Found a player!");
             if let Some(fov_map) = &fov.map {
-                trace!("Found a FOV!");
-                if let fov_map = fov_map.lock().unwrap() {
-                    trace!("FOV is valid");
-                    for (_, _, position, renderable) in (&tile_storage, &player_explored_storage, &position_storage, &renderable_storage).join() {
-                        trace!("Processing renderable at ({}, {})...", position.x, position.y);
-                        if fov_map.is_in_fov(position.x, position.y) {
-                            map_console.render_renderable(position.x, position.y, renderable);
-                        } else {
-                            map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
-                        }
+                debug!("Found a FOV!");
+                let fov_map = fov_map.lock().unwrap();
+                debug!("FOV is valid");
+                for (_, _, position, renderable) in (&tile_storage, &player_explored_storage, &position_storage, &renderable_storage).join() {
+                    trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                    if fov_map.is_in_fov(position.x, position.y) {
+                        map_console.render_renderable(position.x, position.y, renderable);
+                    } else {
+                        map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                     }
-                    for (_, position, renderable) in (!&tile_storage, &position_storage, &renderable_storage).join() {
-                        trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                }
+                for (_, _, position, renderable) in (!&tile_storage, !&player_explored_storage, &position_storage, &renderable_storage).join() {
+                    trace!("Processing renderable at ({}, {})...", position.x, position.y);
+                    if fov_map.is_in_fov(position.x, position.y) {
                         map_console.render_renderable(position.x, position.y, &obscure_renderable(renderable));
                     }
                 }

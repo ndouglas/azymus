@@ -1,13 +1,12 @@
 use std::fmt;
-use crate::map::MapType;
 
 /// Resource.
-pub struct MapResource(pub MapType);
+pub struct OccupantMapResource(pub Vec<Vec<bool>>);
 
 /// Allows us to show this object in tests, etc.
-impl fmt::Debug for MapResource {
+impl fmt::Debug for OccupantMapResource {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Map")
+        write!(f, "OccupantMap")
     }
 }
 
