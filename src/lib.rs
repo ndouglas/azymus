@@ -21,9 +21,6 @@
 //!
 //! I don't know where I'm going with this.
 
-/// Azymus (the library).
-extern crate azymus;
-
 /// A Rust library providing a lightweight logging facade.
 #[macro_use]
 extern crate log;
@@ -31,11 +28,14 @@ extern crate log;
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
 
-#[cfg_attr(tarpaulin, skip)]
-fn main() {
-    azymus::init();
-    trace!("Entering main().");
-    trace!("Exiting main().");
+/// Bindings for the tcod library.
+extern crate tcod;
+
+/// Perform some initialization stuff.
+pub fn init() {
+    pretty_env_logger::init();
+    trace!("Entering init().");
+    trace!("Exiting init().");
 }
 
 #[cfg(test)]
@@ -44,6 +44,11 @@ mod tests {
     #[test]
     fn basic_sanity_test() {
         assert_eq!(2 + 2, 4);
+    }
+
+    #[test]
+    fn test_init() {
+        super::init();
     }
 
 }

@@ -11,3 +11,11 @@ rand = "0.3.9"
 specs = "0.14.0"
 specs-derive = "0.4.0"
 tcod = { version = "0.15", features = ["serialization"] }
+
+[lib]
+name = "azymus"
+path = "src/lib.rs"
+
+[[bin]]
+name = "azymus"
+path = "src/main.rs"
