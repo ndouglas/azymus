@@ -43,6 +43,9 @@ extern crate tcod;
 
 /// MODULES
 
+/// The game structure, run loop, etc.
+pub mod game;
+
 /// A settings system to allow some configuration.
 pub mod settings;
 
