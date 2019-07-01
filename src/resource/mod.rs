@@ -1,3 +1,5 @@
+/// The combatant map.
+pub mod combatant_map;
 /// The continue flag.
 pub mod continue_flag;
 /// The current input domain.

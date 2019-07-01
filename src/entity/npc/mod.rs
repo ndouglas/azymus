@@ -6,6 +6,7 @@ use agent::Agent as AgentType;
 use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
+use component::combatant::Combatant;
 use component::field_of_view::FieldOfView;
 use component::name::Name;
 use component::occupant::Occupant;
@@ -23,6 +24,7 @@ pub fn get_orc(world: &mut World, x: i32, y: i32, seed: i64) -> Entity {
         .with(Name {
             name: format!("Orc ({}, {})", x, y),
         })
+        .with(Combatant)
         .with(Actor {
             energy: rng.gen_range(0, 3) + x % 3 + y % 3,
             speed: rng.gen_range(6, 8) + x % 3 + y % 3,
@@ -60,6 +62,7 @@ pub fn get_troll(world: &mut World, x: i32, y: i32, seed: i64) -> Entity {
         .with(Name {
             name: format!("Troll ({}, {})", x, y),
         })
+        .with(Combatant)
         .with(Agent {
             agent: AgentType::Orc,
         })

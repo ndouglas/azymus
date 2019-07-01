@@ -11,6 +11,7 @@ use crate::entity;
 use entity::npc::get_orc;
 use entity::npc::get_troll;
 use crate::resource;
+use resource::combatant_map::CombatantMapResource;
 use resource::occupant_map::OccupantMapResource;
 use resource::opaque_map::OpaqueMapResource;
 use crate::map::tile::preset::*;
@@ -128,6 +129,7 @@ pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i
             rooms.push(new_room);
         }
     }
+    world.add_resource(CombatantMapResource(occupant_map.clone()));
     for y in 0..height {
         for x in 0..width {
             let is_wall = map[x as usize][y as usize];

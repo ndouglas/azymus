@@ -8,6 +8,7 @@ use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
 use component::baton::Baton;
+use component::combatant::Combatant;
 use component::player_explored::PlayerExplored;
 use component::field_of_view::FieldOfView;
 use component::name::Name;
@@ -36,6 +37,7 @@ use system::actor_feeder::ActorFeederSystem;
 use system::baton_passer::BatonPasserSystem;
 use system::baton_remover::BatonRemoverSystem;
 use system::command_processor;
+use system::action_processor::attack::AttackSystem;
 use system::command_processor::wait::WaitSystem;
 use system::command_selector::CommandSelectorSystem;
 use system::field_of_view::FieldOfViewSystem;
@@ -128,6 +130,7 @@ pub fn run_game_loop() {
     world.register::<Actor>();
     world.register::<Agent>();
     world.register::<Baton>();
+    world.register::<Combatant>();
     world.register::<FieldOfView>();
     world.register::<Name>();
     world.register::<Occupant>();
@@ -169,6 +172,9 @@ pub fn run_game_loop() {
             "command_selector",
         ])
         .with(action_processor::walk::WalkSystem, "action_processor__walk", &[
+            "command_processor__walk",
+        ])
+        .with(AttackSystem, "action_processor__attack", &[
             "command_processor__walk",
         ])
         .with(BatonRemoverSystem, "baton_remover", &[

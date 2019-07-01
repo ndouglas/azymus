@@ -15,19 +15,18 @@ use resource::occupant_map::OccupantMapResource;
 use resource::seed::SeedResource;
 use crate::rule;
 use rule::action::check_map_boundaries;
-use rule::action::is_map_point_occupied;
 use rule::action::is_map_point_combatant;
 // fn check_map_boundaries(x: i32, y: i32, map_height: i32, map_width: i32) -> Option<Action>
 // fn check_map_occupied<'a>(x: i32, y: i32, occupant_storage: &ReadStorage<'a, Occupant>, position_storage: &ReadStorage<'a, Position>) -> Option<Action> {
 
 const DEFAULT_ACTION_COST: i32 = 120;
 
-/// Processes move commands.
+/// Processes attack commands.
 #[derive(Clone, Copy, Debug)]
-pub struct WalkSystem;
+pub struct AttackSystem;
 
-/// Processes move commands.
-impl<'a> System<'a> for WalkSystem {
+/// Processes attack commands.
+impl<'a> System<'a> for AttackSystem {
 
     type SystemData = (
         Entities<'a>,
@@ -42,7 +41,7 @@ impl<'a> System<'a> for WalkSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        trace!("Entering MoveSystem::run().");
+        trace!("Entering AttackSystem::run().");
         let (
             entities,
             seed_resource,
@@ -55,7 +54,7 @@ impl<'a> System<'a> for WalkSystem {
             mut action_storage,
         ) = data;
         let _seed = seed_resource.0;
-        let occupant_map = &occupant_map_resource.0;
+        let _occupant_map = &occupant_map_resource.0;
         let combatant_map = &combatant_map_resource.0;
         for (entity, _, name, actor, position) in (&entities, &baton_storage, &name_storage, &mut actor_storage, &position_storage).join() {
             debug!("Found WTF ({:?}) command on actor {}...", actor.command_queue.front(), name.name);
@@ -68,14 +67,10 @@ impl<'a> System<'a> for WalkSystem {
                         let y2 = position.y - 1;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if is_map_point_occupied(x2, y2, &occupant_map) {
-                            if is_map_point_combatant(x2, y2, &combatant_map) {
-                                Some(Action::Attack((position.x, position.y), (x2, y2)))
-                            } else {
-                                None
-                            }
+                        } else if !is_map_point_combatant(x2, y2, &combatant_map) {
+                            None
                         } else {
-                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                            Some(Action::Attack((position.x, position.y), (x2, y2)))
                         }
                     },
                     South => {
@@ -83,14 +78,10 @@ impl<'a> System<'a> for WalkSystem {
                         let y2 = position.y + 1;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if is_map_point_occupied(x2, y2, &occupant_map) {
-                            if is_map_point_combatant(x2, y2, &combatant_map) {
-                                Some(Action::Attack((position.x, position.y), (x2, y2)))
-                            } else {
-                                None
-                            }
+                        } else if !is_map_point_combatant(x2, y2, &combatant_map) {
+                            None
                         } else {
-                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                            Some(Action::Attack((position.x, position.y), (x2, y2)))
                         }
                     },
                     West => {
@@ -98,14 +89,10 @@ impl<'a> System<'a> for WalkSystem {
                         let y2 = position.y;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if is_map_point_occupied(x2, y2, &occupant_map) {
-                            if is_map_point_combatant(x2, y2, &combatant_map) {
-                                Some(Action::Attack((position.x, position.y), (x2, y2)))
-                            } else {
-                                None
-                            }
+                        } else if !is_map_point_combatant(x2, y2, &combatant_map) {
+                            None
                         } else {
-                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                            Some(Action::Attack((position.x, position.y), (x2, y2)))
                         }
                     },
                     East => {
@@ -113,14 +100,10 @@ impl<'a> System<'a> for WalkSystem {
                         let y2 = position.y;
                         if !check_map_boundaries(x2, y2, 100, 160) {
                             None
-                        } else if is_map_point_occupied(x2, y2, &occupant_map) {
-                            if is_map_point_combatant(x2, y2, &combatant_map) {
-                                Some(Action::Attack((position.x, position.y), (x2, y2)))
-                            } else {
-                                None
-                            }
+                        } else if !is_map_point_combatant(x2, y2, &combatant_map) {
+                            None
                         } else {
-                            Some(Action::Walk((position.x, position.y), (x2, y2)))
+                            Some(Action::Attack((position.x, position.y), (x2, y2)))
                         }
                     },
                 };
@@ -137,6 +120,6 @@ impl<'a> System<'a> for WalkSystem {
                 actor.command_queue.pop_front();
             }
         }
-        trace!("Exiting WalkSystem::run().");
+        trace!("Exiting AttackSystem::run().");
     }
 }
