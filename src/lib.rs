@@ -21,6 +21,8 @@
 //!
 //! I don't know where I'm going with this.
 
+/// EXTERNAL CRATES
+
 /// A Rust library providing a lightweight logging facade.
 #[macro_use]
 extern crate log;
@@ -28,8 +30,24 @@ extern crate log;
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
 
+// Serde-Derive: Serializing and deserializing macros.
+#[macro_use]
+extern crate serde_derive;
+
+// Serde-Json: Serializing and deserializing macros.
+// #[macro_use]
+extern crate serde_json;
+
 /// Bindings for the tcod library.
 extern crate tcod;
+
+/// MODULES
+
+/// A settings system to allow some configuration.
+pub mod settings;
+
+/// The UI, specifically consoles, input, etc.
+pub mod ui;
 
 /// Perform some initialization stuff.
 pub fn init() {
