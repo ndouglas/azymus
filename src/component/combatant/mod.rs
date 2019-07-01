@@ -1,5 +1,5 @@
 use specs::*;
 
-/// Something whose turn it is.
+/// Something willing to fight.
 #[derive(Clone, Copy, Component, Debug)]
 pub struct Combatant;

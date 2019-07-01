@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use specs::*;
 use crate::component::actor::Actor;
+use crate::component::combatant::Combatant;
 use crate::component::field_of_view::FieldOfView;
 use crate::component::name::Name;
 use crate::component::occupant::Occupant;
@@ -17,6 +18,7 @@ pub fn get_player(world: &mut World, x: i32, y: i32, _seed: i64) -> Entity {
         .with(Name {
             name: "Player".to_string(),
         })
+        .with(Combatant)
         .with(Occupant)
         .with(Actor {
             energy: 0,

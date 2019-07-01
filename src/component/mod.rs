@@ -4,6 +4,8 @@ pub mod actor;
 pub mod agent;
 /// Something whose turn it is.
 pub mod baton;
+/// Something willing to fight.
+pub mod combatant;
 /// Something representing an entity's ability to perceive.
 pub mod field_of_view;
 /// Something that has a name.

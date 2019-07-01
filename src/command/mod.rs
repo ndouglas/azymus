@@ -16,6 +16,8 @@ pub enum CompassDirection {
 /// The commands.
 #[derive(Clone, Copy, Component, Debug)]
 pub enum Command {
+    /// Attack.
+    Attack(CompassDirection),
     /// Walk.
     Walk(CompassDirection),
     /// Wait.
