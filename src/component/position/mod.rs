@@ -10,3 +10,27 @@ pub struct Position {
     /// The z-coordinate of the object.  (Altitude)
     pub z: i32,
 }
+
+impl Position {
+
+    /// Constructor.
+    pub fn new() -> Position {
+        Position {
+            w: 0,
+            x: 0,
+            y: 0,
+            z: 0,
+        }
+    }
+
+}
+
+/// Creates a default instance.
+impl Default for Position {
+
+    /// Creates a default instance.
+    fn default() -> Self {
+        Position::new()
+    }
+
+}

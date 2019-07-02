@@ -1,6 +1,7 @@
+use crate::component;
+use component::position::Position;
 use crate::entity;
 use entity::Entity;
-use entity::component::position::Position;
 
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]
@@ -17,7 +18,7 @@ impl Command {
         use Command::*;
         match self {
             Move(position) => {
-                entity.position = Some(*position);
+                entity.move_to(position.x, position.y, position.z);
             }
         }
     }

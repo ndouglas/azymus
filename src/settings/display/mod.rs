@@ -55,7 +55,6 @@ impl Display {
 
 }
 
-
 impl Default for Display {
     fn default() -> Self {
         Display::new()

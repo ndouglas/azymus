@@ -13,32 +13,10 @@ pub fn run() {
     let height = map_console.height();
     let x = width / 2;
     let y = height / 2;
-    let mut player = entity::Entity::new();
-    player.position = Some(entity::component::position::Position {
-        w: 0,
-        x: x,
-        y: y,
-        z: 0,
-    });
-    player.renderable = Some(entity::component::renderable::Renderable {
-        char: Some('@'),
-        background_color: None,
-        foreground_color: Some(tcod::colors::WHITE),
-
-    });
-    let mut npc = entity::Entity::new();
-    npc.position = Some(entity::component::position::Position {
-        w: 0,
-        x: x - 20,
-        y: y,
-        z: 0,
-    });
-    npc.renderable = Some(entity::component::renderable::Renderable {
-        char: Some('@'),
-        background_color: None,
-        foreground_color: Some(tcod::colors::YELLOW),
-
-    });
+    let mut player = entity::get_player();
+    player.move_to(x, y, 0);
+    let mut npc = entity::get_npc();
+    npc.move_to(x + 20, y, 0);
     while !root_console.window_closed() {
         use tcod::colors::*;
         use tcod::console::*;

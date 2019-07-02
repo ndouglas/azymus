@@ -3,9 +3,10 @@ use tcod::input::KeyCode::*;
 use tcod::console::*;
 use crate::action;
 use action::Action;
+use crate::component;
+use component::position::Position;
 use crate::entity;
 use entity::Entity;
-use entity::component::position::Position;
 
 /// Handle input from the player.
 pub fn handle_keys(root_console: &mut Root, player: &mut Entity) -> bool {

@@ -49,14 +49,23 @@ pub mod action;
 /// Commands are attempts to perform actions.
 pub mod command;
 
+/// Components are reusable structures for disparate kinds of objects.
+pub mod component;
+
 /// Any object that exists within the game.
 pub mod entity;
 
 /// The game structure, run loop, etc.
 pub mod game;
 
+/// The map, the current slice of the game world.
+pub mod map;
+
 /// A settings system to allow some configuration.
 pub mod settings;
+
+/// The tiles that form the map.
+pub mod tile;
 
 /// The UI, specifically consoles, input, etc.
 pub mod ui;
