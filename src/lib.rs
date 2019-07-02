@@ -5,7 +5,7 @@
     clippy::all,
     missing_docs,
     missing_debug_implementations,
-    missing_copy_implementations,
+//    missing_copy_implementations,
     trivial_casts,
     trivial_numeric_casts,
     unsafe_code,
@@ -42,6 +42,15 @@ extern crate serde_json;
 extern crate tcod;
 
 /// MODULES
+
+/// Actions are processes that modify the game world.
+pub mod action;
+
+/// Commands are attempts to perform actions.
+pub mod command;
+
+/// Any object that exists within the game.
+pub mod entity;
 
 /// The game structure, run loop, etc.
 pub mod game;

@@ -1,9 +1,14 @@
 use tcod::input::*;
 use tcod::input::KeyCode::*;
 use tcod::console::*;
+use crate::action;
+use action::Action;
+use crate::entity;
+use entity::Entity;
+use entity::component::position::Position;
 
 /// Handle input from the player.
-pub fn handle_keys(root_console: &mut Root, x: &mut i32, y: &mut i32) -> bool {
+pub fn handle_keys(root_console: &mut Root, player: &mut Entity) -> bool {
     let key = root_console.wait_for_keypress(true);
     match key {
         Key {
@@ -16,12 +21,31 @@ pub fn handle_keys(root_console: &mut Root, x: &mut i32, y: &mut i32) -> bool {
             root_console.set_fullscreen(!fullscreen);
         }
         Key { code: Escape, .. } => return true, // exit game
-        Key { code: Up, .. } => *y -= 1,
-        Key { code: Down, .. } => *y += 1,
-        Key { code: Left, .. } => *x -= 1,
-        Key { code: Right, .. } => *x += 1,
+        Key { code: Up, .. } => Action::Move(Position {
+            w: player.position.unwrap().w,
+            x: player.position.unwrap().x,
+            y: player.position.unwrap().y - 1,
+            z: player.position.unwrap().z,
+        }).execute(player),
+        Key { code: Down, .. } => Action::Move(Position {
+            w: player.position.unwrap().w,
+            x: player.position.unwrap().x,
+            y: player.position.unwrap().y + 1,
+            z: player.position.unwrap().z,
+        }).execute(player),
+        Key { code: Left, .. } => Action::Move(Position {
+            w: player.position.unwrap().w,
+            x: player.position.unwrap().x - 1,
+            y: player.position.unwrap().y,
+            z: player.position.unwrap().z,
+        }).execute(player),
+        Key { code: Right, .. } => Action::Move(Position {
+            w: player.position.unwrap().w,
+            x: player.position.unwrap().x + 1,
+            y: player.position.unwrap().y,
+            z: player.position.unwrap().z,
+        }).execute(player),
         _ => {},
     }
-
    false
 }
