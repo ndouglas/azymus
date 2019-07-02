@@ -1,7 +1,11 @@
-use crate::settings;
-use settings::Settings;
+use tcod::console::*;
+use crate::component;
+use component::position::Position;
 use crate::tile;
 use tile::Tile;
+
+/// The map generators.
+pub mod generator;
 
 /// The map type.
 pub type MapType = Vec<Vec<Tile>>;
@@ -17,11 +21,28 @@ pub struct Map {
 impl Map {
 
     /// Constructor.
-    pub fn new(settings: &Settings) -> Self {
-        let map_settings = &settings.map;
+    pub fn new(map: MapType) -> Self {
         Map {
-            map: vec![vec![Tile::new(); map_settings.height as usize]; map_settings.width as usize],
+            map: map,
         }
     }
 
+    /// Render this entity's renderable at the current position.
+    pub fn draw(&self, console: &mut Console) {
+        trace!("Entering Map::draw().");
+        for y in 0..console.height() {
+            for x in 0..console.width() {
+                self.map[x as usize][y as usize].draw(console);
+            }
+        }
+        trace!("Exiting Map::draw().");
+    }
+
+}
+
+/// Get a new map.
+pub fn get_map(seed: i64, width: i32, height: i32, level: i32) -> (Map, Position) {
+    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level);
+    let map = Map::new(inner_map);
+    (map, position)
 }

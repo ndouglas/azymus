@@ -14,12 +14,12 @@ pub struct Position {
 impl Position {
 
     /// Constructor.
-    pub fn new() -> Position {
+    pub fn new(w: i64, x: i32, y: i32, z: i32) -> Position {
         Position {
-            w: 0,
-            x: 0,
-            y: 0,
-            z: 0,
+            w,
+            x,
+            y,
+            z,
         }
     }
 
@@ -30,7 +30,12 @@ impl Default for Position {
 
     /// Creates a default instance.
     fn default() -> Self {
-        Position::new()
+        Position {
+            w: 0,
+            x: 0,
+            y: 0,
+            z: 0,
+        }
     }
 
 }

@@ -30,11 +30,14 @@ extern crate log;
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
 
-// Serde-Derive: Serializing and deserializing macros.
+/// A random number generator library for Rust.
+extern crate rand;
+
+/// Serde-Derive: Serializing and deserializing macros.
 #[macro_use]
 extern crate serde_derive;
 
-// Serde-Json: Serializing and deserializing macros.
+/// Serde-Json: Serializing and deserializing macros.
 // #[macro_use]
 extern crate serde_json;
 

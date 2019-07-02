@@ -42,6 +42,10 @@ pub enum Factory {
     Player,
     /// A little test NPC.
     Npc,
+    /// A floor.
+    Floor,
+    /// A wall.
+    Wall,
 }
 
 impl Factory {
@@ -59,6 +63,16 @@ impl Factory {
                 char: Some('@'),
                 foreground_color: Some(YELLOW),
                 background_color: None,
+            },
+            Floor => Renderable {
+                char: None,
+                foreground_color: None,
+                background_color: Some(LIGHT_BLUE),
+            },
+            Wall => Renderable {
+                char: None,
+                foreground_color: None,
+                background_color: Some(DARK_BLUE),
             },
         }
     }

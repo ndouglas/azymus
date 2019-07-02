@@ -1,7 +1,7 @@
 /// Default screen width in characters.
 const DEFAULT_WIDTH: i32 = 160;
-/// Default creen height in characters.
-const DEFAULT_HEIGHT: i32 = 100;
+/// Default screen height in characters.
+const DEFAULT_HEIGHT: i32 = 90;
 
 /// Map-specific settings.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]

@@ -1,13 +1,15 @@
 use tcod::console::*;
 use crate::component;
+use component::position::Position;
+use component::renderable::{Renderable, Factory as RenderableFactory};
 
 /// The tiles that form the map and structure of the game world.
 #[derive(Clone, Debug)]
 pub struct Tile {
     /// Indicates a position of the object within the game world.
-    pub position: Option<component::position::Position>,
+    pub position: Option<Position>,
     /// Indicates how the given object is rendered on a map.
-    pub renderable: Option<component::renderable::Renderable>,
+    pub renderable: Option<Renderable>,
 }
 
 impl Tile {
@@ -37,6 +39,22 @@ impl Tile {
             }
         }
         trace!("Exiting Tile::draw().");
+    }
+
+    /// Create a floor tile.
+    pub fn floor(w: i64, x: i32, y: i32, z: i32) -> Self {
+        Tile {
+            position: Some(Position::new(w, x, y, z)),
+            renderable: Some(RenderableFactory::Floor.create()),
+        }
+    }
+
+    /// Create a wall tile.
+    pub fn wall(w: i64, x: i32, y: i32, z: i32) -> Self {
+        Tile {
+            position: Some(Position::new(w, x, y, z)),
+            renderable: Some(RenderableFactory::Wall.create()),
+        }
     }
 
 }

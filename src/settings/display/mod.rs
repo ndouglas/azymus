@@ -2,7 +2,7 @@
 static DEFAULT_TITLE: &str = "Azymus";
 /// Default screen width in characters.
 const DEFAULT_WIDTH: i32 = 160;
-/// Default creen height in characters.
+/// Default screen height in characters.
 const DEFAULT_HEIGHT: i32 = 100;
 /// Default maximum frames rendered per second.
 const DEFAULT_FPS_LIMIT: i32 = 60;
