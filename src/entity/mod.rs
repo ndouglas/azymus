@@ -1,7 +1,7 @@
 use tcod::console::*;
 use crate::component;
 use component::field_of_view::FieldOfView;
-use component::light_source::LightSource;
+use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
 use crate::map;
@@ -70,8 +70,8 @@ impl Entity {
 /// Get a "player" entity.
 pub fn get_player(map: &Map) -> Entity {
     let mut player = Entity::new();
-    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 8));
-    player.light_source = Some(LightSource::new());
+    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
+    player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
     player
@@ -81,6 +81,7 @@ pub fn get_player(map: &Map) -> Entity {
 pub fn get_npc(map: &Map) -> Entity {
     let mut npc = Entity::new();
     npc.field_of_view = Some(FieldOfView::new(map.get_fov(), 8));
+    npc.light_source = Some(LightSourceFactory::Torch.create());
     npc.position = Some(Position::default());
     npc.renderable = Some(RenderableFactory::Npc.create());
     npc

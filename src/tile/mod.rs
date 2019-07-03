@@ -1,12 +1,15 @@
 use tcod::colors::*;
 use tcod::console::*;
 use crate::component;
+use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
 
 /// The tiles that form the map and structure of the game world.
 #[derive(Clone, Debug)]
 pub struct Tile {
+    /// Indicates that this tile has a light source.
+    pub light_source: Option<LightSource>,
     /// Indicates a position of the object within the game world.
     pub position: Option<Position>,
     /// Indicates how the given object is rendered on a map.
@@ -15,8 +18,6 @@ pub struct Tile {
     pub blocks_movement: bool,
     /// Whether this object is opaque.
     pub blocks_light: bool,
-    /// Ambient light level.
-    pub light_level: i8,
 }
 
 impl Tile {
@@ -24,11 +25,11 @@ impl Tile {
     /// Constructor.
     pub fn new() -> Self {
         Tile {
+            light_source: None,
             position: None,
             renderable: None,
             blocks_movement: false,
             blocks_light: false,
-            light_level: 0,
         }
     }
 
@@ -71,28 +72,23 @@ impl Tile {
     }
 
     /// Render this tile's renderable with a source of illumination.
-    pub fn draw_lighted(&self, console: &mut Console, intensity: i32, color: Color) {
+    pub fn draw_lighted(&self, console: &mut Console, ls: &LightSource, lsx: i32, lsy: i32) {
         trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
         if let Some(position) = self.position {
             if let Some(Renderable {
-                background_color: Some(Color {
-                    r,
-                    g,
-                    b,
-                }),
+                background_color: Some(color),
                 ..
             }) = self.renderable {
-                let multiplier = intensity as f64 / 256 as f64;
-                let new_r = (r as f64 + ((color.r - r) as f64 * multiplier)) as u8;
-                let new_g = (g as f64 + ((color.g - g) as f64 * multiplier)) as u8;
-                let new_b = (b as f64 + ((color.b - b) as f64 * multiplier)) as u8;
+                let transformed_color = ls.transform_color_at(
+                    color,
+                    lsx,
+                    lsy,
+                    position.x,
+                    position.y
+                );
                 let renderable = Renderable {
                     char: self.renderable.unwrap().char,
-                    background_color: Some(Color {
-                        r: new_r,
-                        g: new_g,
-                        b: new_b,
-                    }),
+                    background_color: Some(transformed_color),
                     foreground_color: self.renderable.unwrap().foreground_color,
                 };
                 renderable.draw(position.x, position.y, console);
@@ -104,22 +100,33 @@ impl Tile {
     /// Create a floor tile.
     pub fn floor(w: i64, x: i32, y: i32, z: i32) -> Self {
         Tile {
+            light_source: None,
             position: Some(Position::new(w, x, y, z)),
             renderable: Some(RenderableFactory::Floor.create()),
             blocks_movement: false,
             blocks_light: false,
-            light_level: 0,
         }
     }
 
     /// Create a wall tile.
     pub fn wall(w: i64, x: i32, y: i32, z: i32) -> Self {
         Tile {
+            light_source: None,
             position: Some(Position::new(w, x, y, z)),
             renderable: Some(RenderableFactory::Wall.create()),
             blocks_movement: true,
             blocks_light: true,
-            light_level: 0,
+        }
+    }
+
+    /// Create a sconce tile.
+    pub fn sconce(w: i64, x: i32, y: i32, z: i32) -> Self {
+        Tile {
+            light_source: Some(LightSourceFactory::Torch.create()),
+            position: Some(Position::new(w, x, y, z)),
+            renderable: Some(RenderableFactory::Floor.create()),
+            blocks_movement: false,
+            blocks_light: false,
         }
     }
 

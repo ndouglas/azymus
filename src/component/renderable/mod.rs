@@ -81,12 +81,20 @@ impl Factory {
             Floor => Renderable {
                 char: None,
                 foreground_color: None,
-                background_color: Some(DARKEST_GREY),
+                background_color: Some(Color {
+                    r: 16,
+                    g: 16,
+                    b: 16,
+                }),
             },
             Wall => Renderable {
                 char: None,
                 foreground_color: None,
-                background_color: Some(BLACK),
+                background_color: Some(Color {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                }),
             },
         }
     }

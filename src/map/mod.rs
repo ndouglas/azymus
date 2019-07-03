@@ -91,12 +91,10 @@ impl Map {
         let fov_x = fov.x;
         let fov_y = fov.y;
         let fov_map = fov.map.lock().unwrap();
-        let color = ls.color;
         for y in 0..console.height() {
             for x in 0..console.width() {
                 if fov_map.is_in_fov(x, y) {
-                    let intensity = ls.intensity_at((fov_x - x).abs(), (fov_y - y).abs());
-                    self.map[x as usize][y as usize].draw_lighted(console, intensity, color);
+                    self.map[x as usize][y as usize].draw_lighted(console, ls, fov_x, fov_y);
                 } else if self.is_in_bounds(x, y) && fov.explored_map[x as usize][y as usize] {
                     self.map[x as usize][y as usize].draw(console);
                 }
