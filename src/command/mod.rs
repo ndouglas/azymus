@@ -1,3 +1,5 @@
+use crate::action;
+use action::Action;
 use crate::component;
 use component::position::Position;
 use crate::entity;
@@ -18,7 +20,7 @@ impl Command {
         use Command::*;
         match self {
             Move(position) => {
-                entity.move_to(position.x, position.y, position.z);
+                Action::Move(*position).execute(entity);
             }
         }
     }
