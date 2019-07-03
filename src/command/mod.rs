@@ -35,6 +35,8 @@ impl Command {
                 if let Some(position1) = entity.position {
                     vec![
                         CanWalkFromPositionToPosition(position1, position),
+                        MapPositionDoesNotBlockMovement(position),
+                        MapPositionIsNotOutOfBounds(position),
                     ]
                 } else {
                     vec![
@@ -143,12 +145,11 @@ impl CommandRule {
                 }
                 Neutral
             },
-            CanWalkFromPositionToPosition(_position1, _position2) => {
-                let map = &game.map;
-                if !map.is_in_bounds(_position2.x, _position2.y) {
-                    return Denied("Requested an out-of-bounds position.".to_string());
+            CanWalkFromPositionToPosition(position1, position2) => {
+                if (position1.x - position2.x).abs() > 1 || (position1.y - position2.y).abs() > 1 {
+                    return Denied("The destination position is too far from the original position.".to_string());
                 }
-                Permitted
+                Neutral
             },
         }
     }
