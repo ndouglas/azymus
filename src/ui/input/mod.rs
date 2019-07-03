@@ -5,11 +5,12 @@ use crate::command;
 use command::Command;
 use crate::component;
 use component::position::Position;
-use crate::entity;
-use entity::Entity;
+use crate::game;
+use game::Game;
 
 /// Handle input from the player.
-pub fn handle_keys(root_console: &mut Root, player: &mut Entity) -> bool {
+pub fn handle_keys(root_console: &mut Root, player_id: usize, game: &mut Game) -> bool {
+    let player = &game.objects[player_id];
     let key = root_console.wait_for_keypress(true);
     match key {
         Key {
@@ -22,30 +23,30 @@ pub fn handle_keys(root_console: &mut Root, player: &mut Entity) -> bool {
             root_console.set_fullscreen(!fullscreen);
         }
         Key { code: Escape, .. } => return true, // exit game
-        Key { code: Up, .. } => Command::Move(Position {
+        Key { code: Up, .. } => Command::Walk(Position {
             w: player.position.unwrap().w,
             x: player.position.unwrap().x,
             y: player.position.unwrap().y - 1,
             z: player.position.unwrap().z,
-        }).execute(player),
-        Key { code: Down, .. } => Command::Move(Position {
+        }).execute(player_id, game),
+        Key { code: Down, .. } => Command::Walk(Position {
             w: player.position.unwrap().w,
             x: player.position.unwrap().x,
             y: player.position.unwrap().y + 1,
             z: player.position.unwrap().z,
-        }).execute(player),
-        Key { code: Left, .. } => Command::Move(Position {
+        }).execute(player_id, game),
+        Key { code: Left, .. } => Command::Walk(Position {
             w: player.position.unwrap().w,
             x: player.position.unwrap().x - 1,
             y: player.position.unwrap().y,
             z: player.position.unwrap().z,
-        }).execute(player),
-        Key { code: Right, .. } => Command::Move(Position {
+        }).execute(player_id, game),
+        Key { code: Right, .. } => Command::Walk(Position {
             w: player.position.unwrap().w,
             x: player.position.unwrap().x + 1,
             y: player.position.unwrap().y,
             z: player.position.unwrap().z,
-        }).execute(player),
+        }).execute(player_id, game),
         _ => {},
     }
    false

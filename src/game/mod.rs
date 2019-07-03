@@ -8,43 +8,62 @@ use crate::map;
 use map::Map;
 use map::get_map;
 use crate::settings;
+use settings::Settings;
 use settings::get_settings;
 use crate::ui;
 use ui::input::handle_keys;
 use ui::map_console::get_map_console;
 use ui::root_console::get_root_console;
 
+/// The game object.
+#[derive(Clone, Debug)]
+pub struct Game {
+    /// The game map.
+    pub map: Map,
+    /// All objects in the game.
+    pub objects: Vec<Entity>,
+    /// The game settings.
+    pub settings: Settings,
+    /// The current seed.
+    pub seed: i64,
+}
+
 /// Setup and run the main game loop.
 pub fn run() {
+    let seed: i64 = 0;
     let settings = get_settings();
     let mut root_console = get_root_console(&settings);
     let mut map_console = get_map_console(&settings);
     let width = map_console.width();
     let height = map_console.height();
-    let seed: i64 = 0;
     let (map, position) = get_map(seed, width, height, 0);
     let mut player = get_player(&map);
     let mut npc = get_npc(&map);
     player.move_to(position.x, position.y, 0);
     npc.move_to(position.x + 20, position.y, 0);
-    let mut objects = [
-        player,
-        npc,
-    ];
+    let mut game = Game {
+        map: map,
+        objects: Vec::new(),
+        settings: get_settings(),
+        seed: 0,
+    };
+    game.objects.push(player);
+    let player_id: usize = 0;
+    game.objects.push(npc); // 1
     while !root_console.window_closed() {
-        render_all(&mut root_console, &mut map_console, &objects, &map);
-        let mut player = &mut objects[0];
-        let exit = handle_keys(&mut root_console, &mut player);
+        render_all(&mut root_console, &mut map_console, player_id, &game);
+        let exit = handle_keys(&mut root_console, player_id, &mut game);
         if exit {
             break
         }
     }
 }
 
-fn render_all(root_console: &mut Root, map_console: &mut Offscreen, objects: &[Entity], map: &Map) {
+fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: usize, game: &Game) {
     map_console.set_default_foreground(WHITE);
     map_console.clear();
-    let player = &objects[0];
+    let map = &game.map;
+    let player = &game.objects[player_id];
     if let Some(fov) = &player.field_of_view {
         if let Some(ls) = &player.light_source {
             map.draw_fov_ls(map_console, fov, ls);
@@ -52,7 +71,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, objects: &[E
             map.draw_fov(map_console, fov);
         }
         let fov_map = fov.map.lock().unwrap();
-        for object in objects {
+        for object in &game.objects {
             if let Some(position) = object.position {
                 if fov_map.is_in_fov(position.x, position.y) {
                     object.draw(map_console);
@@ -60,7 +79,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, objects: &[E
             }
         }
     } else {
-        for object in objects {
+        for object in &game.objects {
             object.draw(map_console);
         }
     }

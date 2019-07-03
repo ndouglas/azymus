@@ -103,6 +103,11 @@ impl Map {
         trace!("Exiting Map::draw().");
     }
 
+    /// Indicates whether a pair of coordinates are in bounds of this map.
+    pub fn get_tile(&self, x: i32, y: i32) -> &Tile {
+        &self.map[x as usize][y as usize]
+    }
+
 }
 
 /// Get a new map.
