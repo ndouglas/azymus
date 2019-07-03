@@ -11,6 +11,7 @@ pub struct Position {
     pub z: i32,
 }
 
+/// Indicates a position of the entity within the game world.
 impl Position {
 
     /// Constructor.

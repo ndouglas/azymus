@@ -1,13 +1,23 @@
 use tcod::console::*;
 use crate::component;
+use component::field_of_view::FieldOfView;
+use component::light_source::LightSource;
+use component::position::Position;
+use component::renderable::{Renderable, Factory as RenderableFactory};
+use crate::map;
+use map::Map;
 
 /// The entity object that represents anything that functions in the game world.
 #[derive(Clone, Debug)]
 pub struct Entity {
+    /// Indicates the object's ability to perceive the world around it.
+    pub field_of_view: Option<FieldOfView>,
+    /// A light source attached to or possessed by this entity.
+    pub light_source: Option<LightSource>,
     /// Indicates a position of the object within the game world.
-    pub position: Option<component::position::Position>,
+    pub position: Option<Position>,
     /// Indicates how the given object is rendered on a map.
-    pub renderable: Option<component::renderable::Renderable>,
+    pub renderable: Option<Renderable>,
 }
 
 impl Entity {
@@ -15,6 +25,8 @@ impl Entity {
     /// Constructor.
     pub fn new() -> Self {
         Entity {
+            field_of_view: None,
+            light_source: None,
             position: None,
             renderable: None,
         }
@@ -47,27 +59,29 @@ impl Entity {
             position.y = y;
             position.z = z;
         }
+        if let Some(fov) = &mut self.field_of_view {
+            fov.update(x, y);
+        }
         trace!("Exiting Entity::move_to().");
     }
 
 }
 
 /// Get a "player" entity.
-pub fn get_player() -> Entity {
-    use component::position::Position;
-    use component::renderable::Factory;
+pub fn get_player(map: &Map) -> Entity {
     let mut player = Entity::new();
+    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 8));
+    player.light_source = Some(LightSource::new());
     player.position = Some(Position::default());
-    player.renderable = Some(Factory::Player.create());
+    player.renderable = Some(RenderableFactory::Player.create());
     player
 }
 
 /// Get an "NPC" entity.
-pub fn get_npc() -> Entity {
-    use component::position::Position;
-    use component::renderable::Factory;
+pub fn get_npc(map: &Map) -> Entity {
     let mut npc = Entity::new();
+    npc.field_of_view = Some(FieldOfView::new(map.get_fov(), 8));
     npc.position = Some(Position::default());
-    npc.renderable = Some(Factory::Npc.create());
+    npc.renderable = Some(RenderableFactory::Npc.create());
     npc
 }

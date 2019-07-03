@@ -1,4 +1,5 @@
 use tcod::colors::*;
+use tcod::console::*;
 
 /// Indicates how the given object is rendered on a map.
 #[derive(Clone, Copy, Debug)]
@@ -23,6 +24,19 @@ impl Renderable {
         }
     }
 
+    /// Render this object at the specified position.
+    pub fn draw(&self, x: i32, y: i32, console: &mut Console) {
+        if let Some(color) = self.foreground_color {
+            if let Some(char) = self.char {
+                console.set_default_foreground(color);
+                console.put_char(x, y, char, BackgroundFlag::None);
+            }
+        }
+        if let Some(color) = self.background_color {
+            console.set_char_background(x, y, color, BackgroundFlag::Set);
+        }
+    }
+
 }
 
 /// Creates a default instance.
@@ -42,9 +56,9 @@ pub enum Factory {
     Player,
     /// A little test NPC.
     Npc,
-    /// A floor.
+    /// A floor (dark).
     Floor,
-    /// A wall.
+    /// A wall (dark).
     Wall,
 }
 
@@ -67,12 +81,12 @@ impl Factory {
             Floor => Renderable {
                 char: None,
                 foreground_color: None,
-                background_color: Some(LIGHT_BLUE),
+                background_color: Some(DARKEST_GREY),
             },
             Wall => Renderable {
                 char: None,
                 foreground_color: None,
-                background_color: Some(DARK_BLUE),
+                background_color: Some(BLACK),
             },
         }
     }
