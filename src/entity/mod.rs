@@ -1,6 +1,8 @@
 use tcod::console::*;
 use crate::agent;
 use agent::Algorithm as AgentAlgorithm;
+use crate::command;
+use command::CompassDirection;
 use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
@@ -82,6 +84,20 @@ impl Entity {
         trace!("Exiting Entity::move_to().");
     }
 
+    /// Move to a specific position.
+    pub fn move_to_position(&mut self, position: Position) {
+        trace!("Entering Entity::move_to_position() for entity {:?}.", self);
+        self.move_to(position.x, position.y, position.z);
+    }
+
+    /// Move to a specific compass direction.
+    pub fn move_to_direction(&mut self, compass_direction: CompassDirection) {
+        trace!("Entering Entity::move_to_direction() for entity {:?}.", self);
+        if let Some(position) = self.position {
+            self.move_to_position(position.to_direction(compass_direction));
+        }
+    }
+
 }
 
 /// Get a "player" entity.
@@ -109,7 +125,7 @@ pub fn get_orc() -> Entity {
         speed: 11,
     });
     orc.agent = Some(Agent {
-        algorithm: AgentAlgorithm::JustMoveSouth,
+        algorithm: AgentAlgorithm::ApproachPlayer,
     });
     orc.light_source = Some(LightSourceFactory::Torch.create());
     orc.position = Some(Position::default());
@@ -127,7 +143,7 @@ pub fn get_troll() -> Entity {
         speed: 9,
     });
     troll.agent = Some(Agent {
-        algorithm: AgentAlgorithm::JustMoveSouth,
+        algorithm: AgentAlgorithm::ApproachPlayer,
     });
     troll.light_source = Some(LightSourceFactory::Candle.create());
     troll.position = Some(Position::default());

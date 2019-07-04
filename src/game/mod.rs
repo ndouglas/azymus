@@ -26,6 +26,8 @@ pub struct Game {
     pub map: Map,
     /// All entities in the game.
     pub entities: Vec<Entity>,
+    /// The player entity ID.
+    pub player_id: usize,
     /// The game settings.
     pub settings: Settings,
     /// The current seed.
@@ -55,21 +57,23 @@ pub fn run() {
     let settings = get_settings();
     let mut root_console = get_root_console(&settings);
     let mut map_console = get_map_console(&settings);
-    let scheduler = Scheduler::new(&settings);
+    let scheduler = Scheduler::new();
     let width = map_console.width();
     let height = map_console.height();
     let mut entities = Vec::new();
     let (map, position) = get_map(seed, width, height, 0, &mut entities);
     let mut player = get_player(&map);
     player.move_to(position.x, position.y, 0);
+    let next_id = entities.len();
     let mut game = Game {
         input_domain: InputDomain::Explore,
         map: map,
         entities: entities,
+        player_id: next_id,
         settings: get_settings(),
         seed: 0,
     };
-    let player_id: usize = game.entities.len();
+    let player_id = game.player_id;
     game.entities.push(player);
     scheduler.feed(&mut game.entities);
     while !root_console.window_closed() {

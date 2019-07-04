@@ -12,15 +12,21 @@ pub enum Action {
     Walk(CompassDirection),
     /// Just wait, wasting a turn.
     Wait,
+    /// Stall -- don't waste turn, but don't do anything.
+    Stall,
 }
 
 /// Actions are processes that modify the game world.
 impl Action {
 
     /// Get the cost of performing this action.
-    pub fn get_cost(&self, _id: usize, _game: &Game) -> i32 {
+    pub fn get_cost(self, _id: usize, _game: &Game) -> i32 {
         trace!("Entering Action::get_cost().");
-        TIME_PER_TURN
+        use Action::*;
+        match self {
+            Stall => 0,
+            _ => TIME_PER_TURN,
+        }
     }
 
     /// Perform the action.
@@ -30,19 +36,15 @@ impl Action {
         match self {
             Walk(compass_direction) => {
                 let entity = &mut game.entities[id];
-                if let Some(position) = entity.position {
-                    use CompassDirection::*;
-                    match compass_direction {
-                        North => entity.move_to(position.x, position.y - 1, position.z),
-                        South => entity.move_to(position.x, position.y + 1, position.z),
-                        West => entity.move_to(position.x - 1, position.y, position.z),
-                        East => entity.move_to(position.x + 1, position.y, position.z),
-                    }
-                }
+                entity.move_to_direction(*compass_direction);
             },
             Wait => {
                 let entity = &game.entities[id];
                 println!("Entity {} elected to wait ({}).", entity.name, entity.actor.unwrap().time);
+            },
+            Stall => {
+                let entity = &game.entities[id];
+                println!("Entity {} elected to stall for time ({}).", entity.name, entity.actor.unwrap().time);
             },
         }
     }

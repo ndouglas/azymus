@@ -10,8 +10,16 @@ use game::Game;
 pub enum CompassDirection {
     /// North.
     North,
+    /// Northeast.
+    Northeast,
+    /// Northwest.
+    Northwest,
     /// South.
     South,
+    /// Southeast.
+    Southeast,
+    /// Southwest.
+    Southwest,
     /// East.
     East,
     /// West.
@@ -25,6 +33,8 @@ pub enum Command {
     Walk(CompassDirection),
     /// Just wait, wasting a turn.
     Wait,
+    /// Stall -- don't waste turn, but don't do anything.
+    Stall,
 }
 
 /// Actions are processes that modify the game world.
@@ -37,10 +47,13 @@ impl Command {
         match self {
             Walk(compass_direction) => {
                 Some(Action::Walk(compass_direction))
-            }
+            },
             Wait => {
                 Some(Action::Wait)
-            }
+            },
+            Stall => {
+                Some(Action::Stall)
+            },
         }
     }
 
@@ -53,13 +66,7 @@ impl Command {
             Walk(compass_direction) => {
                 let entity = &game.entities[id];
                 if let Some(position1) = entity.position {
-                    use CompassDirection::*;
-                    let position2 = match compass_direction {
-                        North => position1.to_north(),
-                        South => position1.to_south(),
-                        West => position1.to_west(),
-                        East => position1.to_east(),
-                    };
+                    let position2 = position1.to_direction(compass_direction);
                     vec![
                         CanWalkFromPositionToPosition(position1, position2),
                         PositionIsNotOutOfBounds(position2),
@@ -71,12 +78,17 @@ impl Command {
                         Deny("Entity has no starting position!".to_string()),
                     ]
                 }
-            }
+            },
             Wait => {
                 vec![
                     Permit,
                 ]
-            }
+            },
+            Stall => {
+                vec![
+                    Permit,
+                ]
+            },
         }
     }
 
