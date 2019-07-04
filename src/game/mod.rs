@@ -3,7 +3,6 @@ use tcod::console::*;
 use crate::entity;
 use entity::Entity;
 use entity::get_player;
-use entity::get_npc;
 use crate::map;
 use map::Map;
 use map::get_map;
@@ -20,12 +19,29 @@ use ui::root_console::get_root_console;
 pub struct Game {
     /// The game map.
     pub map: Map,
-    /// All objects in the game.
-    pub objects: Vec<Entity>,
+    /// All entities in the game.
+    pub entities: Vec<Entity>,
     /// The game settings.
     pub settings: Settings,
     /// The current seed.
     pub seed: i64,
+}
+
+impl Game {
+
+    /// Get the entities at the specified location.
+    pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
+        let mut result = Vec::new();
+        for entity in &self.entities {
+            if let Some(position) = entity.position {
+                if position.x == x && position.y == y {
+                    result.push(entity);
+                }
+            }
+        }
+        result
+    }
+
 }
 
 /// Setup and run the main game loop.
@@ -36,20 +52,19 @@ pub fn run() {
     let mut map_console = get_map_console(&settings);
     let width = map_console.width();
     let height = map_console.height();
-    let (map, position) = get_map(seed, width, height, 0);
+    let mut entities = Vec::new();
+    let (map, position) = get_map(seed, width, height, 0, &mut entities);
     let mut player = get_player(&map);
-    let mut npc = get_npc(&map);
     player.move_to(position.x, position.y, 0);
-    npc.move_to(position.x + 20, position.y, 0);
+
     let mut game = Game {
         map: map,
-        objects: Vec::new(),
+        entities: entities,
         settings: get_settings(),
         seed: 0,
     };
-    game.objects.push(player);
-    let player_id: usize = 0;
-    game.objects.push(npc); // 1
+    let player_id: usize = game.entities.len();
+    game.entities.push(player);
     while !root_console.window_closed() {
         render_all(&mut root_console, &mut map_console, player_id, &game);
         let exit = handle_keys(&mut root_console, player_id, &mut game);
@@ -63,7 +78,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
     map_console.set_default_foreground(WHITE);
     map_console.clear();
     let map = &game.map;
-    let player = &game.objects[player_id];
+    let player = &game.entities[player_id];
     if let Some(fov) = &player.field_of_view {
         if let Some(ls) = &player.light_source {
             map.draw_fov_ls(map_console, fov, ls);
@@ -71,7 +86,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
             map.draw_fov(map_console, fov);
         }
         let fov_map = fov.map.lock().unwrap();
-        for object in &game.objects {
+        for object in &game.entities {
             if let Some(position) = object.position {
                 if fov_map.is_in_fov(position.x, position.y) {
                     object.draw(map_console);
@@ -79,7 +94,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
             }
         }
     } else {
-        for object in &game.objects {
+        for object in &game.entities {
             object.draw(map_console);
         }
     }

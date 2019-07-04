@@ -2,6 +2,10 @@ use rand::*;
 use std::cmp;
 use crate::component;
 use component::position::Position;
+use crate::entity;
+use entity::Entity;
+use entity::get_orc;
+use entity::get_troll;
 use crate::tile;
 use tile::Tile;
 use super::super::MapGeneratorReturnType;
@@ -47,8 +51,6 @@ impl Rect {
             && (self.y2 >= other.y1)
     }
 
-
-
 }
 
 /// Creates a room.
@@ -72,8 +74,38 @@ fn create_v_tunnel(seed: i64, level: i32, y1: i32, y2: i32, x: i32, map: &mut Ma
     }
 }
 
+fn place_objects(room: Rect, seed: i64, level: i32, objects: &mut Vec<Entity>) {
+    let in_seed: &[_] = &[seed as usize];
+    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
+    let num_monsters = rng.gen_range(0, (room.y2 - room.y1).abs());
+    for _ in 0..num_monsters {
+        let x = rng.gen_range(room.x1 + 1, room.x2);
+        let y = rng.gen_range(room.y1 + 1, room.y2);
+        let monster = if rng.gen_range(0, 10) < 8 {
+            let mut orc = get_orc();
+            orc.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            orc
+        } else {
+            let mut troll = get_troll();
+            troll.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            troll
+        };
+        objects.push(monster);
+    }
+}
+
 /// Generate the map.
-pub fn generate_map(seed: i64, width: i32, height: i32, level: i32) -> MapGeneratorReturnType {
+pub fn generate_map(seed: i64, width: i32, height: i32, level: i32, objects: &mut Vec<Entity>) -> MapGeneratorReturnType {
     let in_seed: &[_] = &[seed as usize];
     let mut rng: StdRng = SeedableRng::from_seed(in_seed);
     let mut map = vec![vec![Tile::new(); height as usize]; width as usize];
@@ -95,7 +127,9 @@ pub fn generate_map(seed: i64, width: i32, height: i32, level: i32) -> MapGenera
             .any(|other_room| new_room.intersects_with(other_room));
         if !failed {
             create_room(seed, level, new_room, &mut map);
-            //place_objects(world, new_room, seed, &mut occupant_map);
+            if !rooms.is_empty() {
+                place_objects(new_room, seed, level, objects);
+            }
             let (new_x, new_y) = new_room.center();
             if rooms.is_empty() {
                 starting_position = Position::new(seed, new_x, new_y, level);

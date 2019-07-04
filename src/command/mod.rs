@@ -31,12 +31,13 @@ impl Command {
         use CommandRule::*;
         match self {
             Walk(position) => {
-                let entity = &game.objects[id];
+                let entity = &game.entities[id];
                 if let Some(position1) = entity.position {
                     vec![
                         CanWalkFromPositionToPosition(position1, position),
-                        MapPositionDoesNotBlockMovement(position),
-                        MapPositionIsNotOutOfBounds(position),
+                        PositionIsNotOutOfBounds(position),
+                        TileAtPositionDoesNotBlockMovement(position),
+                        NothingAtPositionBlocksMovement(position),
                     ]
                 } else {
                     vec![
@@ -112,11 +113,13 @@ pub enum CommandRule {
     /// Denies the command with the specified message.
     Deny(String),
     /// Position is not out of bounds.
-    MapPositionIsNotOutOfBounds(Position),
+    PositionIsNotOutOfBounds(Position),
     /// Position does not block movement.
-    MapPositionDoesNotBlockMovement(Position),
+    TileAtPositionDoesNotBlockMovement(Position),
     /// Can walk from position 1 to position 2.
     CanWalkFromPositionToPosition(Position, Position),
+    /// No entity at the location blocks movement.
+    NothingAtPositionBlocksMovement(Position),
 }
 
 
@@ -131,14 +134,14 @@ impl CommandRule {
             Permit => Permitted,
             Deny(string) => Denied(string),
             Substitute(command) => Substituted(command),
-            MapPositionIsNotOutOfBounds(position) => {
+            PositionIsNotOutOfBounds(position) => {
                 let map = &game.map;
                 if !map.is_in_bounds(position.x, position.y) {
                     return Denied("Requested an out-of-bounds position.".to_string());
                 }
                 Neutral
             },
-            MapPositionDoesNotBlockMovement(position) => {
+            TileAtPositionDoesNotBlockMovement(position) => {
                 let map = &game.map;
                 if map.get_tile(position.x, position.y).blocks_movement {
                     return Denied("The destination position contains a tile that blocks movement.".to_string());
@@ -148,6 +151,15 @@ impl CommandRule {
             CanWalkFromPositionToPosition(position1, position2) => {
                 if (position1.x - position2.x).abs() > 1 || (position1.y - position2.y).abs() > 1 {
                     return Denied("The destination position is too far from the original position.".to_string());
+                }
+                Neutral
+            },
+            NothingAtPositionBlocksMovement(position) => {
+                let occupants = &game.get_entities(position.x, position.y);
+                for occupant in occupants {
+                    if occupant.blocks_movement {
+                        return Denied("The destination position contains a tile that blocks movement.".to_string());
+                    }
                 }
                 Neutral
             },

@@ -54,8 +54,10 @@ impl Default for Renderable {
 pub enum Factory {
     /// The PC.
     Player,
-    /// A little test NPC.
-    Npc,
+    /// An orc.
+    Orc,
+    /// A troll.
+    Troll,
     /// A floor (dark).
     Floor,
     /// A wall (dark).
@@ -73,9 +75,14 @@ impl Factory {
                 foreground_color: Some(WHITE),
                 background_color: None,
             },
-            Npc => Renderable {
-                char: Some('@'),
-                foreground_color: Some(YELLOW),
+            Orc => Renderable {
+                char: Some('o'),
+                foreground_color: Some(DESATURATED_GREEN),
+                background_color: None,
+            },
+            Troll => Renderable {
+                char: Some('T'),
+                foreground_color: Some(GREEN),
                 background_color: None,
             },
             Floor => Renderable {

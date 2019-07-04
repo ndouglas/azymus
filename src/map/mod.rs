@@ -3,6 +3,8 @@ use crate::component;
 use component::field_of_view::FieldOfView;
 use component::position::Position;
 use component::light_source::LightSource;
+use crate::entity;
+use entity::Entity;
 use crate::tile;
 use tile::Tile;
 use tcod::map::Map as FovMap;
@@ -111,8 +113,8 @@ impl Map {
 }
 
 /// Get a new map.
-pub fn get_map(seed: i64, width: i32, height: i32, level: i32) -> (Map, Position) {
-    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level);
+pub fn get_map(seed: i64, width: i32, height: i32, level: i32, objects: &mut Vec<Entity>) -> (Map, Position) {
+    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, objects);
     let map = Map::new(inner_map);
     (map, position)
 }

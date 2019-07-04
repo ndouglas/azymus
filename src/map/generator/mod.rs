@@ -1,6 +1,8 @@
 use crate::component;
 use component::position::Position;
 use super::MapType;
+use crate::entity;
+use entity::Entity;
 
 /// Algorithms.
 pub mod algorithm;
@@ -9,4 +11,4 @@ pub mod algorithm;
 pub type MapGeneratorReturnType = (MapType, Position);
 
 /// The type of function of a map generator.
-pub type MapGeneratorType = fn(i64, i32, i32, i32) -> MapGeneratorReturnType;
+pub type MapGeneratorType = fn(i64, i32, i32, i32, &mut Vec<Entity>) -> MapGeneratorReturnType;

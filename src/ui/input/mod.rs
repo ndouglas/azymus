@@ -10,7 +10,7 @@ use game::Game;
 
 /// Handle input from the player.
 pub fn handle_keys(root_console: &mut Root, player_id: usize, game: &mut Game) -> bool {
-    let player = &game.objects[player_id];
+    let player = &game.entities[player_id];
     let key = root_console.wait_for_keypress(true);
     match key {
         Key {

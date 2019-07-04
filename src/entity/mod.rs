@@ -18,6 +18,8 @@ pub struct Entity {
     pub position: Option<Position>,
     /// Indicates how the given object is rendered on a map.
     pub renderable: Option<Renderable>,
+    /// Whether this object prevents movement.
+    pub blocks_movement: bool,
 }
 
 impl Entity {
@@ -29,6 +31,7 @@ impl Entity {
             light_source: None,
             position: None,
             renderable: None,
+            blocks_movement: false,
         }
     }
 
@@ -74,15 +77,26 @@ pub fn get_player(map: &Map) -> Entity {
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
+    player.blocks_movement = true;
     player
 }
 
-/// Get an "NPC" entity.
-pub fn get_npc(map: &Map) -> Entity {
-    let mut npc = Entity::new();
-    npc.field_of_view = Some(FieldOfView::new(map.get_fov(), 8));
-    npc.light_source = Some(LightSourceFactory::Torch.create());
-    npc.position = Some(Position::default());
-    npc.renderable = Some(RenderableFactory::Npc.create());
-    npc
+/// Get an orc entity.
+pub fn get_orc() -> Entity {
+    let mut orc = Entity::new();
+    orc.light_source = Some(LightSourceFactory::Torch.create());
+    orc.position = Some(Position::default());
+    orc.renderable = Some(RenderableFactory::Orc.create());
+    orc.blocks_movement = true;
+    orc
+}
+
+/// Get a troll entity.
+pub fn get_troll() -> Entity {
+    let mut troll = Entity::new();
+    troll.light_source = Some(LightSourceFactory::Candle.create());
+    troll.position = Some(Position::default());
+    troll.renderable = Some(RenderableFactory::Troll.create());
+    troll.blocks_movement = true;
+    troll
 }

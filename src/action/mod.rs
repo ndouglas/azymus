@@ -23,7 +23,7 @@ impl Action {
         use Action::*;
         match self {
             Move(position) => {
-                let entity = &mut game.objects[id];
+                let entity = &mut game.entities[id];
                 entity.move_to(position.x, position.y, position.z);
             }
         }
