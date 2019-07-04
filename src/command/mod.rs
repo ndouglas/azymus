@@ -110,13 +110,13 @@ impl Command {
         if let Some(action) = self.check_rules(id, game) {
             return action.get_cost(id, game);
         }
-        0
+        return Action::Wait.get_cost(id, game);
     }
 
     /// Perform the action.
     pub fn execute(self, id: usize, game: &mut Game) {
         trace!("Entering Command::execute().");
-        let mut cost = 120;
+        let mut cost = Action::Wait.get_cost(id, game);
         if let Some(action) = self.check_rules(id, game) {
             cost = action.get_cost(id, game);
             action.execute(id, game);
