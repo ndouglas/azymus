@@ -14,6 +14,8 @@ pub enum Algorithm {
     JustMoveSouth,
     /// Approach the player.
     ApproachPlayer,
+    /// Approach and fight the player.
+    ApproachAndFightPlayer,
 }
 
 /// Algorithms used to vend commands when given a context.
@@ -33,30 +35,42 @@ impl Algorithm {
             ApproachPlayer => {
                 let player = &game.entities[game.player_id];
                 let player_position = player.position.unwrap();
-                command_to_move_towards(id, player_position.x, player_position.y, game)
+                command_to_move_towards(id, player_position, game)
+            },
+            ApproachAndFightPlayer => {
+                let player = &game.entities[game.player_id];
+                let player_position = player.position.unwrap();
+                let entity = &game.entities[id];
+                let entity_position = entity.position.unwrap();
+                if entity_position.distance_to(player_position) >= 2.0 {
+                    command_to_move_towards(id, player_position, game)
+                } else {
+                    command_to_attack(id, player_position, game)
+                }
             },
         }
     }
 
 }
 
-fn get_direction_to(id: usize, target_x: i32, target_y: i32, game: &Game) -> Option<CompassDirection> {
+fn get_direction_to(id: usize, position: Position, game: &Game) -> Option<CompassDirection> {
     let entity = &game.entities[id];
-    if let Some(position1) = entity.position {
-        let position2 = Position {
-            w: position1.w,
-            x: target_x,
-            y: target_y,
-            z: position1.z,
-        };
-        return position1.direction_to(position2);
+    if let Some(entity_position) = entity.position {
+        return entity_position.direction_to(position);
     }
     None
 }
 
-fn command_to_move_towards(id: usize, target_x: i32, target_y: i32, game: &Game) -> Option<Command> {
-    if let Some(compass_direction) = get_direction_to(id, target_x, target_y, game) {
+fn command_to_move_towards(id: usize, position: Position, game: &Game) -> Option<Command> {
+    if let Some(compass_direction) = get_direction_to(id, position, game) {
         return Some(Command::Walk(compass_direction));
+    }
+    None
+}
+
+fn command_to_attack(id: usize, position: Position, game: &Game) -> Option<Command> {
+    if let Some(compass_direction) = get_direction_to(id, position, game) {
+        return Some(Command::MeleeAttack(compass_direction));
     }
     None
 }

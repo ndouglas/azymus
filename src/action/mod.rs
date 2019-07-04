@@ -10,6 +10,8 @@ const TIME_PER_TURN: i32 = 120;
 pub enum Action {
     /// Walk the entity to the specified direction.
     Walk(CompassDirection),
+    /// Attack (melee) something in the specified direction.
+    MeleeAttack(CompassDirection),
     /// Just wait, wasting a turn.
     Wait,
     /// Stall -- don't waste turn, but don't do anything.
@@ -24,8 +26,10 @@ impl Action {
         trace!("Entering Action::get_cost().");
         use Action::*;
         match self {
+            Walk(_) => TIME_PER_TURN,
+            MeleeAttack(_) => TIME_PER_TURN,
+            Wait => TIME_PER_TURN,
             Stall => 0,
-            _ => TIME_PER_TURN,
         }
     }
 
@@ -37,6 +41,10 @@ impl Action {
             Walk(compass_direction) => {
                 let entity = &mut game.entities[id];
                 entity.move_to_direction(*compass_direction);
+            },
+            MeleeAttack(_compass_direction) => {
+                let entity = &mut game.entities[id];
+                println!("The {} growls menacingly.", entity.name);
             },
             Wait => {
                 let entity = &game.entities[id];

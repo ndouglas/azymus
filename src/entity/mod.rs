@@ -10,6 +10,7 @@ use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
+use component::species::Species;
 use crate::map;
 use map::Map;
 
@@ -18,6 +19,8 @@ use map::Map;
 pub struct Entity {
     /// The naem of this entity.
     pub name: String,
+    /// The species of this entity.
+    pub species: Option<Species>,
     /// Something that gets dispensed time and has an opportunity to act.
     pub actor: Option<Actor>,
     /// Something that can act autonomously.
@@ -41,6 +44,7 @@ impl Entity {
         trace!("Entering Entity::new().");
         Entity {
             name: name,
+            species: None,
             actor: None,
             agent: None,
             field_of_view: None,
@@ -98,6 +102,16 @@ impl Entity {
         }
     }
 
+    /// If the entity would attack another entity.
+    pub fn would_attack(&self, entity: &Entity) -> bool {
+        match (self.species, entity.species) {
+            (Some(_), Some(_)) => false,
+            (None, None) => false,
+            (Some(_), None) => true,
+            (None, Some(_)) => true,
+        }
+    }
+
 }
 
 /// Get a "player" entity.
@@ -108,7 +122,7 @@ pub fn get_player(map: &Map) -> Entity {
         time: 0,
         speed: 12,
     });
-    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
+    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
@@ -131,6 +145,7 @@ pub fn get_orc() -> Entity {
     orc.position = Some(Position::default());
     orc.renderable = Some(RenderableFactory::Orc.create());
     orc.blocks_movement = true;
+    orc.species = Some(Species);
     orc
 }
 
@@ -149,5 +164,6 @@ pub fn get_troll() -> Entity {
     troll.position = Some(Position::default());
     troll.renderable = Some(RenderableFactory::Troll.create());
     troll.blocks_movement = true;
+    troll.species = Some(Species);
     troll
 }

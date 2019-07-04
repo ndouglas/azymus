@@ -131,6 +131,11 @@ impl Position {
         }
     }
 
+    /// Returns the distance to another object.
+    pub fn distance_to(&self, position: Position) -> f32 {
+        (((position.x - self.x).pow(2) + (position.y - self.y).pow(2)) as f32).sqrt()
+    }
+
 }
 
 /// Creates a default instance.
