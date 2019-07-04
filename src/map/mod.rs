@@ -113,8 +113,11 @@ impl Map {
 }
 
 /// Get a new map.
-pub fn get_map(seed: i64, width: i32, height: i32, level: i32, objects: &mut Vec<Entity>) -> (Map, Position) {
-    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, objects);
+pub fn get_map(seed: i64, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
+    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, entities);
     let map = Map::new(inner_map);
+    for entity in entities {
+        entity.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
+    }
     (map, position)
 }

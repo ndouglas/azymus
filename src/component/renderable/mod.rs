@@ -17,6 +17,7 @@ impl Renderable {
 
     /// Constructor.
     pub fn new() -> Renderable {
+        trace!("Entering Renderable::to_north().");
         Renderable {
             char: None,
             foreground_color: None,
@@ -26,6 +27,7 @@ impl Renderable {
 
     /// Render this object at the specified position.
     pub fn draw(&self, x: i32, y: i32, console: &mut Console) {
+        trace!("Entering Renderable::draw().");
         if let Some(color) = self.foreground_color {
             if let Some(char) = self.char {
                 console.set_default_foreground(color);
@@ -35,6 +37,7 @@ impl Renderable {
         if let Some(color) = self.background_color {
             console.set_char_background(x, y, color, BackgroundFlag::Set);
         }
+        trace!("Exiting Renderable::draw().");
     }
 
 }
@@ -68,6 +71,7 @@ impl Factory {
 
     /// Creates a renderable for the given value.
     pub fn create(self) -> Renderable {
+        trace!("Entering Factory::create().");
         use Factory::*;
         match self {
             Player => Renderable {

@@ -49,6 +49,9 @@ extern crate tcod;
 /// Actions are processes that modify the game world.
 pub mod action;
 
+/// Agents are algorithms that permit NPC actors to act within the game world.
+pub mod agent;
+
 /// Commands are attempts to perform actions.
 pub mod command;
 
@@ -63,6 +66,9 @@ pub mod game;
 
 /// The map, the current slice of the game world.
 pub mod map;
+
+/// The scheduler that determines when and who will be able to issue commands.
+pub mod scheduler;
 
 /// A settings system to allow some configuration.
 pub mod settings;

@@ -1,5 +1,9 @@
 use tcod::console::*;
+use crate::agent;
+use agent::Algorithm as AgentAlgorithm;
 use crate::component;
+use component::actor::Actor;
+use component::agent::Agent;
 use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
@@ -10,6 +14,12 @@ use map::Map;
 /// The entity object that represents anything that functions in the game world.
 #[derive(Clone, Debug)]
 pub struct Entity {
+    /// The naem of this entity.
+    pub name: String,
+    /// Something that gets dispensed time and has an opportunity to act.
+    pub actor: Option<Actor>,
+    /// Something that can act autonomously.
+    pub agent: Option<Agent>,
     /// Indicates the object's ability to perceive the world around it.
     pub field_of_view: Option<FieldOfView>,
     /// A light source attached to or possessed by this entity.
@@ -25,8 +35,12 @@ pub struct Entity {
 impl Entity {
 
     /// Constructor.
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
+        trace!("Entering Entity::new().");
         Entity {
+            name: name,
+            actor: None,
+            agent: None,
             field_of_view: None,
             light_source: None,
             position: None,
@@ -72,7 +86,12 @@ impl Entity {
 
 /// Get a "player" entity.
 pub fn get_player(map: &Map) -> Entity {
-    let mut player = Entity::new();
+    trace!("Entering get_player().");
+    let mut player = Entity::new("Player".to_string());
+    player.actor = Some(Actor {
+        time: 0,
+        speed: 12,
+    });
     player.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
@@ -83,7 +102,15 @@ pub fn get_player(map: &Map) -> Entity {
 
 /// Get an orc entity.
 pub fn get_orc() -> Entity {
-    let mut orc = Entity::new();
+    trace!("Entering get_orc().");
+    let mut orc = Entity::new("Orc".to_string());
+    orc.actor = Some(Actor {
+        time: 0,
+        speed: 11,
+    });
+    orc.agent = Some(Agent {
+        algorithm: AgentAlgorithm::JustMoveSouth,
+    });
     orc.light_source = Some(LightSourceFactory::Torch.create());
     orc.position = Some(Position::default());
     orc.renderable = Some(RenderableFactory::Orc.create());
@@ -93,7 +120,15 @@ pub fn get_orc() -> Entity {
 
 /// Get a troll entity.
 pub fn get_troll() -> Entity {
-    let mut troll = Entity::new();
+    trace!("Entering get_troll().");
+    let mut troll = Entity::new("Troll".to_string());
+    troll.actor = Some(Actor {
+        time: 0,
+        speed: 9,
+    });
+    troll.agent = Some(Agent {
+        algorithm: AgentAlgorithm::JustMoveSouth,
+    });
     troll.light_source = Some(LightSourceFactory::Candle.create());
     troll.position = Some(Position::default());
     troll.renderable = Some(RenderableFactory::Troll.create());

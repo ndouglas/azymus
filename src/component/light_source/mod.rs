@@ -18,6 +18,7 @@ impl LightSource {
 
     /// Constructor.
     pub fn new(color: Color, radius: i32, intensity: i32) -> LightSource {
+        trace!("Entering LightSource::new().");
         LightSource {
             color: color,
             radius: radius,
@@ -27,6 +28,7 @@ impl LightSource {
 
     /// Compute intensity of light at a distance.
     pub fn intensity_at(&self, x: i32, y: i32, x2: i32, y2: i32) -> i32 {
+        trace!("Entering LightSource::intensity_at().");
         let dx = (x2 - x).abs();
         let dy = (y2 - y).abs();
         if dx > self.radius || dy > self.radius {
@@ -42,6 +44,7 @@ impl LightSource {
 
     /// Transform a color at a specified distance.
     pub fn transform_color_at(&self, color: Color, x: i32, y: i32, x2: i32, y2: i32) -> Color {
+        trace!("Entering LightSource::transform_color_at().");
         let intensity = self.intensity_at(x, y, x2, y2);
         let multiplier = intensity as f64 / 512 as f64;
         let r = color.r;
@@ -53,6 +56,7 @@ impl LightSource {
         let new_r = (r as f64 + (r_diff as f64 * multiplier)) as u8;
         let new_g = (g as f64 + (g_diff as f64 * multiplier)) as u8;
         let new_b = (b as f64 + (b_diff as f64 * multiplier)) as u8;
+        trace!("Exiting LightSource::transform_color_at().");
         Color {
             r: new_r,
             g: new_g,

@@ -16,11 +16,56 @@ impl Position {
 
     /// Constructor.
     pub fn new(w: i64, x: i32, y: i32, z: i32) -> Position {
+        trace!("Entering Position::new().");
         Position {
             w,
             x,
             y,
             z,
+        }
+    }
+
+    /// Position to the north.
+    pub fn to_north(&self) -> Position {
+        trace!("Entering Position::to_north().");
+        Position {
+            w: self.w,
+            x: self.x,
+            y: self.y - 1,
+            z: self.z,
+        }
+    }
+
+    /// Position to the south.
+    pub fn to_south(&self) -> Position {
+        trace!("Entering Position::to_south().");
+        Position {
+            w: self.w,
+            x: self.x,
+            y: self.y + 1,
+            z: self.z,
+        }
+    }
+
+    /// Position to the west.
+    pub fn to_west(&self) -> Position {
+        trace!("Entering Position::to_west().");
+        Position {
+            w: self.w,
+            x: self.x - 1,
+            y: self.y,
+            z: self.z,
+        }
+    }
+
+    /// Position to the east.
+    pub fn to_east(&self) -> Position {
+        trace!("Entering Position::to_east().");
+        Position {
+            w: self.w,
+            x: self.x + 1,
+            y: self.y,
+            z: self.z,
         }
     }
 

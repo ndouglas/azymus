@@ -29,8 +29,10 @@ impl FieldOfView {
 
     /// Constructor.
     pub fn new(map: Map, radius: i32) -> FieldOfView {
+        trace!("Entering FieldOfView::new().");
         let (width, height) = map.size();
         let explored_map = vec![vec![false; height as usize]; width as usize];
+        trace!("Exiting FieldOfView::new().");
         FieldOfView {
             algorithm: FovAlgorithm::Basic,
             radius: radius,
@@ -45,11 +47,16 @@ impl FieldOfView {
 
     /// Indicates whether a pair of coordinates are in bounds of this map.
     pub fn is_in_bounds(&self, x: i32, y: i32) -> bool {
+        trace!("Entering FieldOfView::is_in_bounds().");
         (x >= 0 && y >= 0 && x < self.width - 1 && y < self.height - 1)
     }
 
     /// Updates.
     pub fn update(&mut self, x: i32, y: i32) {
+        trace!("Entering FieldOfView::update().");
+        if x == self.x && y == self.y {
+            return;
+        }
         let map = &mut self.map.lock().unwrap();
         map.compute_fov(x, y, self.radius, true, self.algorithm);
         self.x = x;
@@ -61,6 +68,7 @@ impl FieldOfView {
                 }
             }
         }
+        trace!("Exiting FieldOfView::update().");
     }
 
 }

@@ -11,6 +11,10 @@ use display::Display;
 pub mod map;
 use map::Map;
 
+/// Scheduler Settings.
+pub mod scheduler;
+use scheduler::Scheduler;
+
 /// The filename.
 pub const SETTINGS_FILENAME: &str = "settings.json";
 
@@ -21,6 +25,8 @@ pub struct Settings {
     pub display: Display,
     /// Map settings.
     pub map: Map,
+    /// Scheduler settings.
+    pub scheduler: Scheduler,
 }
 
 /// Settings.
@@ -31,6 +37,7 @@ impl Settings {
         Settings {
             display: Display::new(),
             map: Map::new(),
+            scheduler: Scheduler::new(),
         }
     }
 

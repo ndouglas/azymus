@@ -5,11 +5,26 @@ use component::position::Position;
 use crate::game;
 use game::Game;
 
+/// Compass directions.
+#[derive(Clone, Copy, Debug)]
+pub enum CompassDirection {
+    /// North.
+    North,
+    /// South.
+    South,
+    /// East.
+    East,
+    /// West.
+    West,
+}
+
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]
 pub enum Command {
-    /// Walk the entity argument to the specified position.
-    Walk(Position),
+    /// Walk the entity argument in the specified direction.
+    Walk(CompassDirection),
+    /// Just wait, wasting a turn.
+    Wait,
 }
 
 /// Actions are processes that modify the game world.
@@ -17,27 +32,39 @@ impl Command {
 
     /// Retrieve the action for this command.
     pub fn get_default_action(self) -> Option<Action> {
+        trace!("Entering Command::get_default_action().");
         use Command::*;
         match self {
-            Walk(position) => {
-                Some(Action::Move(position))
+            Walk(compass_direction) => {
+                Some(Action::Walk(compass_direction))
+            }
+            Wait => {
+                Some(Action::Wait)
             }
         }
     }
 
     /// List the rules for this command.
     pub fn get_rules(self, id: usize, game: &Game) -> Vec<CommandRule> {
+        trace!("Entering Command::get_rules().");
         use Command::*;
         use CommandRule::*;
         match self {
-            Walk(position) => {
+            Walk(compass_direction) => {
                 let entity = &game.entities[id];
                 if let Some(position1) = entity.position {
+                    use CompassDirection::*;
+                    let position2 = match compass_direction {
+                        North => position1.to_north(),
+                        South => position1.to_south(),
+                        West => position1.to_west(),
+                        East => position1.to_east(),
+                    };
                     vec![
-                        CanWalkFromPositionToPosition(position1, position),
-                        PositionIsNotOutOfBounds(position),
-                        TileAtPositionDoesNotBlockMovement(position),
-                        NothingAtPositionBlocksMovement(position),
+                        CanWalkFromPositionToPosition(position1, position2),
+                        PositionIsNotOutOfBounds(position2),
+                        TileAtPositionDoesNotBlockMovement(position2),
+                        NothingAtPositionBlocksMovement(position2),
                     ]
                 } else {
                     vec![
@@ -45,11 +72,17 @@ impl Command {
                     ]
                 }
             }
+            Wait => {
+                vec![
+                    Permit,
+                ]
+            }
         }
     }
 
     /// Check the rules for this command.
     pub fn check_rules(self, id: usize, game: &Game) -> Option<Action> {
+        trace!("Entering Command:check_rules().");
         use CommandRuleResult::*;
         for rule in self.get_rules(id, game) {
             match rule.evaluate(id, game) {
@@ -71,16 +104,27 @@ impl Command {
         return self.get_default_action();
     }
 
-    /// Get the cost for an action.
-    pub fn get_action_cost(self, id: usize, game: &Game, action: Action) -> i32 {
-        return action.get_cost(id, game);
+    /// Get the cost for the anticipated action.
+    pub fn get_cost(self, id: usize, game: &Game) -> i32 {
+        trace!("Entering Command::get_cost().");
+        if let Some(action) = self.check_rules(id, game) {
+            return action.get_cost(id, game);
+        }
+        0
     }
 
     /// Perform the action.
     pub fn execute(self, id: usize, game: &mut Game) {
+        trace!("Entering Command::execute().");
+        let mut cost = 120;
         if let Some(action) = self.check_rules(id, game) {
+            cost = action.get_cost(id, game);
             action.execute(id, game);
         }
+        if let Some(actor) = game.entities[id].actor.as_mut() {
+            actor.time -= cost;
+        }
+        trace!("Exiting Command::execute().");
     }
 
 }
@@ -128,6 +172,7 @@ impl CommandRule {
 
     /// Evaluates the given rule with the specified context.
     pub fn evaluate(self, _id: usize, game: &Game) -> CommandRuleResult {
+        trace!("Entering CommandRule::evaluate().");
         use CommandRuleResult::*;
         use CommandRule::*;
         match self {
