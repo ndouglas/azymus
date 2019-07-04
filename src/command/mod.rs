@@ -129,6 +129,9 @@ impl Command {
     pub fn execute(self, id: usize, game: &mut Game) {
         trace!("Entering Command::execute().");
         let mut cost = Action::Wait.get_cost(id, game);
+        if id == game.player_id {
+            cost = 0;
+        }
         if let Some(action) = self.check_rules(id, game) {
             cost = action.get_cost(id, game);
             action.execute(id, game);
