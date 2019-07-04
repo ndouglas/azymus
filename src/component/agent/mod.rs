@@ -1,10 +1,9 @@
-use specs::*;
-use crate::agent::Agent as AgentType;
+use crate::agent;
+use agent::Algorithm;
 
-/// Something that can act independently of player control.
-#[derive(Clone, Copy, Component, Debug)]
-#[storage(VecStorage)]
+/// Something that can act autonomously.
+#[derive(Clone, Copy, Debug)]
 pub struct Agent {
-    /// The behavior system for this agent.
-    pub agent: AgentType,
+    /// The algorithm used by this agent.
+    pub algorithm: Algorithm,
 }
