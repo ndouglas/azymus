@@ -3,6 +3,8 @@ use command::CompassDirection;
 use crate::game;
 use game::Game;
 
+const TIME_PER_TURN: i32 = 120;
+
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]
 pub enum Action {
@@ -18,7 +20,7 @@ impl Action {
     /// Get the cost of performing this action.
     pub fn get_cost(&self, _id: usize, _game: &Game) -> i32 {
         trace!("Entering Action::get_cost().");
-        120
+        TIME_PER_TURN
     }
 
     /// Perform the action.
