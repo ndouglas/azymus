@@ -21,6 +21,9 @@
 //!
 //! I don't know where I'm going with this.
 
+/// Azymus (the library).
+extern crate azymus;
+
 /// A Rust library providing a lightweight logging facade.
 #[macro_use]
 extern crate log;
@@ -28,65 +31,20 @@ extern crate log;
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
 
-/// Parallel ECS.
-extern crate specs;
 
-/// Custom derive macros for Specs components.
-#[macro_use]
-extern crate specs_derive;
-
-/// Bindings for the tcod library.
-extern crate tcod;
-
-/// Actions.
-pub mod action;
-
-/// Agents.
-pub mod agent;
-
-/// Commands.
-pub mod command;
-
-/// Components.
-pub mod component;
-
-/// Entities.
-pub mod entity;
-
-/// Input.
-pub mod input;
-
-/// Map.
-pub mod map;
-
-/// Resource.
-pub mod resource;
-
-/// Rules.
-pub mod rule;
-
-/// Systems.
-pub mod system;
-
-/// User Interface.
-pub mod ui;
-
-/// World.
-pub mod world;
-
+#[cfg_attr(tarpaulin, skip)]
 fn main() {
-    pretty_env_logger::init();
+    azymus::init();
     trace!("Entering main().");
-    world::run_game_loop();
+    azymus::game::run();
     trace!("Exiting main().");
 }
-
 
 #[cfg(test)]
 mod tests {
 
     #[test]
-    fn it_works() {
+    fn basic_sanity_test() {
         assert_eq!(2 + 2, 4);
     }
 

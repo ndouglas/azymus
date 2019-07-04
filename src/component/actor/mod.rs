@@ -1,15 +1,8 @@
-use std::collections::VecDeque;
-use specs::*;
-use crate::command::Command;
-
-/// Something that can act.
-#[derive(Clone, Component, Debug)]
-#[storage(VecStorage)]
+/// Something that gets dispensed time and has an opportunity to act.
+#[derive(Clone, Copy, Debug)]
 pub struct Actor {
-    /// The current energy of the entity.
-    pub energy: i32,
-    /// The speed acquired by the entity each turn.
+    /// The current time of the entity.
+    pub time: i32,
+    /// The time acquired by the entity each turn.
     pub speed: i32,
-    /// The enqueued commands for this entity.
-    pub command_queue: VecDeque<Command>,
 }

@@ -1,26 +1,12 @@
-/// Something that can act.
+/// Something that gets dispensed time and has an opportunity to act.
 pub mod actor;
-/// Something with the ability to act independently.
+/// Something that can act autonomously.
 pub mod agent;
-/// Something whose turn it is.
-pub mod baton;
-/// Something willing to fight.
-pub mod combatant;
-/// Something representing an entity's ability to perceive.
+/// Something representing an entity's ability to see the game world.
 pub mod field_of_view;
-/// Something that has a name.
-pub mod name;
-/// Something that is the sole occupant of its position.
-pub mod occupant;
-/// Something that blocks light.
-pub mod opaque;
-/// Something currently controlled by the player.
-pub mod player;
-/// Something we've encountered.
-pub mod player_explored;
-/// Something that can be positioned in the world.
+/// Something that gives off light.
+pub mod light_source;
+/// Something positioned within the game world.
 pub mod position;
-/// Something that can be drawn to a console.
+/// Something that can be rendered on a map.
 pub mod renderable;
-/// Something that is a tile in the map.
-pub mod tile;

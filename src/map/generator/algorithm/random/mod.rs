@@ -1,6 +1,8 @@
-use specs::*;
+use super::super::MapGeneratorReturnType;
+use crate::entity;
+use entity::Entity;
 
 /// Generate the map.
-pub fn generate_map(world: &mut World, width: i32, height: i32, seed: i64) -> (i32, i32) {
-    super::simple::generate_map(world, width, height, seed) // chosen at random.
+pub fn generate_map(seed: i64, width: i32, height: i32, level: i32, objects: &mut Vec<Entity>) -> MapGeneratorReturnType {
+    super::simple::generate_map(seed, width, height, level, objects) // Chosen at random.
 }

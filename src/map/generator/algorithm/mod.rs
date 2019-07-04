@@ -1,7 +1,10 @@
-use specs::*;
+use super::MapGeneratorReturnType;
+use super::MapGeneratorType;
+use crate::entity;
+use entity::Entity;
 
-/// None...
-pub mod none;
+/// Empty...
+pub mod empty;
 /// Tutorial...
 pub mod simple;
 /// Random...
@@ -11,7 +14,7 @@ pub mod random;
 #[derive(Clone, Copy, Debug)]
 pub enum Algorithm {
     /// All floor, useful(?) for testing.
-    None,
+    Empty,
     /// The simple algorithm used by this Rust roguelike tutorial.
     Simple,
     /// This should be a lot cooler when I don't have exactly two choices.
@@ -22,14 +25,14 @@ pub enum Algorithm {
 impl Algorithm {
 
     /// Generate the map.
-    pub fn generate_map(&self, world: &mut World, width: i32, height: i32, seed: i64) -> (i32, i32) {
+    pub fn generate_map(&self, seed: i64, width: i32, height: i32, level: i32, objects: &mut Vec<Entity>) -> MapGeneratorReturnType {
         use Algorithm::*;
-        let generate_map: fn(&mut World, i32, i32, i64) -> (i32, i32) = match self {
-            None => none::generate_map,
+        let generate_map: MapGeneratorType = match self {
+            Empty => empty::generate_map,
             Simple => simple::generate_map,
             Random => random::generate_map,
         };
-        generate_map(world, width, height, seed)
+        generate_map(seed, width, height, level, objects)
     }
 
 }
