@@ -42,17 +42,17 @@ impl Action {
                 let entity = &mut game.entities[id];
                 entity.move_to_direction(*compass_direction);
             },
-            MeleeAttack(_compass_direction) => {
+            MeleeAttack(compass_direction) => {
                 let entity = &mut game.entities[id];
-                println!("The {} growls menacingly.", entity.name);
+                debug!("Entity {} elected to attack ({:?}).", entity.name, compass_direction);
             },
             Wait => {
                 let entity = &game.entities[id];
-                println!("Entity {} elected to wait ({}).", entity.name, entity.actor.unwrap().time);
+                debug!("Entity {} elected to wait ({}).", entity.name, entity.actor.unwrap().time);
             },
             Stall => {
                 let entity = &game.entities[id];
-                println!("Entity {} elected to stall for time ({}).", entity.name, entity.actor.unwrap().time);
+                debug!("Entity {} elected to stall for time ({}).", entity.name, entity.actor.unwrap().time);
             },
         }
     }

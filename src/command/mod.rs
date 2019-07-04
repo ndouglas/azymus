@@ -44,7 +44,7 @@ impl Command {
 
     /// Retrieve the action for this command.
     pub fn get_default_action(self) -> Option<Action> {
-        trace!("Entering Command::get_default_action().");
+        trace!("Entering Command::get_default_action() for command {:?}.", self);
         use Command::*;
         match self {
             Walk(compass_direction) => {
@@ -64,7 +64,7 @@ impl Command {
 
     /// List the rules for this command.
     pub fn get_rules(self, id: usize, game: &Game) -> Vec<CommandRule> {
-        trace!("Entering Command::get_rules().");
+        trace!("Entering Command::get_rules() for command {:?}.", self);
         use Command::*;
         use CommandRule::*;
         match self {
@@ -76,8 +76,8 @@ impl Command {
                         PositionsAreAdjacent(position1, position2),
                         PositionIsNotOutOfBounds(position2),
                         TileAtPositionDoesNotBlockMovement(position2),
-                        NothingAtPositionBlocksMovement(position2),
                         NothingAtPositionIsValidMeleeAttackTarget(position2),
+                        NothingAtPositionBlocksMovement(position2),
                     ]
                 } else {
                     vec![
@@ -115,21 +115,27 @@ impl Command {
 
     /// Check the rules for this command.
     pub fn check_rules(self, id: usize, game: &Game) -> CommandRuleResult {
-        trace!("Entering Command:check_rules().");
+        trace!("Entering Command::check_rules() for command {:?}.", self);
         use CommandRuleResult::*;
         for rule in self.get_rules(id, game) {
+            debug!("Checking rule {:?} for command {:?}.", rule, self);
+            let rule_name = format!("{:?}", rule);
             match rule.evaluate(id, game) {
                 Permitted => {
+                    debug!("Rule {} for command {:?} evaluated to Permitted.", rule_name, self);
                     return Permitted;
                 },
                 Neutral => {
+                    debug!("Rule {} for command {:?} evaluated to Neutral.", rule_name, self);
                     continue;
                 },
                 Denied(string) => {
+                    debug!("Rule {} for command {:?} evaluated to Denied({}).", rule_name, self, string);
                     return Denied(string);
                 },
                 Substituted(command) => {
-                    return command.check_rules(id, game);
+                    debug!("Rule {} for command {:?} evaluated to Substituted({:?}).", rule_name, self, command);
+                    return Substituted(command);
                 }
             }
         }
@@ -138,31 +144,42 @@ impl Command {
 
     /// Retrieve the final action for this command.
     pub fn get_final_action(self, id: usize, game: &Game) -> Option<Action> {
-        trace!("Entering Command::get_final_action().");
+        trace!("Entering Command::get_final_action() for command {:?}.", self);
         use CommandRuleResult::*;
         match self.check_rules(id, game) {
-            Permitted => self.get_default_action(),
-            Neutral => self.get_default_action(),
+            Permitted => {
+                debug!("Returning default action for command {:?}.", self);
+                self.get_default_action()
+            },
+            Neutral => {
+                debug!("Returning default action for command {:?}.", self);
+                self.get_default_action()
+            },
             Denied(_string) => {
                 if id == game.player_id {
+                    debug!("Returning stall command.");
                     Some(Action::Stall)
                 } else {
+                    debug!("Returning wait command.");
                     Some(Action::Wait)
                 }
             },
-            Substituted(command) => command.get_final_action(id, game),
+            Substituted(command) => {
+                debug!("Returning substituted command {:?}.", command);
+                command.get_final_action(id, game)
+            },
         }
     }
 
     /// Get the cost for the anticipated action.
     pub fn get_cost(self, id: usize, game: &Game, action: Action) -> i32 {
-        trace!("Entering Command::get_cost().");
+        trace!("Entering Command::get_cost() for command {:?}.", self);
         action.get_cost(id, game)
     }
 
     /// Perform the action.
     pub fn execute(self, id: usize, game: &mut Game) {
-        trace!("Entering Command::execute().");
+        trace!("Entering Command::execute() for command {:?}.", self);
         let mut cost = Action::Wait.get_cost(id, game);
         if let Some(action) = self.get_final_action(id, game) {
             cost = action.get_cost(id, game);
@@ -171,7 +188,7 @@ impl Command {
         if let Some(actor) = game.entities[id].actor.as_mut() {
             actor.time -= cost;
         };
-        trace!("Exiting Command::execute().");
+        trace!("Exiting Command::execute() for command {:?}.", self);
     }
 
 }
@@ -223,7 +240,7 @@ impl CommandRule {
 
     /// Evaluates the given rule with the specified context.
     pub fn evaluate(self, id: usize, game: &Game) -> CommandRuleResult {
-        trace!("Entering CommandRule::evaluate().");
+        trace!("Entering CommandRule::evaluate() with rule {:?}.", self);
         use CommandRuleResult::*;
         use CommandRule::*;
         match self {
@@ -256,12 +273,15 @@ impl CommandRule {
             },
             NothingAtPositionBlocksMovement(position) => {
                 trace!("Entering rule {:?}.", NothingAtPositionBlocksMovement(position));
+                let entity = &game.entities[id];
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
                     if occupant.blocks_movement {
+                        debug!("Entity {} ({}, {}) is blocked by entity {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
                         return Denied("The destination position contains an entity that blocks movement.".to_string());
                     }
                 }
+                debug!("Entity {} ({}, {}) is not blocked by anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
                 Neutral
             },
             SomethingAtPositionIsValidMeleeAttackTarget(position) => {
@@ -270,9 +290,11 @@ impl CommandRule {
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
                     if entity.would_attack(occupant) {
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
                         return Neutral;
                     }
                 }
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
                 Substituted(Command::Walk(entity.position.unwrap().direction_to(position).unwrap()))
             },
             NothingAtPositionIsValidMeleeAttackTarget(position) => {
@@ -281,9 +303,11 @@ impl CommandRule {
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
                     if entity.would_attack(occupant) {
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
                         return Substituted(Command::MeleeAttack(entity.position.unwrap().direction_to(position).unwrap()));
                     }
                 }
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
                 Neutral
             },
         }
