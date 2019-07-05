@@ -1,8 +1,8 @@
 use tcod::console::*;
 use crate::agent;
 use agent::Algorithm as AgentAlgorithm;
-use crate::command;
-use command::CompassDirection;
+use crate::body;
+use body::Body;
 use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
@@ -21,6 +21,8 @@ pub struct Entity {
     pub name: String,
     /// The species of this entity.
     pub species: Option<Species>,
+    /// The body of this entity.
+    pub body: Option<Body>,
     /// Something that gets dispensed time and has an opportunity to act.
     pub actor: Option<Actor>,
     /// Something that can act autonomously.
@@ -45,6 +47,7 @@ impl Entity {
         Entity {
             name: name,
             species: None,
+            body: None,
             actor: None,
             agent: None,
             field_of_view: None,
@@ -74,34 +77,6 @@ impl Entity {
         trace!("Exiting Entity::draw().");
     }
 
-    /// Move to a specific location.
-    pub fn move_to(&mut self, x: i32, y: i32, z: i32) {
-        trace!("Entering Entity::move_to() for entity {:?}.", self);
-        if let Some(position) = self.position.as_mut() {
-            position.x = x;
-            position.y = y;
-            position.z = z;
-        }
-        if let Some(fov) = &mut self.field_of_view {
-            fov.update(x, y);
-        }
-        trace!("Exiting Entity::move_to().");
-    }
-
-    /// Move to a specific position.
-    pub fn move_to_position(&mut self, position: Position) {
-        trace!("Entering Entity::move_to_position() for entity {:?}.", self);
-        self.move_to(position.x, position.y, position.z);
-    }
-
-    /// Move to a specific compass direction.
-    pub fn move_to_direction(&mut self, compass_direction: CompassDirection) {
-        trace!("Entering Entity::move_to_direction() for entity {:?}.", self);
-        if let Some(position) = self.position {
-            self.move_to_position(position.to_direction(compass_direction));
-        }
-    }
-
     /// If the entity would attack another entity.
     pub fn would_attack(&self, entity: &Entity) -> bool {
         match (self.species, entity.species) {
@@ -122,6 +97,10 @@ pub fn get_player(map: &Map) -> Entity {
         time: 0,
         speed: 12,
     });
+    player.body = Some(Body {
+        total_hit_points: 32767,
+        current_hit_points: 32767,
+    });
     player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
@@ -137,6 +116,10 @@ pub fn get_orc() -> Entity {
     orc.actor = Some(Actor {
         time: 0,
         speed: 11,
+    });
+    orc.body = Some(Body {
+        total_hit_points: 10,
+        current_hit_points: 10,
     });
     orc.agent = Some(Agent {
         algorithm: AgentAlgorithm::ApproachPlayer,
@@ -156,6 +139,10 @@ pub fn get_troll() -> Entity {
     troll.actor = Some(Actor {
         time: 0,
         speed: 9,
+    });
+    troll.body = Some(Body {
+        total_hit_points: 15,
+        current_hit_points: 15,
     });
     troll.agent = Some(Agent {
         algorithm: AgentAlgorithm::ApproachPlayer,

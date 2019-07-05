@@ -1,5 +1,7 @@
 use tcod::colors::*;
 use tcod::console::*;
+use crate::effect;
+use effect::Effect;
 use crate::entity;
 use entity::Entity;
 use entity::get_player;
@@ -62,8 +64,8 @@ pub fn run() {
     let height = map_console.height();
     let mut entities = Vec::new();
     let (map, position) = get_map(seed, width, height, 0, &mut entities);
-    let mut player = get_player(&map);
-    player.move_to(position.x, position.y, 0);
+    let player = get_player(&map);
+    let player_position = player.position.unwrap();
     let next_id = entities.len();
     let mut game = Game {
         input_domain: InputDomain::Explore,
@@ -75,6 +77,7 @@ pub fn run() {
     };
     let player_id = game.player_id;
     game.entities.push(player);
+    Effect::EntityMoves(player_position, position).execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
     while !root_console.window_closed() {
         if let Some(next_id) = scheduler.next(&game.entities) {

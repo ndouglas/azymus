@@ -52,11 +52,17 @@ pub mod action;
 /// Agents are algorithms that permit NPC actors to act within the game world.
 pub mod agent;
 
+/// Bodies are the forms of "living" entities.
+pub mod body;
+
 /// Commands are attempts to perform actions.
 pub mod command;
 
 /// Components are reusable structures for disparate kinds of objects.
 pub mod component;
+
+/// Effects are direct modifications of the game world.
+pub mod effect;
 
 /// Any object that exists within the game.
 pub mod entity;
