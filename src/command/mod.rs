@@ -10,8 +10,16 @@ use game::Game;
 pub enum CompassDirection {
     /// North.
     North,
+    /// Northeast.
+    Northeast,
+    /// Northwest.
+    Northwest,
     /// South.
     South,
+    /// Southeast.
+    Southeast,
+    /// Southwest.
+    Southwest,
     /// East.
     East,
     /// West.
@@ -23,8 +31,12 @@ pub enum CompassDirection {
 pub enum Command {
     /// Walk the entity argument in the specified direction.
     Walk(CompassDirection),
+    /// Attack (melee) something in the specified direction.
+    MeleeAttack(CompassDirection),
     /// Just wait, wasting a turn.
     Wait,
+    /// Stall -- don't waste turn, but don't do anything.
+    Stall,
 }
 
 /// Actions are processes that modify the game world.
@@ -32,38 +44,39 @@ impl Command {
 
     /// Retrieve the action for this command.
     pub fn get_default_action(self) -> Option<Action> {
-        trace!("Entering Command::get_default_action().");
+        trace!("Entering Command::get_default_action() for command {:?}.", self);
         use Command::*;
         match self {
             Walk(compass_direction) => {
                 Some(Action::Walk(compass_direction))
+            },
+            MeleeAttack(compass_direction) => {
+                Some(Action::MeleeAttack(compass_direction))
             }
             Wait => {
                 Some(Action::Wait)
-            }
+            },
+            Stall => {
+                Some(Action::Stall)
+            },
         }
     }
 
     /// List the rules for this command.
     pub fn get_rules(self, id: usize, game: &Game) -> Vec<CommandRule> {
-        trace!("Entering Command::get_rules().");
+        trace!("Entering Command::get_rules() for command {:?}.", self);
         use Command::*;
         use CommandRule::*;
         match self {
             Walk(compass_direction) => {
                 let entity = &game.entities[id];
                 if let Some(position1) = entity.position {
-                    use CompassDirection::*;
-                    let position2 = match compass_direction {
-                        North => position1.to_north(),
-                        South => position1.to_south(),
-                        West => position1.to_west(),
-                        East => position1.to_east(),
-                    };
+                    let position2 = position1.to_direction(compass_direction);
                     vec![
-                        CanWalkFromPositionToPosition(position1, position2),
+                        PositionsAreAdjacent(position1, position2),
                         PositionIsNotOutOfBounds(position2),
                         TileAtPositionDoesNotBlockMovement(position2),
+                        NothingAtPositionIsValidMeleeAttackTarget(position2),
                         NothingAtPositionBlocksMovement(position2),
                     ]
                 } else {
@@ -71,60 +84,111 @@ impl Command {
                         Deny("Entity has no starting position!".to_string()),
                     ]
                 }
-            }
+            },
+            MeleeAttack(compass_direction) => {
+                let entity = &game.entities[id];
+                if let Some(position1) = entity.position {
+                    let position2 = position1.to_direction(compass_direction);
+                    vec![
+                        PositionsAreAdjacent(position1, position2),
+                        PositionIsNotOutOfBounds(position2),
+                        SomethingAtPositionIsValidMeleeAttackTarget(position2),
+                    ]
+                } else {
+                    vec![
+                        Deny("Entity has no starting position!".to_string()),
+                    ]
+                }
+            },
             Wait => {
                 vec![
                     Permit,
                 ]
-            }
+            },
+            Stall => {
+                vec![
+                    Permit,
+                ]
+            },
         }
     }
 
     /// Check the rules for this command.
-    pub fn check_rules(self, id: usize, game: &Game) -> Option<Action> {
-        trace!("Entering Command:check_rules().");
+    pub fn check_rules(self, id: usize, game: &Game) -> CommandRuleResult {
+        trace!("Entering Command::check_rules() for command {:?}.", self);
         use CommandRuleResult::*;
         for rule in self.get_rules(id, game) {
+            debug!("Checking rule {:?} for command {:?}.", rule, self);
+            let rule_name = format!("{:?}", rule);
             match rule.evaluate(id, game) {
                 Permitted => {
-                    return self.get_default_action();
+                    debug!("Rule {} for command {:?} evaluated to Permitted.", rule_name, self);
+                    return Permitted;
                 },
                 Neutral => {
+                    debug!("Rule {} for command {:?} evaluated to Neutral.", rule_name, self);
                     continue;
                 },
                 Denied(string) => {
-                    println!("{}", string);
-                    return None;
+                    debug!("Rule {} for command {:?} evaluated to Denied({}).", rule_name, self, string);
+                    return Denied(string);
                 },
                 Substituted(command) => {
-                    return command.check_rules(id, game);
+                    debug!("Rule {} for command {:?} evaluated to Substituted({:?}).", rule_name, self, command);
+                    return Substituted(command);
                 }
             }
         }
-        return self.get_default_action();
+        return Neutral;
+    }
+
+    /// Retrieve the final action for this command.
+    pub fn get_final_action(self, id: usize, game: &Game) -> Option<Action> {
+        trace!("Entering Command::get_final_action() for command {:?}.", self);
+        use CommandRuleResult::*;
+        match self.check_rules(id, game) {
+            Permitted => {
+                debug!("Returning default action for command {:?}.", self);
+                self.get_default_action()
+            },
+            Neutral => {
+                debug!("Returning default action for command {:?}.", self);
+                self.get_default_action()
+            },
+            Denied(_string) => {
+                if id == game.player_id {
+                    debug!("Returning stall command.");
+                    Some(Action::Stall)
+                } else {
+                    debug!("Returning wait command.");
+                    Some(Action::Wait)
+                }
+            },
+            Substituted(command) => {
+                debug!("Returning substituted command {:?}.", command);
+                command.get_final_action(id, game)
+            },
+        }
     }
 
     /// Get the cost for the anticipated action.
-    pub fn get_cost(self, id: usize, game: &Game) -> i32 {
-        trace!("Entering Command::get_cost().");
-        if let Some(action) = self.check_rules(id, game) {
-            return action.get_cost(id, game);
-        }
-        return Action::Wait.get_cost(id, game);
+    pub fn get_cost(self, id: usize, game: &Game, action: Action) -> i32 {
+        trace!("Entering Command::get_cost() for command {:?}.", self);
+        action.get_cost(id, game)
     }
 
     /// Perform the action.
     pub fn execute(self, id: usize, game: &mut Game) {
-        trace!("Entering Command::execute().");
+        trace!("Entering Command::execute() for command {:?}.", self);
         let mut cost = Action::Wait.get_cost(id, game);
-        if let Some(action) = self.check_rules(id, game) {
+        if let Some(action) = self.get_final_action(id, game) {
             cost = action.get_cost(id, game);
             action.execute(id, game);
-        }
+        };
         if let Some(actor) = game.entities[id].actor.as_mut() {
             actor.time -= cost;
-        }
-        trace!("Exiting Command::execute().");
+        };
+        trace!("Exiting Command::execute() for command {:?}.", self);
     }
 
 }
@@ -160,10 +224,14 @@ pub enum CommandRule {
     PositionIsNotOutOfBounds(Position),
     /// Position does not block movement.
     TileAtPositionDoesNotBlockMovement(Position),
-    /// Can walk from position 1 to position 2.
-    CanWalkFromPositionToPosition(Position, Position),
+    /// The positions are adjacent.
+    PositionsAreAdjacent(Position, Position),
     /// No entity at the location blocks movement.
     NothingAtPositionBlocksMovement(Position),
+    /// No entity at the location can be attacked.
+    NothingAtPositionIsValidMeleeAttackTarget(Position),
+    /// Some entity at the location can be attacked.
+    SomethingAtPositionIsValidMeleeAttackTarget(Position),
 }
 
 
@@ -171,8 +239,8 @@ pub enum CommandRule {
 impl CommandRule {
 
     /// Evaluates the given rule with the specified context.
-    pub fn evaluate(self, _id: usize, game: &Game) -> CommandRuleResult {
-        trace!("Entering CommandRule::evaluate().");
+    pub fn evaluate(self, id: usize, game: &Game) -> CommandRuleResult {
+        trace!("Entering CommandRule::evaluate() with rule {:?}.", self);
         use CommandRuleResult::*;
         use CommandRule::*;
         match self {
@@ -180,32 +248,66 @@ impl CommandRule {
             Deny(string) => Denied(string),
             Substitute(command) => Substituted(command),
             PositionIsNotOutOfBounds(position) => {
+                trace!("Entering rule {:?}.", PositionIsNotOutOfBounds(position));
                 let map = &game.map;
                 if !map.is_in_bounds(position.x, position.y) {
+                    debug!("Position {:?} is not in bounds of the map.", position);
                     return Denied("Requested an out-of-bounds position.".to_string());
                 }
                 Neutral
             },
             TileAtPositionDoesNotBlockMovement(position) => {
+                trace!("Entering rule {:?}.", TileAtPositionDoesNotBlockMovement(position));
                 let map = &game.map;
                 if map.get_tile(position.x, position.y).blocks_movement {
                     return Denied("The destination position contains a tile that blocks movement.".to_string());
                 }
                 Neutral
             },
-            CanWalkFromPositionToPosition(position1, position2) => {
+            PositionsAreAdjacent(position1, position2) => {
+                trace!("Entering rule {:?}.", PositionsAreAdjacent(position1, position2));
                 if (position1.x - position2.x).abs() > 1 || (position1.y - position2.y).abs() > 1 {
-                    return Denied("The destination position is too far from the original position.".to_string());
+                    return Denied("The destination position is not adjacent to the original position.".to_string());
                 }
                 Neutral
             },
             NothingAtPositionBlocksMovement(position) => {
+                trace!("Entering rule {:?}.", NothingAtPositionBlocksMovement(position));
+                let entity = &game.entities[id];
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
                     if occupant.blocks_movement {
-                        return Denied("The destination position contains a tile that blocks movement.".to_string());
+                        debug!("Entity {} ({}, {}) is blocked by entity {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
+                        return Denied("The destination position contains an entity that blocks movement.".to_string());
                     }
                 }
+                debug!("Entity {} ({}, {}) is not blocked by anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                Neutral
+            },
+            SomethingAtPositionIsValidMeleeAttackTarget(position) => {
+                trace!("Entering rule {:?}.", SomethingAtPositionIsValidMeleeAttackTarget(position));
+                let entity = &game.entities[id];
+                let occupants = &game.get_entities(position.x, position.y);
+                for occupant in occupants {
+                    if entity.would_attack(occupant) {
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
+                        return Neutral;
+                    }
+                }
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                Substituted(Command::Walk(entity.position.unwrap().direction_to(&position).unwrap()))
+            },
+            NothingAtPositionIsValidMeleeAttackTarget(position) => {
+                trace!("Entering rule {:?}.", NothingAtPositionIsValidMeleeAttackTarget(position));
+                let entity = &game.entities[id];
+                let occupants = &game.get_entities(position.x, position.y);
+                for occupant in occupants {
+                    if entity.would_attack(occupant) {
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
+                        return Substituted(Command::MeleeAttack(entity.position.unwrap().direction_to(&position).unwrap()));
+                    }
+                }
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
                 Neutral
             },
         }

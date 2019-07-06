@@ -1,5 +1,7 @@
 use tcod::colors::*;
 use tcod::console::*;
+use crate::effect;
+use effect::Effect;
 use crate::entity;
 use entity::Entity;
 use entity::get_player;
@@ -26,6 +28,8 @@ pub struct Game {
     pub map: Map,
     /// All entities in the game.
     pub entities: Vec<Entity>,
+    /// The player entity ID.
+    pub player_id: usize,
     /// The game settings.
     pub settings: Settings,
     /// The current seed.
@@ -55,22 +59,25 @@ pub fn run() {
     let settings = get_settings();
     let mut root_console = get_root_console(&settings);
     let mut map_console = get_map_console(&settings);
-    let scheduler = Scheduler::new(&settings);
+    let scheduler = Scheduler::new();
     let width = map_console.width();
     let height = map_console.height();
     let mut entities = Vec::new();
     let (map, position) = get_map(seed, width, height, 0, &mut entities);
-    let mut player = get_player(&map);
-    player.move_to(position.x, position.y, 0);
+    let player = get_player(&map);
+    let player_position = player.position.unwrap();
+    let next_id = entities.len();
     let mut game = Game {
         input_domain: InputDomain::Explore,
         map: map,
         entities: entities,
+        player_id: next_id,
         settings: get_settings(),
         seed: 0,
     };
-    let player_id: usize = game.entities.len();
+    let player_id = game.player_id;
     game.entities.push(player);
+    Effect::EntityMoves(player_position, position).execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
     while !root_console.window_closed() {
         if let Some(next_id) = scheduler.next(&game.entities) {
@@ -128,5 +135,14 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
         1.0,
         1.0,
     );
+    if let Some(body) = &game.entities[player_id].body {
+        root_console.print_ex(
+            1,
+            root_console.height() - 2,
+            BackgroundFlag::None,
+            TextAlignment::Left,
+            format!("HP: {}/{} ", body.current_hit_points, body.total_hit_points),
+        );
+    }
     root_console.flush();
 }

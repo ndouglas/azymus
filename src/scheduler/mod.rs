@@ -4,27 +4,18 @@ use crate::entity;
 use entity::Entity;
 use crate::game;
 use game::Game;
-use crate::settings;
-use settings::Settings;
 
 /// The scheduler.
 #[derive(Clone, Copy, Debug)]
 pub struct Scheduler {
-    /// The amount of time consumed per player turn.
-    pub time_per_turn: i32,
-    /// The amount of time consumed per tick.
-    pub time_per_tick: i32,
 }
 
 /// The scheduler.
 impl Scheduler {
 
     /// Constructor.
-    pub fn new(settings: &Settings) -> Self {
-        let scheduler_settings = &settings.scheduler;
+    pub fn new() -> Self {
         Scheduler {
-            time_per_turn: scheduler_settings.time_per_turn,
-            time_per_tick: scheduler_settings.time_per_tick,
         }
     }
 
@@ -47,7 +38,7 @@ impl Scheduler {
         let mut highest = 0;
         for (id, entity) in entities.iter().enumerate() {
             if let Some(actor) = entity.actor {
-                if actor.time >= self.time_per_turn && actor.time > highest {
+                if actor.time > highest {
                     highest = actor.time;
                     debug!("Found new winner {} ({}, {}) ({}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, highest);
                     result = Some(id);

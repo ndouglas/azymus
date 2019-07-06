@@ -1,4 +1,3 @@
-use tcod::colors::*;
 use tcod::console::*;
 use crate::component;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
@@ -37,7 +36,7 @@ impl Tile {
     pub fn draw(&self, console: &mut Console) {
         trace!("Entering Tile::draw() for tile {:?}.", self);
         if let Some(position) = self.position {
-            if let Some(renderable) = self.renderable {
+            if let Some(renderable) = &self.renderable {
                 renderable.draw(position.x, position.y, console);
             }
         }
@@ -47,27 +46,7 @@ impl Tile {
     /// Render this tile's renderable with a simple FOV illumination.
     pub fn draw_in_fov(&self, console: &mut Console) {
         trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
-        if let Some(position) = self.position {
-            if let Some(Renderable {
-                background_color: Some(Color {
-                    r,
-                    g,
-                    b,
-                }),
-                ..
-            }) = self.renderable {
-                let renderable = Renderable {
-                    char: self.renderable.unwrap().char,
-                    background_color: Some(Color {
-                        r: b,
-                        g: g,
-                        b: r,
-                    }),
-                    foreground_color: self.renderable.unwrap().foreground_color,
-                };
-                renderable.draw(position.x, position.y, console);
-            }
-        }
+        self.draw(console);
         trace!("Exiting Tile::draw_illuminated().");
     }
 
@@ -75,23 +54,18 @@ impl Tile {
     pub fn draw_lighted(&self, console: &mut Console, ls: &LightSource, lsx: i32, lsy: i32) {
         trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
         if let Some(position) = self.position {
-            if let Some(Renderable {
-                background_color: Some(color),
-                ..
-            }) = self.renderable {
-                let transformed_color = ls.transform_color_at(
-                    color,
-                    lsx,
-                    lsy,
-                    position.x,
-                    position.y
-                );
-                let renderable = Renderable {
-                    char: self.renderable.unwrap().char,
-                    background_color: Some(transformed_color),
-                    foreground_color: self.renderable.unwrap().foreground_color,
-                };
-                renderable.draw(position.x, position.y, console);
+            if let Some(renderable) = &self.renderable {
+                if let Some(color) = renderable.background_color {
+                    let transformed_color = ls.transform_color_at(
+                        color,
+                        lsx,
+                        lsy,
+                        position.x,
+                        position.y
+                    );
+                    let renderable = renderable.with_background_color(Some(transformed_color));
+                    renderable.draw(position.x, position.y, console);
+                }
             }
         }
         trace!("Exiting Tile::draw_illuminated().");

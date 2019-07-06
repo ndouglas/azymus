@@ -2,7 +2,7 @@ use tcod::colors::*;
 use tcod::console::*;
 
 /// Indicates how the given object is rendered on a map.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Renderable {
     /// The character used to render the object.
     pub char: Option<char>,
@@ -38,6 +38,33 @@ impl Renderable {
             console.set_char_background(x, y, color, BackgroundFlag::Set);
         }
         trace!("Exiting Renderable::draw().");
+    }
+
+    /// Return a modified version of this renderable.
+    pub fn with_char(&self, char: Option<char>) -> Renderable {
+        Renderable {
+            char: char,
+            foreground_color: self.foreground_color,
+            background_color: self.background_color,
+        }
+    }
+
+    /// Return a modified version of this renderable.
+    pub fn with_foreground_color(&self, foreground_color: Option<Color>) -> Renderable {
+        Renderable {
+            char: self.char,
+            foreground_color: foreground_color,
+            background_color: self.background_color,
+        }
+    }
+
+    /// Return a modified version of this renderable.
+    pub fn with_background_color(&self, background_color: Option<Color>) -> Renderable {
+        Renderable {
+            char: self.char,
+            foreground_color: self.foreground_color,
+            background_color: background_color,
+        }
     }
 
 }

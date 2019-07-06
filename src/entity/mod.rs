@@ -1,6 +1,9 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
 use tcod::console::*;
 use crate::agent;
 use agent::Algorithm as AgentAlgorithm;
+use crate::body;
+use body::Body;
 use crate::component;
 use component::actor::Actor;
 use component::agent::Agent;
@@ -8,14 +11,22 @@ use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
+use component::species::Species;
 use crate::map;
 use map::Map;
+
 
 /// The entity object that represents anything that functions in the game world.
 #[derive(Clone, Debug)]
 pub struct Entity {
-    /// The naem of this entity.
+    /// A unique (hopefully) ID for this entity.
+    pub id: usize,
+    /// The name of this entity.
     pub name: String,
+    /// The species of this entity.
+    pub species: Option<Species>,
+    /// The body of this entity.
+    pub body: Option<Body>,
     /// Something that gets dispensed time and has an opportunity to act.
     pub actor: Option<Actor>,
     /// Something that can act autonomously.
@@ -32,13 +43,20 @@ pub struct Entity {
     pub blocks_movement: bool,
 }
 
+
 impl Entity {
 
     /// Constructor.
     pub fn new(name: String) -> Self {
         trace!("Entering Entity::new().");
+        static ID: AtomicUsize = AtomicUsize::new(0);
+        let id = ID.load(Ordering::SeqCst);
+        ID.fetch_add(1, Ordering::SeqCst);
         Entity {
+            id: id,
             name: name,
+            species: None,
+            body: None,
             actor: None,
             agent: None,
             field_of_view: None,
@@ -52,8 +70,8 @@ impl Entity {
     /// Render this entity's renderable at the current position.
     pub fn draw(&self, console: &mut Console) {
         trace!("Entering Entity::draw() for entity {:?}.", self);
-        if let Some(position) = self.position {
-            if let Some(renderable) = self.renderable {
+        if let Some(position) = &self.position {
+            if let Some(renderable) = &self.renderable {
                 if let Some(color) = renderable.foreground_color {
                     if let Some(char) = renderable.char {
                         console.set_default_foreground(color);
@@ -68,18 +86,27 @@ impl Entity {
         trace!("Exiting Entity::draw().");
     }
 
-    /// Move to a specific location.
-    pub fn move_to(&mut self, x: i32, y: i32, z: i32) {
-        trace!("Entering Entity::move_to() for entity {:?}.", self);
-        if let Some(position) = self.position.as_mut() {
-            position.x = x;
-            position.y = y;
-            position.z = z;
+    /// If the entity would attack another entity.
+    pub fn would_attack(&self, entity: &Entity) -> bool {
+        match (self.species, entity.species) {
+            (Some(_), Some(_)) => false,
+            (None, None) => false,
+            (Some(_), None) => true,
+            (None, Some(_)) => true,
         }
-        if let Some(fov) = &mut self.field_of_view {
-            fov.update(x, y);
-        }
-        trace!("Exiting Entity::move_to().");
+    }
+
+    /// Nullifies this entity.
+    pub fn nullify(&mut self) {
+        self.species = None;
+        self.body = None;
+        self.actor = None;
+        self.agent = None;
+        self.field_of_view = None;
+        self.light_source = None;
+        self.position = None;
+        self.renderable = None;
+        self.blocks_movement = false;
     }
 
 }
@@ -92,7 +119,11 @@ pub fn get_player(map: &Map) -> Entity {
         time: 0,
         speed: 12,
     });
-    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
+    player.body = Some(Body {
+        total_hit_points: 32767,
+        current_hit_points: 32767,
+    });
+    player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
@@ -108,13 +139,18 @@ pub fn get_orc() -> Entity {
         time: 0,
         speed: 11,
     });
+    orc.body = Some(Body {
+        total_hit_points: 10,
+        current_hit_points: 10,
+    });
     orc.agent = Some(Agent {
-        algorithm: AgentAlgorithm::JustMoveSouth,
+        algorithm: AgentAlgorithm::ApproachPlayer,
     });
     orc.light_source = Some(LightSourceFactory::Torch.create());
     orc.position = Some(Position::default());
     orc.renderable = Some(RenderableFactory::Orc.create());
     orc.blocks_movement = true;
+    orc.species = Some(Species);
     orc
 }
 
@@ -126,12 +162,17 @@ pub fn get_troll() -> Entity {
         time: 0,
         speed: 9,
     });
+    troll.body = Some(Body {
+        total_hit_points: 15,
+        current_hit_points: 15,
+    });
     troll.agent = Some(Agent {
-        algorithm: AgentAlgorithm::JustMoveSouth,
+        algorithm: AgentAlgorithm::ApproachPlayer,
     });
     troll.light_source = Some(LightSourceFactory::Candle.create());
     troll.position = Some(Position::default());
     troll.renderable = Some(RenderableFactory::Troll.create());
     troll.blocks_movement = true;
+    troll.species = Some(Species);
     troll
 }
