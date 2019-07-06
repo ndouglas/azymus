@@ -10,3 +10,5 @@ pub mod light_source;
 pub mod position;
 /// Something that can be rendered on a map.
 pub mod renderable;
+/// Something that is a member of a species.
+pub mod species;
