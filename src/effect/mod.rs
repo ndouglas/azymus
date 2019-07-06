@@ -7,7 +7,7 @@ use game::Game;
 #[derive(Clone, Debug)]
 pub enum Effect {
     /// Move the specified entity from one position to another.
-    EntityMoves(Position, Position),
+    MoveEntity(Position, Position),
     /// Damage the entity by some amount.
     DamageEntityBody(i32),
     /// Kill the entity completely.
@@ -23,9 +23,10 @@ impl Effect {
     pub fn execute(&self, id: usize, game: &mut Game) {
         use Effect::*;
         match self {
-            EntityMoves(position1, position2) => {
+            MoveEntity(position1, position2) => {
                 let mut entity = &mut game.entities[id];
                 debug!("Moving entity {} from ({}, {}) to ({}, {}).", entity.name, position1.x, position1.y, position2.x, position2.y);
+                game.map.move_entity(entity.id, position1.x as usize, position1.y as usize, position2.x as usize, position2.y as usize);
                 entity.position = Some(*position2);
                 UpdateEntityFov.execute(id, game);
             }
@@ -45,6 +46,9 @@ impl Effect {
                 println!("Entering KillEntity() for id {}.", id);
                 let entity = &mut game.entities[id];
                 println!("Killing entity {}!", entity.name);
+                if let Some(position) = entity.position {
+                    game.map.remove_entity(entity.id, position.x as usize, position.y as usize);
+                }
                 entity.nullify();
                 println!("Entering KillEntity() for id {}.", id);
             }

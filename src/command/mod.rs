@@ -250,7 +250,7 @@ impl CommandPrecondition {
             PositionIsNotOutOfBounds(position) => {
                 trace!("Entering precondition {:?}.", PositionIsNotOutOfBounds(position));
                 let map = &game.map;
-                if !map.is_in_bounds(position.x, position.y) {
+                if !map.is_position_in_bounds(&position) {
                     debug!("Position {:?} is not in bounds of the map.", position);
                     return Denied("Requested an out-of-bounds position.".to_string());
                 }
@@ -259,7 +259,7 @@ impl CommandPrecondition {
             TileAtPositionDoesNotBlockMovement(position) => {
                 trace!("Entering precondition {:?}.", TileAtPositionDoesNotBlockMovement(position));
                 let map = &game.map;
-                if map.get_tile(position.x, position.y).blocks_movement {
+                if map.get_tile_at_position(&position).blocks_movement {
                     return Denied("The destination position contains a tile that blocks movement.".to_string());
                 }
                 Neutral

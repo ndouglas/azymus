@@ -40,15 +40,11 @@ impl Game {
 
     /// Get the entities at the specified location.
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
-        let mut result = Vec::new();
-        for entity in &self.entities {
-            if let Some(position) = entity.position {
-                if position.x == x && position.y == y {
-                    result.push(entity);
-                }
-            }
-        }
-        result
+        self.map
+            .get_entities(x as usize, y as usize)
+            .iter()
+            .map(|&x| &self.entities[x] )
+            .collect()
     }
 
 }
@@ -77,7 +73,8 @@ pub fn run() {
     };
     let player_id = game.player_id;
     game.entities.push(player);
-    Effect::EntityMoves(player_position, position).execute(player_id, &mut game);
+    Effect::MoveEntity(player_position, position)
+        .execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
     while !root_console.window_closed() {
         if let Some(next_id) = scheduler.next(&game.entities) {
@@ -129,7 +126,7 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
     blit(
         map_console,
         (0, 0),
-        (map.width, map.height),
+        (map.width as i32, map.height as i32),
         root_console,
         (0, 0),
         1.0,
