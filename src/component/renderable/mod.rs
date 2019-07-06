@@ -117,8 +117,8 @@ impl Factory {
                 background_color: None,
             },
             Floor => Renderable {
-                char: None,
-                foreground_color: None,
+                char: Some('.'),
+                foreground_color: Some(BLACK),
                 background_color: Some(Color {
                     r: 16,
                     g: 16,
@@ -126,8 +126,8 @@ impl Factory {
                 }),
             },
             Wall => Renderable {
-                char: None,
-                foreground_color: None,
+                char: Some('#'),
+                foreground_color: Some(BLACK),
                 background_color: Some(Color {
                     r: 0,
                     g: 0,

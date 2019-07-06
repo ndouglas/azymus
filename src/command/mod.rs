@@ -62,11 +62,11 @@ impl Command {
         }
     }
 
-    /// List the rules for this command.
-    pub fn get_rules(self, id: usize, game: &Game) -> Vec<CommandRule> {
-        trace!("Entering Command::get_rules() for command {:?}.", self);
+    /// List the preconditions for this command.
+    pub fn get_preconditions(self, id: usize, game: &Game) -> Vec<CommandPrecondition> {
+        trace!("Entering Command::get_preconditions() for command {:?}.", self);
         use Command::*;
-        use CommandRule::*;
+        use CommandPrecondition::*;
         match self {
             Walk(compass_direction) => {
                 let entity = &game.entities[id];
@@ -113,28 +113,28 @@ impl Command {
         }
     }
 
-    /// Check the rules for this command.
-    pub fn check_rules(self, id: usize, game: &Game) -> CommandRuleResult {
-        trace!("Entering Command::check_rules() for command {:?}.", self);
-        use CommandRuleResult::*;
-        for rule in self.get_rules(id, game) {
-            debug!("Checking rule {:?} for command {:?}.", rule, self);
-            let rule_name = format!("{:?}", rule);
-            match rule.evaluate(id, game) {
+    /// Check the preconditions for this command.
+    pub fn check_preconditions(self, id: usize, game: &Game) -> CommandPreconditionResult {
+        trace!("Entering Command::check_preconditions() for command {:?}.", self);
+        use CommandPreconditionResult::*;
+        for precondition in self.get_preconditions(id, game) {
+            debug!("Checking precondition {:?} for command {:?}.", precondition, self);
+            let precondition_name = format!("{:?}", precondition);
+            match precondition.evaluate(id, game) {
                 Permitted => {
-                    debug!("Rule {} for command {:?} evaluated to Permitted.", rule_name, self);
+                    debug!("Precondition {} for command {:?} evaluated to Permitted.", precondition_name, self);
                     return Permitted;
                 },
                 Neutral => {
-                    debug!("Rule {} for command {:?} evaluated to Neutral.", rule_name, self);
+                    debug!("Precondition {} for command {:?} evaluated to Neutral.", precondition_name, self);
                     continue;
                 },
                 Denied(string) => {
-                    debug!("Rule {} for command {:?} evaluated to Denied({}).", rule_name, self, string);
+                    debug!("Precondition {} for command {:?} evaluated to Denied({}).", precondition_name, self, string);
                     return Denied(string);
                 },
                 Substituted(command) => {
-                    debug!("Rule {} for command {:?} evaluated to Substituted({:?}).", rule_name, self, command);
+                    debug!("Precondition {} for command {:?} evaluated to Substituted({:?}).", precondition_name, self, command);
                     return Substituted(command);
                 }
             }
@@ -145,8 +145,8 @@ impl Command {
     /// Retrieve the final action for this command.
     pub fn get_final_action(self, id: usize, game: &Game) -> Option<Action> {
         trace!("Entering Command::get_final_action() for command {:?}.", self);
-        use CommandRuleResult::*;
-        match self.check_rules(id, game) {
+        use CommandPreconditionResult::*;
+        match self.check_preconditions(id, game) {
             Permitted => {
                 debug!("Returning default action for command {:?}.", self);
                 self.get_default_action()
@@ -193,12 +193,12 @@ impl Command {
 
 }
 
-/// Different ways in which a rule might affect the intended action.
+/// Different ways in which a precondition might affect the intended action.
 #[derive(Clone, Debug)]
-pub enum CommandRuleResult {
-    /// The rule permitted this action to proceed immediately without further checks.  (E.g. in god mode)
+pub enum CommandPreconditionResult {
+    /// The precondition permitted this action to proceed immediately without further checks.  (E.g. in god mode)
     Permitted,
-    /// The rule gave no opinion either way on this attempt.
+    /// The precondition gave no opinion either way on this attempt.
     /// This should be the most common result.
     Neutral,
     /// The attempted command failed; a message was provided.
@@ -208,12 +208,12 @@ pub enum CommandRuleResult {
     Substituted(Command),
 }
 
-/// Rules that govern the translation of commands into actions.
+/// Preconditions that govern the translation of commands into actions.
 ///
-/// A Command Rule takes the Command and its context and indicates
+/// A Command Precondition takes the Command and its context and indicates
 /// whether it is permissible for the command to continue.
 #[derive(Clone, Debug)]
-pub enum CommandRule {
+pub enum CommandPrecondition {
     /// Permits the command.
     Permit,
     /// Substitutes a command.
@@ -235,20 +235,20 @@ pub enum CommandRule {
 }
 
 
-/// Rules that govern the translation of commands into actions.
-impl CommandRule {
+/// Preconditions that govern the translation of commands into actions.
+impl CommandPrecondition {
 
-    /// Evaluates the given rule with the specified context.
-    pub fn evaluate(self, id: usize, game: &Game) -> CommandRuleResult {
-        trace!("Entering CommandRule::evaluate() with rule {:?}.", self);
-        use CommandRuleResult::*;
-        use CommandRule::*;
+    /// Evaluates the given precondition with the specified context.
+    pub fn evaluate(self, id: usize, game: &Game) -> CommandPreconditionResult {
+        trace!("Entering CommandPrecondition::evaluate() with precondition {:?}.", self);
+        use CommandPreconditionResult::*;
+        use CommandPrecondition::*;
         match self {
             Permit => Permitted,
             Deny(string) => Denied(string),
             Substitute(command) => Substituted(command),
             PositionIsNotOutOfBounds(position) => {
-                trace!("Entering rule {:?}.", PositionIsNotOutOfBounds(position));
+                trace!("Entering precondition {:?}.", PositionIsNotOutOfBounds(position));
                 let map = &game.map;
                 if !map.is_in_bounds(position.x, position.y) {
                     debug!("Position {:?} is not in bounds of the map.", position);
@@ -257,7 +257,7 @@ impl CommandRule {
                 Neutral
             },
             TileAtPositionDoesNotBlockMovement(position) => {
-                trace!("Entering rule {:?}.", TileAtPositionDoesNotBlockMovement(position));
+                trace!("Entering precondition {:?}.", TileAtPositionDoesNotBlockMovement(position));
                 let map = &game.map;
                 if map.get_tile(position.x, position.y).blocks_movement {
                     return Denied("The destination position contains a tile that blocks movement.".to_string());
@@ -265,14 +265,14 @@ impl CommandRule {
                 Neutral
             },
             PositionsAreAdjacent(position1, position2) => {
-                trace!("Entering rule {:?}.", PositionsAreAdjacent(position1, position2));
+                trace!("Entering precondition {:?}.", PositionsAreAdjacent(position1, position2));
                 if (position1.x - position2.x).abs() > 1 || (position1.y - position2.y).abs() > 1 {
                     return Denied("The destination position is not adjacent to the original position.".to_string());
                 }
                 Neutral
             },
             NothingAtPositionBlocksMovement(position) => {
-                trace!("Entering rule {:?}.", NothingAtPositionBlocksMovement(position));
+                trace!("Entering precondition {:?}.", NothingAtPositionBlocksMovement(position));
                 let entity = &game.entities[id];
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
@@ -285,7 +285,7 @@ impl CommandRule {
                 Neutral
             },
             SomethingAtPositionIsValidMeleeAttackTarget(position) => {
-                trace!("Entering rule {:?}.", SomethingAtPositionIsValidMeleeAttackTarget(position));
+                trace!("Entering precondition {:?}.", SomethingAtPositionIsValidMeleeAttackTarget(position));
                 let entity = &game.entities[id];
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
@@ -298,7 +298,7 @@ impl CommandRule {
                 Substituted(Command::Walk(entity.position.unwrap().direction_to(&position).unwrap()))
             },
             NothingAtPositionIsValidMeleeAttackTarget(position) => {
-                trace!("Entering rule {:?}.", NothingAtPositionIsValidMeleeAttackTarget(position));
+                trace!("Entering precondition {:?}.", NothingAtPositionIsValidMeleeAttackTarget(position));
                 let entity = &game.entities[id];
                 let occupants = &game.get_entities(position.x, position.y);
                 for occupant in occupants {
