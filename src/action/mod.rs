@@ -1,3 +1,5 @@
+use crate::combat;
+use combat::attack;
 use crate::command;
 use command::CompassDirection;
 use crate::effect;
@@ -42,17 +44,20 @@ impl Action {
         match self {
             Walk(compass_direction) => {
                 let entity = &game.entities[id];
-                let position1 = entity.position.unwrap();
-                let position2 = position1.to_direction(*compass_direction);
-                Effect::EntityMoves(position1, position2).execute(id, game);
+                if let Some(position1) = &entity.position {
+                    let position2 = position1.to_direction(*compass_direction);
+                    Effect::EntityMoves(position1.clone(), position2).execute(id, game);
+                }
             },
             MeleeAttack(compass_direction) => {
                 let entity = &game.entities[id];
-                let entity_position = entity.position.unwrap();
-                let target_position = entity_position.to_direction(*compass_direction);
-                debug!("Entity {} elected to attack ({:?}).", entity.name, compass_direction);
-                if let Some(target_entity) = &game.get_entities(target_position.x, target_position.y).iter().filter(|x| x.body.is_some()).nth(0) {
-                    println!("Entity {} ({}, {}) attacks target entity {} ({}, {})!", entity.name, entity_position.x, entity_position.y, target_entity.name, target_position.x, target_position.y);
+                if let Some(entity_position) = &entity.position {
+                    let target_position = entity_position.to_direction(*compass_direction);
+                    debug!("Entity {} elected to attack ({:?}).", entity.name, compass_direction);
+                    if let Some(target_entity) = &game.get_entities(target_position.x, target_position.y).iter().filter(|x| x.body.is_some()).nth(0) {
+                        println!("Entity {} ({}, {}) attacks target entity {} ({}, {})!", entity.name, entity_position.x, entity_position.y, target_entity.name, target_position.x, target_position.y);
+                        attack(id, target_entity.id, game);
+                    }
                 }
             },
             Wait => {

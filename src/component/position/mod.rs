@@ -113,7 +113,7 @@ impl Position {
     }
 
     /// Returns the direction to a given position.
-    pub fn direction_to(&self, position: Position) -> Option<CompassDirection> {
+    pub fn direction_to(&self, position: &Position) -> Option<CompassDirection> {
         trace!("Entering Position::direction_to().");
         let x_diff = position.x - self.x;
         let y_diff = position.y - self.y;
@@ -132,7 +132,7 @@ impl Position {
     }
 
     /// Returns the distance to another object.
-    pub fn distance_to(&self, position: Position) -> f32 {
+    pub fn distance_to(&self, position: &Position) -> f32 {
         (((position.x - self.x).pow(2) + (position.y - self.y).pow(2)) as f32).sqrt()
     }
 

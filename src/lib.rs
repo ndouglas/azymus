@@ -55,6 +55,9 @@ pub mod agent;
 /// Bodies are the forms of "living" entities.
 pub mod body;
 
+/// Combat manages any sort of attack.
+pub mod combat;
+
 /// Commands are attempts to perform actions.
 pub mod command;
 
@@ -66,6 +69,9 @@ pub mod effect;
 
 /// Any object that exists within the game.
 pub mod entity;
+
+/// Events that occur and are significant enough for a nearby object to react.
+pub mod event;
 
 /// The game structure, run loop, etc.
 pub mod game;

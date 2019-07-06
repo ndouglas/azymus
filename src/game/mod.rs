@@ -135,5 +135,14 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
         1.0,
         1.0,
     );
+    if let Some(body) = &game.entities[player_id].body {
+        root_console.print_ex(
+            1,
+            root_console.height() - 2,
+            BackgroundFlag::None,
+            TextAlignment::Left,
+            format!("HP: {}/{} ", body.current_hit_points, body.total_hit_points),
+        );
+    }
     root_console.flush();
 }

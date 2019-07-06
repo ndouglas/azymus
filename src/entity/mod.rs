@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
 use tcod::console::*;
 use crate::agent;
 use agent::Algorithm as AgentAlgorithm;
@@ -14,10 +15,13 @@ use component::species::Species;
 use crate::map;
 use map::Map;
 
+
 /// The entity object that represents anything that functions in the game world.
 #[derive(Clone, Debug)]
 pub struct Entity {
-    /// The naem of this entity.
+    /// A unique (hopefully) ID for this entity.
+    pub id: usize,
+    /// The name of this entity.
     pub name: String,
     /// The species of this entity.
     pub species: Option<Species>,
@@ -39,12 +43,17 @@ pub struct Entity {
     pub blocks_movement: bool,
 }
 
+
 impl Entity {
 
     /// Constructor.
     pub fn new(name: String) -> Self {
         trace!("Entering Entity::new().");
+        static ID: AtomicUsize = AtomicUsize::new(0);
+        let id = ID.load(Ordering::SeqCst);
+        ID.fetch_add(1, Ordering::SeqCst);
         Entity {
+            id: id,
             name: name,
             species: None,
             body: None,
@@ -61,8 +70,8 @@ impl Entity {
     /// Render this entity's renderable at the current position.
     pub fn draw(&self, console: &mut Console) {
         trace!("Entering Entity::draw() for entity {:?}.", self);
-        if let Some(position) = self.position {
-            if let Some(renderable) = self.renderable {
+        if let Some(position) = &self.position {
+            if let Some(renderable) = &self.renderable {
                 if let Some(color) = renderable.foreground_color {
                     if let Some(char) = renderable.char {
                         console.set_default_foreground(color);
@@ -85,6 +94,19 @@ impl Entity {
             (Some(_), None) => true,
             (None, Some(_)) => true,
         }
+    }
+
+    /// Nullifies this entity.
+    pub fn nullify(&mut self) {
+        self.species = None;
+        self.body = None;
+        self.actor = None;
+        self.agent = None;
+        self.field_of_view = None;
+        self.light_source = None;
+        self.position = None;
+        self.renderable = None;
+        self.blocks_movement = false;
     }
 
 }

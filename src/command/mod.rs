@@ -295,7 +295,7 @@ impl CommandRule {
                     }
                 }
                 debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
-                Substituted(Command::Walk(entity.position.unwrap().direction_to(position).unwrap()))
+                Substituted(Command::Walk(entity.position.unwrap().direction_to(&position).unwrap()))
             },
             NothingAtPositionIsValidMeleeAttackTarget(position) => {
                 trace!("Entering rule {:?}.", NothingAtPositionIsValidMeleeAttackTarget(position));
@@ -304,7 +304,7 @@ impl CommandRule {
                 for occupant in occupants {
                     if entity.would_attack(occupant) {
                         debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
-                        return Substituted(Command::MeleeAttack(entity.position.unwrap().direction_to(position).unwrap()));
+                        return Substituted(Command::MeleeAttack(entity.position.unwrap().direction_to(&position).unwrap()));
                     }
                 }
                 debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
