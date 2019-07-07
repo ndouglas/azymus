@@ -1,3 +1,4 @@
+use tcod::map::Map as FovMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tcod::console::*;
 use crate::agent;
@@ -102,30 +103,12 @@ impl Entity {
         }
     }
 
-    /// Nullifies this entity.
-    pub fn nullify(&mut self) {
-        self.species = None;
-        self.body = None;
-        self.actor = None;
-        self.agent = None;
-        self.field_of_view = None;
-        self.light_source = None;
-        self.position = None;
-        self.renderable = None;
-        self.blocks_movement = false;
-    }
-
-    /// Nullifies this entity.
-    pub fn corpsify(&mut self) {
-        self.species = None;
-        self.body = None;
-        self.actor = None;
-        self.agent = None;
-        self.field_of_view = None;
-        if let Some(renderable) = self.renderable.as_mut() {
-            renderable.char = Some('%');
+    /// If this entity is in the FOV.
+    pub fn is_in_fov(&self, fov: &FovMap) -> bool {
+        if let Some(position) = &self.position {
+            return fov.is_in_fov(position.x, position.y);
         }
-        self.blocks_movement = false;
+        false
     }
 
 }

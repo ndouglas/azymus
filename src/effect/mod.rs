@@ -46,10 +46,15 @@ impl Effect {
                 println!("Entering KillEntity() for id {}.", id);
                 let entity = &mut game.entities[id];
                 println!("Killing entity {}!", entity.name);
-                if let Some(position) = entity.position {
-                    game.map.remove_entity(entity.id, position.x as usize, position.y as usize);
+                entity.species = None;
+                entity.body = None;
+                entity.actor = None;
+                entity.agent = None;
+                entity.field_of_view = None;
+                if let Some(renderable) = entity.renderable.as_mut() {
+                    renderable.char = Some('%');
                 }
-                entity.corpsify();
+                entity.blocks_movement = false;
                 println!("Entering KillEntity() for id {}.", id);
             }
             UpdateEntityFov => {

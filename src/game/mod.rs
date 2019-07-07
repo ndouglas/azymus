@@ -111,16 +111,13 @@ fn render_all(root_console: &mut Root, map_console: &mut Offscreen, player_id: u
             map.draw_fov(map_console, fov);
         }
         let fov_map = fov.map.lock().unwrap();
-        for object in &game.entities {
-            if let Some(position) = object.position {
-                if fov_map.is_in_fov(position.x, position.y) {
-                    object.draw(map_console);
-                }
-            }
-        }
-    } else {
-        for object in &game.entities {
-            object.draw(map_console);
+        let entities_to_draw: Vec<_> = game.entities
+            .iter()
+            .filter(|e| e.position.is_some())
+            .filter(|e| e.is_in_fov(&fov_map))
+            .collect();
+        for entity in entities_to_draw {
+            entity.draw(map_console);
         }
     }
     blit(
