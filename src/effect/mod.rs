@@ -49,7 +49,7 @@ impl Effect {
                 if let Some(position) = entity.position {
                     game.map.remove_entity(entity.id, position.x as usize, position.y as usize);
                 }
-                entity.nullify();
+                entity.corpsify();
                 println!("Entering KillEntity() for id {}.", id);
             }
             UpdateEntityFov => {

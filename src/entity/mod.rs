@@ -115,6 +115,19 @@ impl Entity {
         self.blocks_movement = false;
     }
 
+    /// Nullifies this entity.
+    pub fn corpsify(&mut self) {
+        self.species = None;
+        self.body = None;
+        self.actor = None;
+        self.agent = None;
+        self.field_of_view = None;
+        if let Some(renderable) = self.renderable.as_mut() {
+            renderable.char = Some('%');
+        }
+        self.blocks_movement = false;
+    }
+
 }
 
 /// Get a "player" entity.
