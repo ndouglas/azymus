@@ -68,7 +68,6 @@ pub fn get_settings() -> Settings {
     settings
 }
 
-
 /// Allows us to show this object in tests, etc.
 impl fmt::Debug for Settings {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

@@ -23,6 +23,10 @@
 
 /// EXTERNAL CRATES
 
+/// A rustic FFI for BearLibTerminal;
+#[link(name = "lib/libBearLibTerminal.dylib")]
+extern crate bear_lib_terminal;
+
 /// A Rust library providing a lightweight logging facade.
 #[macro_use]
 extern crate log;
