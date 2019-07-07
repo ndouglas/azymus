@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 use tcod::console::*;
 use crate::component;
 use component::field_of_view::FieldOfView;
@@ -17,7 +18,6 @@ pub mod generator;
 pub type MapType = Vec<Vec<Tile>>;
 
 /// The map object.
-#[derive(Clone, Debug)]
 pub struct Map {
     /// The actual inner map.
     map: MapType,
@@ -155,6 +155,12 @@ impl Map {
         self.spatial_hash.get(&(x, y)).unwrap().clone()
     }
 
+}
+
+impl fmt::Debug for Map {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Map")
+    }
 }
 
 /// Get a new map.

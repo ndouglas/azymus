@@ -20,7 +20,7 @@ use ui::map_console::get_map_console;
 use ui::root_console::get_root_console;
 
 /// The game object.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Game {
     /// The input domain.
     pub input_domain: InputDomain,
