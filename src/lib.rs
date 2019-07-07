@@ -85,6 +85,9 @@ pub mod scheduler;
 /// A settings system to allow some configuration.
 pub mod settings;
 
+/// A species of which an entity can be a part.
+pub mod species;
+
 /// The tiles that form the map.
 pub mod tile;
 

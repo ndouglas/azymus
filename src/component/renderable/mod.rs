@@ -88,6 +88,8 @@ pub enum Factory {
     Orc,
     /// A troll.
     Troll,
+    /// A human,
+    Human,
     /// A floor (dark).
     Floor,
     /// A wall (dark).
@@ -114,6 +116,11 @@ impl Factory {
             Troll => Renderable {
                 char: Some('T'),
                 foreground_color: Some(GREEN),
+                background_color: None,
+            },
+            Human => Renderable {
+                char: Some('h'),
+                foreground_color: Some(BLUE),
                 background_color: None,
             },
             Floor => Renderable {

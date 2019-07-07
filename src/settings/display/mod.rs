@@ -5,7 +5,7 @@ const DEFAULT_WIDTH: i32 = 160;
 /// Default screen height in characters.
 const DEFAULT_HEIGHT: i32 = 100;
 /// Default maximum frames rendered per second.
-const DEFAULT_FPS_LIMIT: i32 = 60;
+const DEFAULT_FPS_LIMIT: i32 = 30;
 /// Default font file.
 static DEFAULT_FONT_FILE: &str = "arial10x10.png";
 

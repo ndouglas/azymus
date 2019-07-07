@@ -12,7 +12,7 @@ pub mod map;
 use map::Map;
 
 /// The filename.
-pub const SETTINGS_FILENAME: &str = "settings.json";
+pub const SETTINGS_FILENAME: &str = "resources/azymus/settings/settings.json";
 
 /// Settings.
 #[derive(Clone, Deserialize, Serialize)]

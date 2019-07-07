@@ -1,20 +1,19 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tcod::console::*;
 use crate::agent;
-use agent::Algorithm as AgentAlgorithm;
+use agent::Agent;
 use crate::body;
 use body::Body;
 use crate::component;
 use component::actor::Actor;
-use component::agent::Agent;
 use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
-use component::species::Species;
 use crate::map;
 use map::Map;
-
+use crate::species;
+use species::Species;
 
 /// The entity object that represents anything that functions in the game world.
 #[derive(Clone, Debug)]
@@ -88,11 +87,18 @@ impl Entity {
 
     /// If the entity would attack another entity.
     pub fn would_attack(&self, entity: &Entity) -> bool {
+        use Species::*;
         match (self.species, entity.species) {
-            (Some(_), Some(_)) => false,
-            (None, None) => false,
-            (Some(_), None) => true,
-            (None, Some(_)) => true,
+            (Some(Orc), Some(Troll)) => false,
+            (Some(Troll), Some(Orc)) => false,
+            (Some(Human), Some(Orc)) => true,
+            (Some(Human), Some(Troll)) => true,
+            (Some(Orc), Some(Human)) => true,
+            (Some(Troll), Some(Human)) => true,
+            (Some(Troll), Some(Troll)) => false,
+            (Some(Orc), Some(Orc)) => false,
+            (Some(Human), Some(Human)) => false,
+            (_, _) => false,
         }
     }
 
@@ -128,51 +134,6 @@ pub fn get_player(map: &Map) -> Entity {
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
     player.blocks_movement = true;
+    player.species = Some(Species::Human);
     player
-}
-
-/// Get an orc entity.
-pub fn get_orc() -> Entity {
-    trace!("Entering get_orc().");
-    let mut orc = Entity::new("Orc".to_string());
-    orc.actor = Some(Actor {
-        time: 0,
-        speed: 11,
-    });
-    orc.body = Some(Body {
-        total_hit_points: 10,
-        current_hit_points: 10,
-    });
-    orc.agent = Some(Agent {
-        algorithm: AgentAlgorithm::ApproachPlayer,
-    });
-    orc.light_source = Some(LightSourceFactory::Torch.create());
-    orc.position = Some(Position::default());
-    orc.renderable = Some(RenderableFactory::Orc.create());
-    orc.blocks_movement = true;
-    orc.species = Some(Species);
-    orc
-}
-
-/// Get a troll entity.
-pub fn get_troll() -> Entity {
-    trace!("Entering get_troll().");
-    let mut troll = Entity::new("Troll".to_string());
-    troll.actor = Some(Actor {
-        time: 0,
-        speed: 9,
-    });
-    troll.body = Some(Body {
-        total_hit_points: 15,
-        current_hit_points: 15,
-    });
-    troll.agent = Some(Agent {
-        algorithm: AgentAlgorithm::ApproachPlayer,
-    });
-    troll.light_source = Some(LightSourceFactory::Candle.create());
-    troll.position = Some(Position::default());
-    troll.renderable = Some(RenderableFactory::Troll.create());
-    troll.blocks_movement = true;
-    troll.species = Some(Species);
-    troll
 }

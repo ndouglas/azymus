@@ -4,8 +4,8 @@ use crate::component;
 use component::position::Position;
 use crate::entity;
 use entity::Entity;
-use entity::get_orc;
-use entity::get_troll;
+use crate::species;
+use species::Factory as SpeciesFactory;
 use crate::tile;
 use tile::Tile;
 use super::super::MapGeneratorReturnType;
@@ -82,7 +82,7 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
         let monster = if rng.gen_range(0, 10) < 8 {
-            let mut orc = get_orc();
+            let mut orc = SpeciesFactory::Orc.create();
             orc.position = Some(Position {
                 w: seed,
                 x: x,
@@ -91,7 +91,7 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
             });
             orc
         } else {
-            let mut troll = get_troll();
+            let mut troll = SpeciesFactory::Troll.create();
             troll.position = Some(Position {
                 w: seed,
                 x: x,
