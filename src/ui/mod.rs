@@ -1,6 +1,7 @@
 use std::fmt;
-use tcod::colors::*;
-use tcod::console::*;
+use bear_lib_terminal::terminal as blt;
+use blt::config::font as blt_font;
+use bear_lib_terminal::geometry::Size;
 use crate::game;
 use game::Game;
 use crate::settings;
@@ -10,19 +11,13 @@ use settings::Settings;
 pub mod input;
 /// The map console.
 pub mod map_console;
-use map_console::get_map_console;
 /// The root console.
 pub mod root_console;
-use root_console::get_root_console;
 
 /// The User Interface abstraction.
 pub struct Ui {
     /// The settings object.
     pub settings: Settings,
-    /// The root console.
-    pub root_console: Root,
-    /// The map console.
-    pub map_console: Offscreen,
 }
 
 /// The User Interface abstraction.
@@ -32,18 +27,44 @@ impl Ui {
     pub fn new(settings: &Settings) -> Self {
         Ui {
             settings: settings.clone(),
-            root_console: get_root_console(&settings),
-            map_console: get_map_console(&settings),
         }
+    }
+
+    /// Open the window.
+    pub fn open(&self) {
+        blt::open("Azymus", self.settings.display.width as u32, self.settings.display.height as u32);
+        blt::set(blt_font::true_type(blt_font::Origin::Root, "resources/azymus/fonts/symbola.ttf", Size::new(0, 10)));
+    }
+
+    /// Close the window.
+    pub fn close(&self) {
+        blt::close();
+    }
+
+    /// Refresh the window.
+    pub fn refresh(&self) {
+        blt::refresh();
     }
 
     /// If the window is closed.
     pub fn is_closed(&self) -> bool {
-        return self.root_console.window_closed();
+        return false;
     }
 
     /// Render a frame.
     pub fn render(&mut self, player_id: usize, game: &Game) {
+        blt::clear(None);
+        let map = &game.map;
+        let player = &game.entities[player_id];
+        if let Some(fov) = &player.field_of_view {
+            map.draw(&self, fov, game);
+        }
+        self.refresh();
+
+
+
+
+        /*
         self.map_console.set_default_foreground(WHITE);
         self.map_console.clear();
         let map = &game.map;
@@ -83,11 +104,12 @@ impl Ui {
             );
         }
         self.root_console.flush();
+        */
     }
 
     /// Handle input.
     pub fn handle_input(&mut self, player_id: usize, game: &mut Game) -> bool {
-        input::handle_keys(&mut self.root_console, player_id, game)
+        input::handle_keys(player_id, game)
     }
 
 }

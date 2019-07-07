@@ -51,8 +51,10 @@ impl Effect {
                 entity.actor = None;
                 entity.agent = None;
                 entity.field_of_view = None;
+                entity.light_source = None;
                 if let Some(renderable) = entity.renderable.as_mut() {
                     renderable.char = Some('%');
+                    renderable.background_color = None;
                 }
                 entity.blocks_movement = false;
                 println!("Entering KillEntity() for id {}.", id);

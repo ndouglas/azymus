@@ -1,18 +1,32 @@
 use std::collections::{HashMap, HashSet};
+use std::cmp;
 use std::fmt;
-use tcod::console::*;
+use bear_lib_terminal::terminal as blt;
+use ::ntree::NTree;
 use crate::component;
 use component::field_of_view::FieldOfView;
 use component::position::Position;
-use component::light_source::LightSource;
+use component::renderable::Renderable;
 use crate::entity;
 use entity::Entity;
+use crate::game;
+use game::Game;
 use crate::tile;
 use tile::Tile;
 use tcod::map::Map as FovMap;
+use crate::ui;
+use ui::Ui;
 
 /// The map generators.
 pub mod generator;
+
+/// The quad-tree for spatial trees.
+pub mod quadtree;
+use quadtree::QuadTreeRegion;
+use quadtree::QuadTreePoint;
+
+/// Our quad-tree type.
+pub type QuadTreeType = NTree<QuadTreeRegion, QuadTreePoint>;
 
 /// The map type.
 pub type MapType = Vec<Vec<Tile>>;
@@ -50,17 +64,6 @@ impl Map {
         }
     }
 
-    /// Render this entity.
-    pub fn draw(&self, console: &mut Console) {
-        trace!("Entering Map::draw().");
-        for y in 0..console.height() {
-            for x in 0..console.width() {
-                self.map[x as usize][y as usize].draw(console);
-            }
-        }
-        trace!("Exiting Map::draw().");
-    }
-
     /// Initialize a field-of-view object.
     pub fn get_fov(&self) -> FovMap {
         let height = self.height;
@@ -86,39 +89,145 @@ impl Map {
         (x < self.width - 1 && y < self.height - 1)
     }
 
-    /// Render this entity, taking into account the provided field of view.
-    pub fn draw_fov(&self, console: &mut Console, fov: &FieldOfView) {
+    /// Get a light source quadtree for the map.
+    pub fn get_ls_tree(&self, game: &Game) -> QuadTreeType {
+        let mut ls_tree: QuadTreeType = NTree::new(QuadTreeRegion {
+            x: 0,
+            y: 0,
+            width: self.width as i32,
+            height: self.height as i32,
+        }, 4);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let ids = self.get_entities(x, y)
+                    .iter()
+                    .filter(|&id| game.entities[*id].light_source.is_some())
+                    .map(|&id| id)
+                    .collect::<Vec<usize>>();
+                for id in ids {
+                    ls_tree.insert(QuadTreePoint {
+                        id: id,
+                        x: x as i32,
+                        y: y as i32,
+                    });
+                }
+            }
+        }
+        ls_tree
+    }
+
+    /// Render this map, taking into account the provided field of view.
+    pub fn draw(&self, _ui: &Ui, fov: &FieldOfView, game: &Game) {
         trace!("Entering Map::draw().");
-        let fov_map = fov.map.lock().unwrap();
-        for y in 0..console.height() {
-            for x in 0..console.width() {
-                if fov_map.is_in_fov(x, y) {
-                    self.map[x as usize][y as usize].draw_in_fov(console);
-                } else if self.is_in_bounds(x as usize, y as usize) && fov.explored_map[x as usize][y as usize] {
-                    self.map[x as usize][y as usize].draw(console);
+        let fov_map = fov.map.lock().unwrap().clone();
+        let ls_tree = self.get_ls_tree(game);
+        let radius: i32 = 12;
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if fov_map.is_in_fov(x as i32, y as i32) {
+                    let region = QuadTreeRegion {
+                        x: cmp::max(x as i32 - radius, 0),
+                        y: cmp::max(y as i32 - radius, 0),
+                        width: cmp::min(x  as i32 + radius, self.width as i32 - 1),
+                        height: cmp::min(y as i32 + radius, self.height as i32 - 1),
+                    };
+                    let ls_vector = ls_tree
+                        .range_query(&region)
+                        .map(|x| x.id)
+                        .collect::<Vec<usize>>();
+                    //println!("({}, {}) -> {:?}", x, y, ls_vector);
+                    if let Some(renderable) = &self.map[x][y].renderable {
+                        self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                    }
+                    for id in self.get_entities(x, y)
+                        .iter()
+                        .collect::<Vec<&usize>>() {
+                        if let Some(renderable) = &game.entities[*id].renderable {
+                            self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                        }
+                    }
+                } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
+                    let ls_vector = vec![];
+                    if let Some(renderable) = &self.map[x][y].renderable {
+                        self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                    }
                 }
             }
         }
         trace!("Exiting Map::draw().");
     }
 
-    /// Render this entity, taking into account the provided field of view.
-    pub fn draw_fov_ls(&self, console: &mut Console, fov: &FieldOfView, ls: &LightSource) {
-        trace!("Entering Map::draw().");
-        let fov_x = fov.x;
-        let fov_y = fov.y;
-        let fov_map = fov.map.lock().unwrap();
-        for y in 0..console.height() {
-            for x in 0..console.width() {
-                if fov_map.is_in_fov(x, y) {
-                    self.map[x as usize][y as usize].draw_lighted(console, ls, fov_x, fov_y);
-                } else if self.is_in_bounds(x as usize, y as usize) && fov.explored_map[x as usize][y as usize] {
-                    self.map[x as usize][y as usize].draw(console);
+    /// Render this object at the specified position.
+    pub fn draw_renderable(&self, x: usize, y: usize, renderable: &Renderable, game: &Game, ls_vector: &Vec<usize>) {
+        trace!("Entering Renderable::draw().");
+        use bear_lib_terminal::geometry::Point;
+        let point = Point::new(x as i32, y as i32);
+        let mut bg_color = blt::pick_background_color(point);
+        let mut fg_color = blt::pick_foreground_color(point, 0);
+        let mut the_char = ' ';
+        if let Some(color) = renderable.background_color {
+            bg_color = color;
+        }
+        if let Some(color) = renderable.foreground_color {
+            fg_color = color;
+        }
+        if let Some(char) = renderable.char {
+            the_char = char;
+        }
+        for id in ls_vector {
+            let entity = &game.entities[*id];
+            if let Some(position) = entity.position {
+                if let Some(light_source) = entity.light_source {
+//                    if let Some(fov) = &entity.field_of_view {
+//                        let fov_map = fov.map.lock().unwrap();
+//                        if fov_map.is_in_fov(x as i32, y as i32) {
+                            bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
+//                        }
+//                    }
                 }
             }
         }
-        trace!("Exiting Map::draw().");
+        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
+        trace!("Exiting Renderable::draw().");
     }
+
+    /*
+    /// Render this tile's renderable with a simple FOV illumination.
+    pub fn draw(&self, _ui: &Ui, _fov: &FieldOfView) {
+        trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
+        if let Some(position) = self.position {
+            if let Some(renderable) = &self.renderable {
+                if let Some(color) = renderable.background_color {
+                    let renderable = renderable.with_background_color(Some(color));
+                    renderable.draw(position.x, position.y);
+                }
+            }
+        }
+
+        trace!("Exiting Tile::draw_illuminated().");
+    }
+
+    /// Render this tile's renderable with a source of illumination.
+    pub fn draw_lighted(&self, _console: &mut Console, ls: &LightSource, lsx: i32, lsy: i32) {
+        trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
+        if let Some(position) = self.position {
+            if let Some(renderable) = &self.renderable {
+                if let Some(color) = renderable.background_color {
+                    let transformed_color = ls.transform_color_at(
+                        color,
+                        lsx,
+                        lsy,
+                        position.x,
+                        position.y
+                    );
+                    let renderable = renderable.with_background_color(Some(transformed_color));
+                    renderable.draw(position.x, position.y);
+                }
+            }
+        }
+        trace!("Exiting Tile::draw_illuminated().");
+    }
+    */
 
     /// Indicates whether a pair of coordinates are in bounds of this map.
     pub fn get_tile(&self, x: usize, y: usize) -> &Tile {

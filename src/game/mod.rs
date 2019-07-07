@@ -50,6 +50,7 @@ pub fn run() {
     let seed: i64 = 0;
     let settings = get_settings();
     let mut ui = Ui::new(&settings);
+    ui.open();
     let scheduler = Scheduler::new();
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
@@ -71,6 +72,7 @@ pub fn run() {
     Effect::MoveEntity(player_position, position)
         .execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
+    ui.refresh();
     while !ui.is_closed() {
         if let Some(next_id) = scheduler.next(&game.entities) {
             if next_id == player_id {
@@ -78,6 +80,7 @@ pub fn run() {
                 debug!("Player ID = Next ID.");
                 let exit = ui.handle_input(player_id, &mut game);
                 if exit {
+                    ui.close();
                     return;
                 } else {
                     debug!("Feeding.");

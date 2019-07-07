@@ -31,6 +31,9 @@ extern crate bear_lib_terminal;
 #[macro_use]
 extern crate log;
 
+/// A quadtree-like structure, but for arbitrary arity.
+extern crate ntree;
+
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
 

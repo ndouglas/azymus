@@ -57,7 +57,9 @@ impl Rect {
 fn create_room(seed: i64, level: i32, room: Rect, map: &mut MapType) {
     for x in (room.x1 + 1)..room.x2 {
         for y in (room.y1 + 1)..room.y2 {
-            map[x as usize][y as usize] = Tile::floor(seed, x, y, level);
+            if x % 5 != 0 || y % 5 != 0 {
+                map[x as usize][y as usize] = Tile::floor(seed, x, y, level);
+            }
         }
     }
 }
@@ -77,7 +79,7 @@ fn create_v_tunnel(seed: i64, level: i32, y1: i32, y2: i32, x: i32, map: &mut Ma
 fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) {
     let in_seed: &[_] = &[seed as usize];
     let mut rng: StdRng = SeedableRng::from_seed(in_seed);
-    let num_monsters = rng.gen_range(0, (room.y2 - room.y1).abs());
+    let num_monsters = rng.gen_range(0, (room.y2 + room.y1).abs());
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
