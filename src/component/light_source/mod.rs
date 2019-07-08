@@ -1,5 +1,6 @@
 use std::cmp;
 use bear_lib_terminal::Color;
+use rand::Rng;
 
 /// Something that gives off light.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -68,6 +69,8 @@ pub enum Factory {
     Candle,
     /// A torch provides more and stronger light.
     Torch,
+    /// A completely random light source.
+    Random,
 }
 
 /// A factory.
@@ -79,6 +82,17 @@ impl Factory {
         match self {
             Candle => LightSource::new(Color::from_rgb(255, 127, 255), 6, 64),
             Torch => LightSource::new(Color::from_rgb(255, 127, 0), 10, 96),
+            Random => {
+                let mut rng = rand::thread_rng();
+                LightSource::new(Color::from_rgb(
+                        rng.gen_range(0, 5) * 60,
+                        rng.gen_range(0, 5) * 60,
+                        rng.gen_range(0, 5) * 60,
+                    ),
+                    rng.gen_range(10, 15),
+                    rng.gen_range(128, 255),
+                )
+            }
         }
     }
 

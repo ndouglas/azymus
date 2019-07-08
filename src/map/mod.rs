@@ -137,19 +137,23 @@ impl Map {
                         .collect::<Vec<usize>>();
                     //println!("({}, {}) -> {:?}", x, y, ls_vector);
                     if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     }
-                    for id in self.get_entities(x, y)
-                        .iter()
-                        .collect::<Vec<&usize>>() {
-                        if let Some(renderable) = &game.entities[*id].renderable {
-                            self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                    let mut occupant_found: bool = false;
+                    for id in self.get_entities(x, y).iter().collect::<Vec<&usize>>() {
+                        if occupant_found {
+                            break;
+                        }
+                        let entity = &game.entities[*id];
+                        occupant_found = entity.blocks_movement;
+                        if let Some(renderable) = &entity.renderable {
+                            self.draw_entity_renderable(x, y, &renderable);
                         }
                     }
                 } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
                     let ls_vector = vec![];
                     if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_renderable(x, y, &renderable, game, &ls_vector);
+                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     }
                 }
             }
@@ -158,8 +162,8 @@ impl Map {
     }
 
     /// Render this object at the specified position.
-    pub fn draw_renderable(&self, x: usize, y: usize, renderable: &Renderable, game: &Game, ls_vector: &Vec<usize>) {
-        trace!("Entering Renderable::draw().");
+    pub fn draw_tile_renderable(&self, x: usize, y: usize, renderable: &Renderable, game: &Game, ls_vector: &Vec<usize>) {
+        trace!("Entering Renderable::draw_tile_renderable().");
         use bear_lib_terminal::geometry::Point;
         let point = Point::new(x as i32, y as i32);
         let mut bg_color = blt::pick_background_color(point);
@@ -178,56 +182,34 @@ impl Map {
             let entity = &game.entities[*id];
             if let Some(position) = entity.position {
                 if let Some(light_source) = entity.light_source {
-//                    if let Some(fov) = &entity.field_of_view {
-//                        let fov_map = fov.map.lock().unwrap();
-//                        if fov_map.is_in_fov(x as i32, y as i32) {
-                            bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
-//                        }
-//                    }
+                    bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
                 }
             }
         }
         blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
-        trace!("Exiting Renderable::draw().");
+        trace!("Exiting Renderable::draw_entity_renderable().");
     }
 
-    /*
-    /// Render this tile's renderable with a simple FOV illumination.
-    pub fn draw(&self, _ui: &Ui, _fov: &FieldOfView) {
-        trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
-        if let Some(position) = self.position {
-            if let Some(renderable) = &self.renderable {
-                if let Some(color) = renderable.background_color {
-                    let renderable = renderable.with_background_color(Some(color));
-                    renderable.draw(position.x, position.y);
-                }
-            }
+    /// Draw an entity renderable.
+    pub fn draw_entity_renderable(&self, x: usize, y: usize, renderable: &Renderable) {
+        trace!("Entering Renderable::draw_entity_renderable().");
+        use bear_lib_terminal::geometry::Point;
+        let point = Point::new(x as i32, y as i32);
+        let mut bg_color = blt::pick_background_color(point);
+        let mut fg_color = blt::pick_foreground_color(point, 0);
+        let mut the_char = ' ';
+        if let Some(color) = renderable.background_color {
+            bg_color = color;
         }
-
-        trace!("Exiting Tile::draw_illuminated().");
-    }
-
-    /// Render this tile's renderable with a source of illumination.
-    pub fn draw_lighted(&self, _console: &mut Console, ls: &LightSource, lsx: i32, lsy: i32) {
-        trace!("Entering Tile::draw_illuminated() for tile {:?}.", self);
-        if let Some(position) = self.position {
-            if let Some(renderable) = &self.renderable {
-                if let Some(color) = renderable.background_color {
-                    let transformed_color = ls.transform_color_at(
-                        color,
-                        lsx,
-                        lsy,
-                        position.x,
-                        position.y
-                    );
-                    let renderable = renderable.with_background_color(Some(transformed_color));
-                    renderable.draw(position.x, position.y);
-                }
-            }
+        if let Some(color) = renderable.foreground_color {
+            fg_color = color;
         }
-        trace!("Exiting Tile::draw_illuminated().");
+        if let Some(char) = renderable.char {
+            the_char = char;
+        }
+        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
+        trace!("Exiting Renderable::draw_entity_renderable().");
     }
-    */
 
     /// Indicates whether a pair of coordinates are in bounds of this map.
     pub fn get_tile(&self, x: usize, y: usize) -> &Tile {

@@ -52,7 +52,7 @@ impl Factory {
                 orc.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachPlayer,
                 });
-                orc.light_source = Some(LightSourceFactory::Candle.create());
+                //orc.light_source = Some(LightSourceFactory::Random.create());
                 orc.position = Some(Position::default());
                 orc.renderable = Some(RenderableFactory::Orc.create());
                 orc.blocks_movement = true;
@@ -72,7 +72,7 @@ impl Factory {
                 troll.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachPlayer,
                 });
-                troll.light_source = None;
+                troll.light_source = Some(LightSourceFactory::Random.create());
                 troll.position = Some(Position::default());
                 troll.renderable = Some(RenderableFactory::Troll.create());
                 troll.blocks_movement = true;

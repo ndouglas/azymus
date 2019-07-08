@@ -83,7 +83,7 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
-        let monster = if rng.gen_range(0, 10) < 8 {
+        let monster = if rng.gen_range(0, 10) < 9 {
             let mut orc = SpeciesFactory::Orc.create();
             orc.position = Some(Position {
                 w: seed,
