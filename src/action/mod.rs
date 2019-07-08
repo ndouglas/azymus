@@ -46,7 +46,7 @@ impl Action {
                 let entity = &game.entities[id];
                 if let Some(position1) = &entity.position {
                     let position2 = position1.to_direction(*compass_direction);
-                    Effect::EntityMoves(position1.clone(), position2).execute(id, game);
+                    Effect::MoveEntity(position1.clone(), position2).execute(id, game);
                 }
             },
             MeleeAttack(compass_direction) => {

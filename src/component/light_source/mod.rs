@@ -1,9 +1,9 @@
 use std::cmp;
-use std::fmt;
-use tcod::colors::*;
+use bear_lib_terminal::Color;
+use rand::Rng;
 
 /// Something that gives off light.
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct LightSource {
     /// The color of light produced.
     pub color: Color,
@@ -47,21 +47,17 @@ impl LightSource {
         trace!("Entering LightSource::transform_color_at().");
         let intensity = self.intensity_at(x, y, x2, y2);
         let multiplier = intensity as f64 / 512 as f64;
-        let r = color.r;
-        let g = color.g;
-        let b = color.b;
-        let r_diff = (self.color.r as i32 - r as i32).abs();
-        let g_diff = (self.color.g as i32 - g as i32).abs();
-        let b_diff = (self.color.b as i32 - b as i32).abs();
-        let new_r = (r as f64 + (r_diff as f64 * multiplier)) as u8;
-        let new_g = (g as f64 + (g_diff as f64 * multiplier)) as u8;
-        let new_b = (b as f64 + (b_diff as f64 * multiplier)) as u8;
+        let red = color.red;
+        let green = color.green;
+        let blue = color.blue;
+        let r_diff = (self.color.red as i32 - red as i32).abs();
+        let g_diff = (self.color.green as i32 - green as i32).abs();
+        let b_diff = (self.color.blue as i32 - blue as i32).abs();
+        let new_r = (red as f64 + (r_diff as f64 * multiplier)) as u8;
+        let new_g = (green as f64 + (g_diff as f64 * multiplier)) as u8;
+        let new_b = (blue as f64 + (b_diff as f64 * multiplier)) as u8;
         trace!("Exiting LightSource::transform_color_at().");
-        Color {
-            r: new_r,
-            g: new_g,
-            b: new_b,
-        }
+        Color::from_rgb(new_r, new_g, new_b)
     }
 
 }
@@ -73,6 +69,8 @@ pub enum Factory {
     Candle,
     /// A torch provides more and stronger light.
     Torch,
+    /// A completely random light source.
+    Random,
 }
 
 /// A factory.
@@ -82,16 +80,20 @@ impl Factory {
     pub fn create(self) -> LightSource {
         use Factory::*;
         match self {
-            Candle => LightSource::new(ORANGE, 6, 96),
-            Torch => LightSource::new(ORANGE, 10, 128),
+            Candle => LightSource::new(Color::from_rgb(255, 127, 255), 6, 64),
+            Torch => LightSource::new(Color::from_rgb(255, 127, 0), 10, 96),
+            Random => {
+                let mut rng = rand::thread_rng();
+                LightSource::new(Color::from_rgb(
+                        rng.gen_range(0, 5) * 60,
+                        rng.gen_range(0, 5) * 60,
+                        rng.gen_range(0, 5) * 60,
+                    ),
+                    rng.gen_range(10, 15),
+                    rng.gen_range(128, 255),
+                )
+            }
         }
     }
 
-}
-
-/// Allows us to show this object in tests, etc.
-impl fmt::Debug for LightSource {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "LightSource")
-    }
 }

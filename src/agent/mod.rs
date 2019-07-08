@@ -6,6 +6,12 @@ use component::position::Position;
 use crate::game;
 use game::Game;
 
+/// Something that can act autonomously.
+#[derive(Clone, Copy, Debug)]
+pub struct Agent {
+    /// The algorithm used by this agent.
+    pub algorithm: Algorithm,
+}
 
 /// Algorithms used to vend commands when given a context.
 #[derive(Clone, Copy, Debug)]

@@ -1,5 +1,4 @@
-use tcod::colors::*;
-use tcod::console::*;
+use bear_lib_terminal::Color;
 
 /// Indicates how the given object is rendered on a map.
 #[derive(Clone, Debug)]
@@ -23,21 +22,6 @@ impl Renderable {
             foreground_color: None,
             background_color: None,
         }
-    }
-
-    /// Render this object at the specified position.
-    pub fn draw(&self, x: i32, y: i32, console: &mut Console) {
-        trace!("Entering Renderable::draw().");
-        if let Some(color) = self.foreground_color {
-            if let Some(char) = self.char {
-                console.set_default_foreground(color);
-                console.put_char(x, y, char, BackgroundFlag::None);
-            }
-        }
-        if let Some(color) = self.background_color {
-            console.set_char_background(x, y, color, BackgroundFlag::Set);
-        }
-        trace!("Exiting Renderable::draw().");
     }
 
     /// Return a modified version of this renderable.
@@ -88,6 +72,8 @@ pub enum Factory {
     Orc,
     /// A troll.
     Troll,
+    /// A human,
+    Human,
     /// A floor (dark).
     Floor,
     /// A wall (dark).
@@ -103,36 +89,33 @@ impl Factory {
         match self {
             Player => Renderable {
                 char: Some('@'),
-                foreground_color: Some(WHITE),
+                foreground_color: Some(Color::from_rgb(255, 255, 255)),
                 background_color: None,
             },
             Orc => Renderable {
                 char: Some('o'),
-                foreground_color: Some(DESATURATED_GREEN),
+                foreground_color: Some(Color::from_rgb(64, 128, 64)),
                 background_color: None,
             },
             Troll => Renderable {
                 char: Some('T'),
-                foreground_color: Some(GREEN),
+                foreground_color: Some(Color::from_rgb(0, 255, 0)),
+                background_color: None,
+            },
+            Human => Renderable {
+                char: Some('h'),
+                foreground_color: Some(Color::from_rgb(115, 115, 255)),
                 background_color: None,
             },
             Floor => Renderable {
-                char: None,
-                foreground_color: None,
-                background_color: Some(Color {
-                    r: 16,
-                    g: 16,
-                    b: 16,
-                }),
+                char: Some('.'),
+                foreground_color: Some(Color::from_rgb(0, 0, 0)),
+                background_color: Some(Color::from_rgb(32, 32, 32)),
             },
             Wall => Renderable {
-                char: None,
-                foreground_color: None,
-                background_color: Some(Color {
-                    r: 0,
-                    g: 0,
-                    b: 0,
-                }),
+                char: Some('#'),
+                foreground_color: Some(Color::from_rgb(0, 0, 0)),
+                background_color: Some(Color::from_rgb(16, 16, 16)),
             },
         }
     }

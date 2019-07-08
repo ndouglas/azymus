@@ -23,9 +23,16 @@
 
 /// EXTERNAL CRATES
 
+/// A rustic FFI for BearLibTerminal;
+#[link(name = "lib/libBearLibTerminal.dylib")]
+extern crate bear_lib_terminal;
+
 /// A Rust library providing a lightweight logging facade.
 #[macro_use]
 extern crate log;
+
+/// A quadtree-like structure, but for arbitrary arity.
+extern crate ntree;
 
 /// A pretty, easy-to-use logger for Rust.
 extern crate pretty_env_logger;
@@ -79,11 +86,17 @@ pub mod game;
 /// The map, the current slice of the game world.
 pub mod map;
 
+/// The message panel.
+pub mod messages;
+
 /// The scheduler that determines when and who will be able to issue commands.
 pub mod scheduler;
 
 /// A settings system to allow some configuration.
 pub mod settings;
+
+/// A species of which an entity can be a part.
+pub mod species;
 
 /// The tiles that form the map.
 pub mod tile;
