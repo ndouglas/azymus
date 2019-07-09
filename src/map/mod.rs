@@ -100,6 +100,7 @@ impl Map {
         for y in 0..self.height {
             for x in 0..self.width {
                 let ids = self.get_entities(x, y)
+                    .unwrap_or(HashSet::new())
                     .iter()
                     .filter(|&id| game.entities[*id].light_source.is_some())
                     .map(|&id| id)
@@ -140,7 +141,10 @@ impl Map {
                         self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     }
                     let mut occupant_found: bool = false;
-                    for id in self.get_entities(x, y).iter().collect::<Vec<&usize>>() {
+                    for id in self.get_entities(x, y)
+                        .unwrap_or(HashSet::new())
+                        .iter()
+                        .collect::<Vec<&usize>>() {
                         if occupant_found {
                             break;
                         }
@@ -242,8 +246,11 @@ impl Map {
     }
 
     /// Gets entity IDs at a specific location.
-    pub fn get_entities(&self, x: usize, y: usize) -> HashSet<usize> {
-        self.spatial_hash.get(&(x, y)).unwrap().clone()
+    pub fn get_entities(&self, x: usize, y: usize) -> Option<HashSet<usize>> {
+        if let Some(hashset) = self.spatial_hash.get(&(x, y)) {
+            return Some(hashset.clone());
+        }
+        None
     }
 
 }

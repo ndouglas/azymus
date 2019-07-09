@@ -38,6 +38,7 @@ impl Game {
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
         self.map
             .get_entities(x as usize, y as usize)
+            .unwrap_or(std::collections::HashSet::new())
             .iter()
             .map(|&x| &self.entities[x] )
             .collect()
