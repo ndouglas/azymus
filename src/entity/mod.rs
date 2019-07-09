@@ -79,6 +79,10 @@ impl Entity {
             (Some(Troll), Some(Troll)) => false,
             (Some(Orc), Some(Orc)) => false,
             (Some(Human), Some(Human)) => false,
+            (Some(Goblin), _ ) => true,
+            (Some(Kobold), _ ) => true,
+            (_, Some(Goblin)) => true,
+            (_, Some(Kobold)) => true,
             (_, _) => false,
         }
     }

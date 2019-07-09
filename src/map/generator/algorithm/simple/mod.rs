@@ -83,7 +83,8 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
-        let monster = if rng.gen_range(0, 10) < 9 {
+        let monster_num = rng.gen_range(0, 20);
+        let monster = if monster_num < 4 {
             let mut orc = SpeciesFactory::Orc.create();
             orc.position = Some(Position {
                 w: seed,
@@ -92,7 +93,7 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
                 z: level,
             });
             orc
-        } else {
+        } else if monster_num < 5 {
             let mut troll = SpeciesFactory::Troll.create();
             troll.position = Some(Position {
                 w: seed,
@@ -101,6 +102,42 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
                 z: level,
             });
             troll
+        } else if monster_num < 10 {
+            let mut goblin = SpeciesFactory::Goblin.create();
+            goblin.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            goblin
+        } else if monster_num < 12 {
+            let mut kobold = SpeciesFactory::Kobold.create();
+            kobold.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            kobold
+        } else if monster_num < 15 {
+            let mut chicken = SpeciesFactory::Chicken.create();
+            chicken.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            chicken
+        } else {
+            let mut mushroom = SpeciesFactory::Mushroom.create();
+            mushroom.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            mushroom
         };
         entities.push(monster);
     }
