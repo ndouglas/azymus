@@ -72,6 +72,14 @@ pub enum Factory {
     Orc,
     /// A troll.
     Troll,
+    /// A goblin.
+    Goblin,
+    /// A kobold.
+    Kobold,
+    /// A chicken.
+    Chicken,
+    /// A mushroom.
+    Mushroom,
     /// A human,
     Human,
     /// A floor (dark).
@@ -100,6 +108,26 @@ impl Factory {
             Troll => Renderable {
                 char: Some('T'),
                 foreground_color: Some(Color::from_rgb(0, 255, 0)),
+                background_color: None,
+            },
+            Goblin => Renderable {
+                char: Some('g'),
+                foreground_color: Some(Color::from_rgb(0, 164, 96)),
+                background_color: None,
+            },
+            Kobold => Renderable {
+                char: Some('k'),
+                foreground_color: Some(Color::from_rgb(0, 255, 128)),
+                background_color: None,
+            },
+            Chicken => Renderable {
+                char: Some('c'),
+                foreground_color: Some(Color::from_rgb(230, 230, 230)),
+                background_color: None,
+            },
+            Mushroom => Renderable {
+                char: Some('🍄'),
+                foreground_color: Some(Color::from_rgb(230, 230, 230)),
                 background_color: None,
             },
             Human => Renderable {

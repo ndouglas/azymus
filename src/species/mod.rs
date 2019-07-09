@@ -19,6 +19,14 @@ pub enum Species {
     Orc,
     /// Troll.
     Troll,
+    /// Goblin.
+    Goblin,
+    /// Kobold.
+    Kobold,
+    /// Chicken.
+    Chicken,
+    /// Mushroom.
+    Mushroom,
 }
 
 /// Factory.
@@ -30,6 +38,14 @@ pub enum Factory {
     Orc,
     /// Troll.
     Troll,
+    /// Goblin.
+    Goblin,
+    /// Kobold.
+    Kobold,
+    /// Chicken.
+    Chicken,
+    /// Mushroom.
+    Mushroom,
 }
 
 /// Factory.
@@ -50,7 +66,7 @@ impl Factory {
                     current_hit_points: 10,
                 });
                 orc.agent = Some(Agent {
-                    algorithm: AgentAlgorithm::ApproachPlayer,
+                    algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
                 //orc.light_source = Some(LightSourceFactory::Random.create());
                 orc.position = Some(Position::default());
@@ -70,7 +86,7 @@ impl Factory {
                     current_hit_points: 15,
                 });
                 troll.agent = Some(Agent {
-                    algorithm: AgentAlgorithm::ApproachPlayer,
+                    algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
                 troll.light_source = Some(LightSourceFactory::Random.create());
                 troll.position = Some(Position::default());
@@ -78,6 +94,84 @@ impl Factory {
                 troll.blocks_movement = true;
                 troll.species = Some(Species::Troll);
                 troll
+            },
+            Goblin => {
+                let mut goblin = Entity::new("Goblin".to_string());
+                goblin.actor = Some(Actor {
+                    time: 0,
+                    speed: 9,
+                });
+                goblin.body = Some(Body {
+                    total_hit_points: 15,
+                    current_hit_points: 15,
+                });
+                goblin.agent = Some(Agent {
+                    algorithm: AgentAlgorithm::ApproachAndFightPlayer,
+                });
+                goblin.light_source = None;
+                goblin.position = Some(Position::default());
+                goblin.renderable = Some(RenderableFactory::Goblin.create());
+                goblin.blocks_movement = true;
+                goblin.species = Some(Species::Goblin);
+                goblin
+            },
+            Kobold => {
+                let mut kobold = Entity::new("Kobold".to_string());
+                kobold.actor = Some(Actor {
+                    time: 0,
+                    speed: 9,
+                });
+                kobold.body = Some(Body {
+                    total_hit_points: 15,
+                    current_hit_points: 15,
+                });
+                kobold.agent = Some(Agent {
+                    algorithm: AgentAlgorithm::ApproachAndFightPlayer,
+                });
+                kobold.light_source = None;
+                kobold.position = Some(Position::default());
+                kobold.renderable = Some(RenderableFactory::Kobold.create());
+                kobold.blocks_movement = true;
+                kobold.species = Some(Species::Kobold);
+                kobold
+            },
+            Chicken => {
+                let mut chicken = Entity::new("Chicken".to_string());
+                chicken.actor = Some(Actor {
+                    time: 0,
+                    speed: 9,
+                });
+                chicken.body = Some(Body {
+                    total_hit_points: 15,
+                    current_hit_points: 15,
+                });
+                chicken.agent = Some(Agent {
+                    algorithm: AgentAlgorithm::ApproachPlayer,
+                });
+                chicken.light_source = None;
+                chicken.position = Some(Position::default());
+                chicken.renderable = Some(RenderableFactory::Chicken.create());
+                chicken.blocks_movement = true;
+                chicken.species = Some(Species::Chicken);
+                chicken
+            },
+            Mushroom => {
+                let mut mushroom = Entity::new("Mushroom".to_string());
+                mushroom.actor = Some(Actor {
+                    time: 0,
+                    speed: 9,
+                });
+                mushroom.body = Some(Body {
+                    total_hit_points: 15,
+                    current_hit_points: 15,
+                });
+                mushroom.agent = None;
+                mushroom.light_source = None;
+                mushroom.position = Some(Position::default());
+                mushroom.renderable = Some(RenderableFactory::Mushroom.create());
+                mushroom.blocks_movement = false;
+                mushroom.species = Some(Species::Mushroom);
+                mushroom
             },
             Human => {
                 let mut human = Entity::new("Human".to_string());

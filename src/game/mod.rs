@@ -13,7 +13,7 @@ use settings::Settings;
 use settings::get_settings;
 use crate::ui;
 use ui::Ui;
-use ui::input::Domain as InputDomain;
+use ui::Domain as InputDomain;
 
 /// The game object.
 #[derive(Debug)]
