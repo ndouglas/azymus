@@ -50,19 +50,19 @@ impl Region<QuadTreePoint> for QuadTreeRegion {
                 x: self.x,
                 y: self.y + halfheight,
                 width: halfwidth,
-                height: halfheight
+                height: self.height - halfheight
             },
             QuadTreeRegion {
                 x: self.x + halfwidth,
                 y: self.y,
-                width: halfwidth,
+                width: self.width - halfwidth,
                 height: halfheight
             },
             QuadTreeRegion {
                 x: self.x + halfwidth,
                 y: self.y + halfheight,
-                width: halfwidth,
-                height: halfheight
+                width: self.width - halfwidth,
+                height: self.height - halfheight
             }
         ]
     }
