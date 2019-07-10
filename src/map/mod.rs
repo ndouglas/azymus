@@ -287,6 +287,27 @@ impl Map {
         None
     }
 
+    /// Gets entity IDs at a specific location.
+    pub fn get_entities_around(&self, x: usize, y: usize) -> Vec<usize> {
+        let mut result: Vec<usize> = vec![];
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                if dx == dy && dx == 0 {
+                    continue;
+                }
+                let final_x = (x as i32 + dx) as usize;
+                let final_y = (y as i32 + dy) as usize;
+                if !self.is_in_bounds(final_x, final_y) {
+                    continue;
+                }
+                if let Some(entities) = self.get_entities(final_x, final_y) {
+                    result.extend(entities)
+                }
+            }
+        }
+        result
+    }
+
 }
 
 impl fmt::Debug for Map {

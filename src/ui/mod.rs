@@ -120,6 +120,7 @@ impl Ui {
                             Down => Command::Walk(CompassDirection::South).execute(player_id, game),
                             Left => Command::Walk(CompassDirection::West).execute(player_id, game),
                             Right => Command::Walk(CompassDirection::East).execute(player_id, game),
+                            Period => Command::Wait.execute(player_id, game),
                             _ => {
                                 println!("{:?}", key);
                             },
