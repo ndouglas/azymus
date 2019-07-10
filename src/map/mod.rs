@@ -170,7 +170,6 @@ impl Map {
                         .range_query(&region)
                         .map(|x| x.id)
                         .collect::<Vec<usize>>();
-                    //println!("({}, {}) -> {:?}", x, y, ls_vector);
                     if let Some(renderable) = &self.map[x][y].renderable {
                         self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     }
@@ -220,7 +219,12 @@ impl Map {
             let entity = &game.entities[*id];
             if let Some(position) = entity.position {
                 if let Some(light_source) = entity.light_source {
-                    bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
+                    if let Some(fov) = &entity.field_of_view {
+                        let fov_map = fov.map.lock().unwrap();
+                        if fov_map.is_in_fov(x as i32, y as i32) {
+                            bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
+                        }
+                    }
                 }
             }
         }
