@@ -102,7 +102,7 @@ impl Factory {
                 let mut goblin = Entity::new("Goblin".to_string());
                 goblin.actor = Some(Actor {
                     time: 0,
-                    speed: 9,
+                    speed: 12,
                 });
                 goblin.body = Some(Body {
                     total_hit_points: 5,
@@ -122,7 +122,7 @@ impl Factory {
                 let mut kobold = Entity::new("Kobold".to_string());
                 kobold.actor = Some(Actor {
                     time: 0,
-                    speed: 9,
+                    speed: 14,
                 });
                 kobold.body = Some(Body {
                     total_hit_points: 7,
@@ -142,7 +142,7 @@ impl Factory {
                 let mut chicken = Entity::new("Chicken".to_string());
                 chicken.actor = Some(Actor {
                     time: 0,
-                    speed: 9,
+                    speed: 14,
                 });
                 chicken.body = Some(Body {
                     total_hit_points: 2,
@@ -162,7 +162,7 @@ impl Factory {
                 let mut mushroom = Entity::new("Mushroom".to_string());
                 mushroom.actor = Some(Actor {
                     time: 0,
-                    speed: 9,
+                    speed: 12,
                 });
                 mushroom.body = Some(Body {
                     total_hit_points: 2,
@@ -182,7 +182,7 @@ impl Factory {
                 let mut moss = Entity::new("Moss".to_string());
                 moss.actor = Some(Actor {
                     time: 0,
-                    speed: 9,
+                    speed: 12,
                 });
                 moss.body = Some(Body {
                     total_hit_points: 2,

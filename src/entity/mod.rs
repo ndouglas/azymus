@@ -75,6 +75,9 @@ impl Entity {
     /// If the entity would attack another entity.
     pub fn would_attack(&self, entity: &Entity) -> bool {
         use Species::*;
+        if !entity.blocks_movement {
+            return false;
+        }
         match (self.species, entity.species) {
             (Some(Orc), Some(Troll)) => false,
             (Some(Troll), Some(Orc)) => false,
