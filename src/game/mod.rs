@@ -8,6 +8,8 @@ use map::Map;
 use map::get_map;
 use crate::scheduler;
 use scheduler::Scheduler;
+use crate::seed;
+use seed::SeedType;
 use crate::settings;
 use settings::Settings;
 use settings::get_settings;
@@ -29,7 +31,7 @@ pub struct Game {
     /// The game settings.
     pub settings: Settings,
     /// The current seed.
-    pub seed: i64,
+    pub seed: SeedType,
 }
 
 impl Game {
@@ -48,7 +50,16 @@ impl Game {
 
 /// Setup and run the main game loop.
 pub fn run() {
-    let seed: i64 = 0;
+    let seed: SeedType = [
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+    ];
     let settings = get_settings();
     let mut ui = Ui::new(&settings);
     ui.open();
@@ -66,7 +77,7 @@ pub fn run() {
         entities: entities,
         player_id: next_id,
         settings: get_settings(),
-        seed: 0,
+        seed: seed,
     };
     let player_id = game.player_id;
     game.entities.push(player);

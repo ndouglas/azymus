@@ -20,6 +20,8 @@ pub enum Action {
     Wait,
     /// Stall -- don't waste turn, but don't do anything.
     Stall,
+    /// Moss lifecycle.
+    MossLifecycle,
 }
 
 /// Actions are processes that modify the game world.
@@ -34,6 +36,7 @@ impl Action {
             MeleeAttack(_) => TIME_PER_TURN,
             Wait => TIME_PER_TURN,
             Stall => 0,
+            MossLifecycle => TIME_PER_TURN * 8,
         }
     }
 
@@ -67,6 +70,11 @@ impl Action {
             Stall => {
                 let entity = &game.entities[id];
                 debug!("Entity {} elected to stall for time ({}).", entity.name, entity.actor.unwrap().time);
+            },
+            MossLifecycle => {
+                let entity = &game.entities[id];
+                debug!("Entity {} is following moss lifecycle rules!", entity.name);
+
             },
         }
     }

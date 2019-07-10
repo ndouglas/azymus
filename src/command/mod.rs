@@ -1,9 +1,12 @@
+use rand::Rng;
+use rand::distributions::{Distribution, Standard};
 use crate::action;
 use action::Action;
 use crate::component;
 use component::position::Position;
 use crate::game;
 use game::Game;
+
 
 /// Compass directions.
 #[derive(Clone, Copy, Debug)]
@@ -26,6 +29,21 @@ pub enum CompassDirection {
     West,
 }
 
+impl Distribution<CompassDirection> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CompassDirection {
+        match rng.gen_range(0, 8) {
+            0 => CompassDirection::North,
+            1 => CompassDirection::Northeast,
+            2 => CompassDirection::Northwest,
+            3 => CompassDirection::South,
+            4 => CompassDirection::Southeast,
+            5 => CompassDirection::Southwest,
+            6 => CompassDirection::East,
+            _ => CompassDirection::West,
+        }
+    }
+}
+
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]
 pub enum Command {
@@ -37,6 +55,8 @@ pub enum Command {
     Wait,
     /// Stall -- don't waste turn, but don't do anything.
     Stall,
+    /// Reproduce (Moss).
+    MossLifecycle,
 }
 
 /// Actions are processes that modify the game world.
@@ -58,6 +78,9 @@ impl Command {
             },
             Stall => {
                 Some(Action::Stall)
+            },
+            MossLifecycle => {
+                Some(Action::MossLifecycle)
             },
         }
     }
@@ -106,6 +129,11 @@ impl Command {
                 ]
             },
             Stall => {
+                vec![
+                    Permit,
+                ]
+            },
+            MossLifecycle => {
                 vec![
                     Permit,
                 ]

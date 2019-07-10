@@ -95,6 +95,9 @@ pub mod messages;
 /// The scheduler that determines when and who will be able to issue commands.
 pub mod scheduler;
 
+/// The seed input that we use for random number generation.
+pub mod seed;
+
 /// A settings system to allow some configuration.
 pub mod settings;
 

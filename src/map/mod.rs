@@ -11,6 +11,10 @@ use crate::entity;
 use entity::Entity;
 use crate::game;
 use game::Game;
+use crate::seed;
+use seed::SeedType;
+use crate::species;
+use species::Species;
 use crate::tile;
 use tile::Tile;
 use tcod::map::Map as FovMap;
@@ -103,6 +107,35 @@ impl Map {
                     .unwrap_or(HashSet::new())
                     .iter()
                     .filter(|&id| game.entities[*id].light_source.is_some())
+                    .map(|&id| id)
+                    .collect::<Vec<usize>>();
+                for id in ids {
+                    ls_tree.insert(QuadTreePoint {
+                        id: id,
+                        x: x as i32,
+                        y: y as i32,
+                    });
+                }
+            }
+        }
+        ls_tree
+    }
+
+    /// Get a quadtree for all entities of a specific species for this map.
+    pub fn get_species_tree(&self, game: &Game, species: Species) -> QuadTreeType {
+        let mut ls_tree: QuadTreeType = NTree::new(QuadTreeRegion {
+            x: 0,
+            y: 0,
+            width: self.width as i32,
+            height: self.height as i32,
+        }, 4);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let ids = self.get_entities(x, y)
+                    .unwrap_or(HashSet::new())
+                    .iter()
+                    .filter(|&id| game.entities[*id].species.is_some())
+                    .filter(|&id| game.entities[*id].species.unwrap() == species)
                     .map(|&id| id)
                     .collect::<Vec<usize>>();
                 for id in ids {
@@ -262,7 +295,7 @@ impl fmt::Debug for Map {
 }
 
 /// Get a new map.
-pub fn get_map(seed: i64, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
+pub fn get_map(seed: SeedType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
     let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, entities);
     let mut map = Map::new(inner_map);
     for entity in entities {

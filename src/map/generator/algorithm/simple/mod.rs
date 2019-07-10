@@ -1,9 +1,12 @@
 use rand::*;
+use rand::prelude::StdRng;
 use std::cmp;
 use crate::component;
 use component::position::Position;
 use crate::entity;
 use entity::Entity;
+use crate::seed;
+use seed::SeedType;
 use crate::species;
 use species::Factory as SpeciesFactory;
 use crate::tile;
@@ -54,7 +57,7 @@ impl Rect {
 }
 
 /// Creates a room.
-fn create_room(seed: i64, level: i32, room: Rect, map: &mut MapType) {
+fn create_room(seed: SeedType, level: i32, room: Rect, map: &mut MapType) {
     for x in (room.x1 + 1)..room.x2 {
         for y in (room.y1 + 1)..room.y2 {
             if x % 5 != 0 || y % 5 != 0 {
@@ -64,21 +67,20 @@ fn create_room(seed: i64, level: i32, room: Rect, map: &mut MapType) {
     }
 }
 
-fn create_h_tunnel(seed: i64, level: i32, x1: i32, x2: i32, y: i32, map: &mut MapType) {
+fn create_h_tunnel(seed: SeedType, level: i32, x1: i32, x2: i32, y: i32, map: &mut MapType) {
     for x in cmp::min(x1, x2)..(cmp::max(x1, x2) + 1) {
         map[x as usize][y as usize] = Tile::floor(seed, x, y, level);
     }
 }
 
-fn create_v_tunnel(seed: i64, level: i32, y1: i32, y2: i32, x: i32, map: &mut MapType) {
+fn create_v_tunnel(seed: SeedType, level: i32, y1: i32, y2: i32, x: i32, map: &mut MapType) {
     for y in cmp::min(y1, y2)..(cmp::max(y1, y2) + 1) {
         map[x as usize][y as usize] = Tile::floor(seed, x, y, level);
     }
 }
 
-fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) {
-    let in_seed: &[_] = &[seed as usize];
-    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
+fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Entity>) {
+    let mut rng: StdRng = SeedableRng::from_seed(seed);
     let num_monsters = rng.gen_range(0, (room.y2 + room.y1).abs());
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
@@ -144,9 +146,8 @@ fn place_objects(room: Rect, seed: i64, level: i32, entities: &mut Vec<Entity>) 
 }
 
 /// Generate the map.
-pub fn generate_map(seed: i64, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> MapGeneratorReturnType {
-    let in_seed: &[_] = &[seed as usize];
-    let mut rng: StdRng = SeedableRng::from_seed(in_seed);
+pub fn generate_map(seed: SeedType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> MapGeneratorReturnType {
+    let mut rng: StdRng = SeedableRng::from_seed(seed);
     let mut map = vec![vec![Tile::new(); height as usize]; width as usize];
     for y in 0..height {
         for x in 0..width {
