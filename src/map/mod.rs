@@ -101,7 +101,7 @@ impl Map {
             y: 0,
             width: self.width as i32,
             height: self.height as i32,
-        }, 4);
+        }, 16);
         for y in 0..self.height {
             for x in 0..self.width {
                 let ids = self.get_entities(x, y)

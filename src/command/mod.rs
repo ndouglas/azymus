@@ -6,7 +6,8 @@ use crate::component;
 use component::position::Position;
 use crate::game;
 use game::Game;
-
+use crate::species;
+use species::Species;
 
 /// Compass directions.
 #[derive(Clone, Copy, Debug)]
@@ -148,10 +149,19 @@ impl Command {
                     Permit,
                 ]
             },
-            MossSeed(_) => {
-                vec![
-                    Permit,
-                ]
+            MossSeed(compass_direction) => {
+                let entity = &game.entities[id];
+                if let Some(position1) = entity.position {
+                    let position2 = position1.to_direction(compass_direction);
+                    vec![
+                        NothingAtPositionIsOfSpecies(position2, Species::Moss),
+                        NothingAtPositionIsOfSpecies(position2, Species::MossSeed),
+                    ]
+                } else {
+                    vec![
+                        Deny("Entity has no starting position!".to_string()),
+                    ]
+                }
             },
             MossDie => {
                 vec![
@@ -285,6 +295,8 @@ pub enum CommandPrecondition {
     NothingAtPositionIsValidMeleeAttackTarget(Position),
     /// Some entity at the location can be attacked.
     SomethingAtPositionIsValidMeleeAttackTarget(Position),
+    /// Don't seed where there's something of the same species.
+    NothingAtPositionIsOfSpecies(Position, Species),
 }
 
 
@@ -361,6 +373,19 @@ impl CommandPrecondition {
                     }
                 }
                 debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                Neutral
+            },
+            NothingAtPositionIsOfSpecies(position, bad_species) => {
+                trace!("Entering precondition {:?}.", NothingAtPositionIsOfSpecies(position, bad_species));
+                let entities = &game.get_entities(position.x, position.y);
+                for entity in entities {
+                    if let Some(species) = entity.species {
+                        if species == bad_species {
+                            return Denied(format!("Found entity {:?} of undesired species {:?} at position {:?}.", entity, bad_species, position));
+                        }
+                    }
+                }
+                debug!("Did not find entities of undesired species {:?} at position {:?}.", bad_species, position);
                 Neutral
             },
         }

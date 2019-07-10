@@ -96,7 +96,7 @@ impl Algorithm {
                         .collect::<Vec<_>>();
                     let count = entities.len();
                     match count {
-                        1 => {
+                        1..=7 => {
                             let map = &game.map;
                             let mut seed_positions: Vec<Position> = vec![];
                             if let Some(position) = &entity.position {

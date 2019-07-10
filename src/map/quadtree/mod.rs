@@ -37,6 +37,8 @@ impl Region<QuadTreePoint> for QuadTreeRegion {
 
     /// Tear my tree into pieces, this is my subdivide()
     fn split(&self) -> Vec<QuadTreeRegion> {
+        assert!(self.height >= 2);
+        assert!(self.width >= 2);
         let halfwidth = self.width / 2;
         let halfheight = self.height / 2;
         vec![
