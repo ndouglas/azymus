@@ -85,7 +85,7 @@ impl Ui {
                             .iter()
                             .map(|&id| game.entities[id].clone());
                         if let Some(top_entity) = entities.last() {
-                            blt::print_xy(position.x + 1, position.y, &top_entity.name);
+                            blt::print_xy(position.x + 1, position.y, &format!("{} (#{}) ({}, {})", &top_entity.name, &top_entity.id, position.x, position.y));
                         }
                     });
                 }
