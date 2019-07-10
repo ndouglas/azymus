@@ -76,17 +76,19 @@ impl Ui {
             map.draw(&self, fov, game);
             let position = blt::state::mouse::position();
             let fov_map = fov.map.lock().unwrap();
-            if fov_map.is_in_fov(position.x, position.y) {
-                blt::with_colors(Color::from_rgb(255, 255, 255), Color::from_rgb(0, 0, 0), || {
-                    let xy_entities = map.get_entities(position.x as usize, position.y as usize)
-                        .unwrap_or(HashSet::new());
-                    let entities = xy_entities
-                        .iter()
-                        .map(|&id| game.entities[id].clone());
-                    if let Some(top_entity) = entities.last() {
-                        blt::print_xy(position.x + 1, position.y, &top_entity.name);
-                    }
-                });
+            if map.is_in_bounds(position.x as usize, position.y as usize) {
+                if fov_map.is_in_fov(position.x, position.y) {
+                    blt::with_colors(Color::from_rgb(255, 255, 255), Color::from_rgb(0, 0, 0), || {
+                        let xy_entities = map.get_entities(position.x as usize, position.y as usize)
+                            .unwrap_or(HashSet::new());
+                        let entities = xy_entities
+                            .iter()
+                            .map(|&id| game.entities[id].clone());
+                        if let Some(top_entity) = entities.last() {
+                            blt::print_xy(position.x + 1, position.y, &top_entity.name);
+                        }
+                    });
+                }
             }
         }
         self.refresh();

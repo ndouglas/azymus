@@ -27,6 +27,8 @@ pub enum Species {
     Chicken,
     /// Mushroom.
     Mushroom,
+    /// Moss.
+    Moss,
 }
 
 /// Factory.
@@ -46,6 +48,8 @@ pub enum Factory {
     Chicken,
     /// Mushroom.
     Mushroom,
+    /// Moss.
+    Moss,
 }
 
 /// Factory.
@@ -62,13 +66,12 @@ impl Factory {
                     speed: 11,
                 });
                 orc.body = Some(Body {
-                    total_hit_points: 10,
-                    current_hit_points: 10,
+                    total_hit_points: 15,
+                    current_hit_points: 15,
                 });
                 orc.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
-                //orc.light_source = Some(LightSourceFactory::Random.create());
                 orc.position = Some(Position::default());
                 orc.renderable = Some(RenderableFactory::Orc.create());
                 orc.blocks_movement = true;
@@ -82,8 +85,8 @@ impl Factory {
                     speed: 9,
                 });
                 troll.body = Some(Body {
-                    total_hit_points: 15,
-                    current_hit_points: 15,
+                    total_hit_points: 25,
+                    current_hit_points: 25,
                 });
                 troll.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
@@ -102,8 +105,8 @@ impl Factory {
                     speed: 9,
                 });
                 goblin.body = Some(Body {
-                    total_hit_points: 15,
-                    current_hit_points: 15,
+                    total_hit_points: 5,
+                    current_hit_points: 5,
                 });
                 goblin.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
@@ -122,8 +125,8 @@ impl Factory {
                     speed: 9,
                 });
                 kobold.body = Some(Body {
-                    total_hit_points: 15,
-                    current_hit_points: 15,
+                    total_hit_points: 7,
+                    current_hit_points: 7,
                 });
                 kobold.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
@@ -142,11 +145,11 @@ impl Factory {
                     speed: 9,
                 });
                 chicken.body = Some(Body {
-                    total_hit_points: 15,
-                    current_hit_points: 15,
+                    total_hit_points: 2,
+                    current_hit_points: 2,
                 });
                 chicken.agent = Some(Agent {
-                    algorithm: AgentAlgorithm::ApproachPlayer,
+                    algorithm: AgentAlgorithm::BeChicken,
                 });
                 chicken.light_source = None;
                 chicken.position = Some(Position::default());
@@ -162,16 +165,38 @@ impl Factory {
                     speed: 9,
                 });
                 mushroom.body = Some(Body {
-                    total_hit_points: 15,
-                    current_hit_points: 15,
+                    total_hit_points: 2,
+                    current_hit_points: 2,
                 });
-                mushroom.agent = None;
+                mushroom.agent = Some(Agent {
+                    algorithm: AgentAlgorithm::BeMushroom,
+                });;
                 mushroom.light_source = None;
                 mushroom.position = Some(Position::default());
                 mushroom.renderable = Some(RenderableFactory::Mushroom.create());
                 mushroom.blocks_movement = false;
                 mushroom.species = Some(Species::Mushroom);
                 mushroom
+            },
+            Moss => {
+                let mut moss = Entity::new("Moss".to_string());
+                moss.actor = Some(Actor {
+                    time: 0,
+                    speed: 9,
+                });
+                moss.body = Some(Body {
+                    total_hit_points: 2,
+                    current_hit_points: 2,
+                });
+                moss.agent = Some(Agent {
+                    algorithm: AgentAlgorithm::BeMoss,
+                });
+                moss.light_source = Some(LightSourceFactory::Moss.create());
+                moss.position = Some(Position::default());
+                moss.renderable = Some(RenderableFactory::Moss.create());
+                moss.blocks_movement = false;
+                moss.species = Some(Species::Moss);
+                moss
             },
             Human => {
                 let mut human = Entity::new("Human".to_string());
@@ -180,8 +205,8 @@ impl Factory {
                     speed: 12,
                 });
                 human.body = Some(Body {
-                    total_hit_points: 6,
-                    current_hit_points: 6,
+                    total_hit_points: 10,
+                    current_hit_points: 10,
                 });
                 human.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachPlayer,

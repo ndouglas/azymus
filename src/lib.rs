@@ -80,6 +80,9 @@ pub mod entity;
 /// Events that occur and are significant enough for a nearby object to react.
 pub mod event;
 
+/// Factions are the groups to which things belong.
+pub mod faction;
+
 /// The game structure, run loop, etc.
 pub mod game;
 

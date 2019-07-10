@@ -80,6 +80,8 @@ pub enum Factory {
     Chicken,
     /// A mushroom.
     Mushroom,
+    /// Moss.
+    Moss,
     /// A human,
     Human,
     /// A floor (dark).
@@ -128,6 +130,11 @@ impl Factory {
             Mushroom => Renderable {
                 char: Some('🍄'),
                 foreground_color: Some(Color::from_rgb(230, 230, 230)),
+                background_color: None,
+            },
+            Moss => Renderable {
+                char: Some('#'),
+                foreground_color: Some(Color::from_rgb(173, 223, 173)),
                 background_color: None,
             },
             Human => Renderable {

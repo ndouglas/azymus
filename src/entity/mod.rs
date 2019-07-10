@@ -10,6 +10,9 @@ use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
+use crate::faction;
+//use faction::Faction;
+use faction::Standing as FactionStanding;
 use crate::map;
 use map::Map;
 use crate::species;
@@ -24,6 +27,8 @@ pub struct Entity {
     pub name: String,
     /// The species of this entity.
     pub species: Option<Species>,
+    /// The factions of this entity.
+    pub faction_standings: Option<Vec<FactionStanding>>,
     /// The body of this entity.
     pub body: Option<Body>,
     /// Something that gets dispensed time and has an opportunity to act.
@@ -55,6 +60,7 @@ impl Entity {
             id: id,
             name: name,
             species: None,
+            faction_standings: None,
             body: None,
             actor: None,
             agent: None,
@@ -109,11 +115,11 @@ pub fn get_player(map: &Map) -> Entity {
         total_hit_points: 32767,
         current_hit_points: 32767,
     });
+    player.species = Some(Species::Human);
     player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
     player.blocks_movement = true;
-    player.species = Some(Species::Human);
     player
 }

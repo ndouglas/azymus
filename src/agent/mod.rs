@@ -22,6 +22,12 @@ pub enum Algorithm {
     ApproachPlayer,
     /// Approach and fight the player.
     ApproachAndFightPlayer,
+    /// Be a chicken.
+    BeChicken,
+    /// Be a mushroom.
+    BeMushroom,
+    /// Just be moss.
+    BeMoss,
 }
 
 /// Algorithms used to vend commands when given a context.
@@ -57,6 +63,15 @@ impl Algorithm {
                         }
                     }
                 }
+                None
+            },
+            BeChicken => {
+                None
+            },
+            BeMushroom => {
+                None
+            },
+            BeMoss => {
                 None
             },
         }
