@@ -68,8 +68,12 @@ impl Algorithm {
             },
             BeChicken => {
                 let mut rng = thread_rng();
-                let direction = rng.gen::<CompassDirection>();
-                Some(Command::Walk(direction))
+                if rng.gen::<bool>() {
+                    let direction = rng.gen::<CompassDirection>();
+                    Some(Command::Walk(direction))
+                } else {
+                    None
+                }
             },
             BeMushroom => {
                 None

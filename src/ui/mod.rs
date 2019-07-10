@@ -95,11 +95,13 @@ impl Ui {
     }
 
     /// Handle input.
-    pub fn handle_input(&mut self, player_id: usize, game: &mut Game) -> bool {
+    pub fn handle_input(&mut self, player_id: usize, game: &mut Game) {
         let event = blt::wait_event();
         use Event::*;
         match event {
-            Some(Close) => return true,
+            Some(Close) => {
+                game.should_continue = false;
+            },
             Some(KeyPressed {
                 key,
                 ctrl: _ctrl,
@@ -111,7 +113,9 @@ impl Ui {
                         use blt::KeyCode;
                         use KeyCode::*;
                         match key {
-                            Escape => return true,
+                            Escape => {
+                                game.should_continue = false;
+                            },
                             Up => Command::Walk(CompassDirection::North).execute(player_id, game),
                             Down => Command::Walk(CompassDirection::South).execute(player_id, game),
                             Left => Command::Walk(CompassDirection::West).execute(player_id, game),
@@ -146,7 +150,6 @@ impl Ui {
             },
             _ => {},
         }
-       false
     }
 
 }

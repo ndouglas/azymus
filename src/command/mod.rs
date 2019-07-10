@@ -216,6 +216,9 @@ impl Command {
         if let Some(actor) = game.entities[id].actor.as_mut() {
             actor.time -= cost;
         };
+        if id == game.player_id && cost > 0 {
+            game.should_advance = true;
+        }
         trace!("Exiting Command::execute() for command {:?}.", self);
     }
 

@@ -36,6 +36,12 @@ pub struct Game {
     pub seed: SeedType,
     /// The random number generator.
     pub rng: RngType,
+    /// Which turn of the game we're on.
+    pub turns: usize,
+    /// Whether or not we should advance the clock.
+    pub should_advance: bool,
+    /// Whether or not we should continue.
+    pub should_continue: bool,
 }
 
 impl Game {
@@ -84,6 +90,9 @@ pub fn run() {
         settings: get_settings(),
         seed: seed,
         rng: rng,
+        turns: 0,
+        should_advance: false,
+        should_continue: true,
     };
     let player_id = game.player_id;
     game.entities.push(player);
@@ -96,11 +105,13 @@ pub fn run() {
             if next_id == player_id {
                 ui.render(player_id, &game);
                 debug!("Player ID = Next ID.");
-                let exit = ui.handle_input(player_id, &mut game);
-                if exit {
+                game.should_advance = false;
+                game.should_continue = true;
+                ui.handle_input(player_id, &mut game);
+                if !game.should_continue {
                     ui.close();
                     return;
-                } else {
+                } else if game.should_advance {
                     debug!("Feeding.");
                     scheduler.feed(&mut game.entities);
                 }
