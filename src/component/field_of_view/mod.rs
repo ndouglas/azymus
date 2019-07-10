@@ -14,6 +14,8 @@ pub struct FieldOfView {
     pub map: Arc<Mutex<Map>>,
     /// The explored areas of the map.
     pub explored_map: Vec<Vec<bool>>,
+    /// Light walls?
+    pub light_walls: bool,
     /// Last x-coordinate of viewer.
     pub x: i32,
     /// Last y-coordinate of viewer.
@@ -38,6 +40,7 @@ impl FieldOfView {
             radius: radius,
             map: Arc::new(Mutex::new(map)),
             explored_map: explored_map,
+            light_walls: false,
             x: -1,
             y: -1,
             width: width,
@@ -58,7 +61,7 @@ impl FieldOfView {
             return;
         }
         let map = &mut self.map.lock().unwrap();
-        map.compute_fov(x, y, self.radius, true, self.algorithm);
+        map.compute_fov(x, y, self.radius, self.light_walls, self.algorithm);
         self.x = x;
         self.y = y;
         for y2 in (y - self.radius)..(y + self.radius) {

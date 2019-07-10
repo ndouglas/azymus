@@ -55,8 +55,12 @@ pub enum Command {
     Wait,
     /// Stall -- don't waste turn, but don't do anything.
     Stall,
-    /// Reproduce (Moss).
-    MossLifecycle,
+    /// Moss: Bloom,
+    MossBloom,
+    /// Moss: Seed,
+    MossSeed(CompassDirection),
+    /// Moss: Die,
+    MossDie,
 }
 
 /// Actions are processes that modify the game world.
@@ -79,8 +83,14 @@ impl Command {
             Stall => {
                 Some(Action::Stall)
             },
-            MossLifecycle => {
-                Some(Action::MossLifecycle)
+            MossBloom => {
+                Some(Action::MossBloom)
+            },
+            MossSeed(compass_direction) => {
+                Some(Action::MossSeed(compass_direction))
+            },
+            MossDie => {
+                Some(Action::MossDie)
             },
         }
     }
@@ -133,7 +143,17 @@ impl Command {
                     Permit,
                 ]
             },
-            MossLifecycle => {
+            MossBloom => {
+                vec![
+                    Permit,
+                ]
+            },
+            MossSeed(_) => {
+                vec![
+                    Permit,
+                ]
+            },
+            MossDie => {
                 vec![
                     Permit,
                 ]
@@ -211,7 +231,9 @@ impl Command {
         let mut cost = Action::Wait.get_cost(id, game);
         if let Some(action) = self.get_final_action(id, game) {
             cost = action.get_cost(id, game);
-            action.execute(id, game);
+            if let Some(effect) = action.execute(id, game) {
+                effect.execute(id, game);
+            }
         };
         if let Some(actor) = game.entities[id].actor.as_mut() {
             actor.time -= cost;

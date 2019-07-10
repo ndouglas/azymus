@@ -1,5 +1,4 @@
 use tcod::map::Map as FovMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use crate::agent;
 use agent::Agent;
 use crate::body;
@@ -53,11 +52,8 @@ impl Entity {
     /// Constructor.
     pub fn new(name: String) -> Self {
         trace!("Entering Entity::new().");
-        static ID: AtomicUsize = AtomicUsize::new(0);
-        let id = ID.load(Ordering::SeqCst);
-        ID.fetch_add(1, Ordering::SeqCst);
         Entity {
-            id: id,
+            id: std::usize::MAX,
             name: name,
             species: None,
             faction_standings: None,
@@ -70,6 +66,22 @@ impl Entity {
             renderable: None,
             blocks_movement: false,
         }
+    }
+
+    /// Set properties from another entity.
+    pub fn set(&mut self, entity: &Entity) {
+        // Skip ID.
+        self.name = entity.name.clone();
+        self.species = entity.species;
+        // Skip faction standings.
+        self.body = entity.body;
+        self.actor = entity.actor;
+        self.agent = entity.agent;
+        self.field_of_view = entity.field_of_view.clone();
+        self.light_source = entity.light_source;
+        // Skip position.
+        self.renderable = entity.renderable.clone();
+        self.blocks_movement = entity.blocks_movement;
     }
 
     /// If the entity would attack another entity.
@@ -88,8 +100,13 @@ impl Entity {
             (Some(Troll), Some(Troll)) => false,
             (Some(Orc), Some(Orc)) => false,
             (Some(Human), Some(Human)) => false,
+            (Some(Goblin), Some(Chicken)) => false,
+            (Some(Kobold), Some(Chicken)) => false,
+            (Some(Goblin), Some(Moss)) => false,
+            (Some(Kobold), Some(Moss)) => false,
             (Some(Goblin), _ ) => true,
             (Some(Kobold), _ ) => true,
+            (Some(Chicken), Some(Moss)) => true,
             (_, Some(Goblin)) => true,
             (_, Some(Kobold)) => true,
             (_, _) => false,
@@ -120,6 +137,9 @@ pub fn get_player(map: &Map) -> Entity {
     });
     player.species = Some(Species::Human);
     player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
+    if let Some(fov) = player.field_of_view.as_mut() {
+        fov.light_walls = true;
+    }
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());

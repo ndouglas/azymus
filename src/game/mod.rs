@@ -79,7 +79,7 @@ pub fn run() {
     let height = ui.settings.map.height;
     let mut entities = Vec::new();
     let (map, position) = get_map(seed, &mut rng, width, height, 0, &mut entities);
-    let player = get_player(&map);
+    let mut player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
     let mut game = Game {
@@ -95,6 +95,7 @@ pub fn run() {
         should_continue: true,
     };
     let player_id = game.player_id;
+    player.id = player_id;
     game.entities.push(player);
     Effect::MoveEntity(player_position, position)
         .execute(player_id, &mut game);

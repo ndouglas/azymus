@@ -85,7 +85,7 @@ fn place_objects(room: Rect, seed: SeedType, rng: &mut RngType, level: i32, enti
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
         let monster_num = rng.gen_range(0, 20);
-        let monster = if monster_num < 3 {
+        let mut monster = if monster_num < 3 {
             let mut orc = SpeciesFactory::Orc.create();
             orc.position = Some(Position {
                 w: seed,
@@ -149,6 +149,7 @@ fn place_objects(room: Rect, seed: SeedType, rng: &mut RngType, level: i32, enti
             });
             moss
         };
+        monster.id = entities.len();
         entities.push(monster);
     }
 }
