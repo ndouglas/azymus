@@ -1,5 +1,4 @@
 use rand::*;
-use rand::prelude::StdRng;
 use std::cmp;
 use crate::component;
 use component::position::Position;
@@ -7,6 +6,7 @@ use crate::entity;
 use entity::Entity;
 use crate::seed;
 use seed::SeedType;
+use seed::RngType;
 use crate::species;
 use species::Factory as SpeciesFactory;
 use crate::tile;
@@ -57,7 +57,7 @@ impl Rect {
 }
 
 /// Creates a room.
-fn create_room(seed: SeedType, level: i32, room: Rect, map: &mut MapType) {
+fn create_room(seed: SeedType, _rng: &mut RngType, level: i32, room: Rect, map: &mut MapType) {
     for x in (room.x1 + 1)..room.x2 {
         for y in (room.y1 + 1)..room.y2 {
             if x % 5 != 0 || y % 5 != 0 {
@@ -79,14 +79,13 @@ fn create_v_tunnel(seed: SeedType, level: i32, y1: i32, y2: i32, x: i32, map: &m
     }
 }
 
-fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Entity>) {
-    let mut rng: StdRng = SeedableRng::from_seed(seed);
+fn place_objects(room: Rect, seed: SeedType, rng: &mut RngType, level: i32, entities: &mut Vec<Entity>) {
     let num_monsters = rng.gen_range(0, (room.y2 + room.y1).abs());
     for _ in 0..num_monsters {
         let x = rng.gen_range(room.x1 + 1, room.x2);
         let y = rng.gen_range(room.y1 + 1, room.y2);
         let monster_num = rng.gen_range(0, 20);
-        let monster = if monster_num < 4 {
+        let monster = if monster_num < 3 {
             let mut orc = SpeciesFactory::Orc.create();
             orc.position = Some(Position {
                 w: seed,
@@ -95,7 +94,7 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             orc
-        } else if monster_num < 5 {
+        } else if monster_num < 4 {
             let mut troll = SpeciesFactory::Troll.create();
             troll.position = Some(Position {
                 w: seed,
@@ -104,7 +103,7 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             troll
-        } else if monster_num < 10 {
+        } else if monster_num < 8 {
             let mut goblin = SpeciesFactory::Goblin.create();
             goblin.position = Some(Position {
                 w: seed,
@@ -113,7 +112,7 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             goblin
-        } else if monster_num < 12 {
+        } else if monster_num < 10 {
             let mut kobold = SpeciesFactory::Kobold.create();
             kobold.position = Some(Position {
                 w: seed,
@@ -122,7 +121,7 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             kobold
-        } else if monster_num < 15 {
+        } else if monster_num < 13 {
             let mut chicken = SpeciesFactory::Chicken.create();
             chicken.position = Some(Position {
                 w: seed,
@@ -131,7 +130,7 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             chicken
-        } else {
+        } else if monster_num < 17 {
             let mut mushroom = SpeciesFactory::Mushroom.create();
             mushroom.position = Some(Position {
                 w: seed,
@@ -140,14 +139,22 @@ fn place_objects(room: Rect, seed: SeedType, level: i32, entities: &mut Vec<Enti
                 z: level,
             });
             mushroom
+        } else {
+            let mut moss = SpeciesFactory::Moss.create();
+            moss.position = Some(Position {
+                w: seed,
+                x: x,
+                y: y,
+                z: level,
+            });
+            moss
         };
         entities.push(monster);
     }
 }
 
 /// Generate the map.
-pub fn generate_map(seed: SeedType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> MapGeneratorReturnType {
-    let mut rng: StdRng = SeedableRng::from_seed(seed);
+pub fn generate_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> MapGeneratorReturnType {
     let mut map = vec![vec![Tile::new(); height as usize]; width as usize];
     for y in 0..height {
         for x in 0..width {
@@ -166,9 +173,9 @@ pub fn generate_map(seed: SeedType, width: i32, height: i32, level: i32, entitie
             .iter()
             .any(|other_room| new_room.intersects_with(other_room));
         if !failed {
-            create_room(seed, level, new_room, &mut map);
+            create_room(seed, rng, level, new_room, &mut map);
             if !rooms.is_empty() {
-                place_objects(new_room, seed, level, entities);
+                place_objects(new_room, seed, rng, level, entities);
             }
             let (new_x, new_y) = new_room.center();
             if rooms.is_empty() {

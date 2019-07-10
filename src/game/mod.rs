@@ -10,6 +10,8 @@ use crate::scheduler;
 use scheduler::Scheduler;
 use crate::seed;
 use seed::SeedType;
+use seed::RngType;
+use seed::get_rng;
 use crate::settings;
 use settings::Settings;
 use settings::get_settings;
@@ -32,6 +34,8 @@ pub struct Game {
     pub settings: Settings,
     /// The current seed.
     pub seed: SeedType,
+    /// The random number generator.
+    pub rng: RngType,
 }
 
 impl Game {
@@ -60,6 +64,7 @@ pub fn run() {
         1, 2, 3, 4,
         5, 6, 7, 8,
     ];
+    let mut rng = get_rng(seed);
     let settings = get_settings();
     let mut ui = Ui::new(&settings);
     ui.open();
@@ -67,7 +72,7 @@ pub fn run() {
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
     let mut entities = Vec::new();
-    let (map, position) = get_map(seed, width, height, 0, &mut entities);
+    let (map, position) = get_map(seed, &mut rng, width, height, 0, &mut entities);
     let player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
@@ -78,6 +83,7 @@ pub fn run() {
         player_id: next_id,
         settings: get_settings(),
         seed: seed,
+        rng: rng,
     };
     let player_id = game.player_id;
     game.entities.push(player);

@@ -1,3 +1,4 @@
+use rand::*;
 use crate::command;
 use command::Command;
 use command::CompassDirection;
@@ -66,7 +67,9 @@ impl Algorithm {
                 None
             },
             BeChicken => {
-                None
+                let mut rng = thread_rng();
+                let direction = rng.gen::<CompassDirection>();
+                Some(Command::Walk(direction))
             },
             BeMushroom => {
                 None

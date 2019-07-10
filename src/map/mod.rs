@@ -13,6 +13,7 @@ use crate::game;
 use game::Game;
 use crate::seed;
 use seed::SeedType;
+use seed::RngType;
 use crate::species;
 use species::Species;
 use crate::tile;
@@ -295,8 +296,8 @@ impl fmt::Debug for Map {
 }
 
 /// Get a new map.
-pub fn get_map(seed: SeedType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
-    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, entities);
+pub fn get_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
+    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, rng, width, height, level, entities);
     let mut map = Map::new(inner_map);
     for entity in entities {
         entity.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));

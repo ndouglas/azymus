@@ -49,6 +49,7 @@ impl Action {
                 let entity = &game.entities[id];
                 if let Some(position1) = &entity.position {
                     let position2 = position1.to_direction(*compass_direction);
+                    debug!("Entity {} elected to move ({:?}).", entity.name, compass_direction);
                     Effect::MoveEntity(position1.clone(), position2).execute(id, game);
                 }
             },
@@ -74,7 +75,10 @@ impl Action {
             MossLifecycle => {
                 let entity = &game.entities[id];
                 debug!("Entity {} is following moss lifecycle rules!", entity.name);
-
+                let _map = &game.map;
+                if let Some(_position) = & entity.position {
+                    let _neighbors: i32 = 0;
+                }
             },
         }
     }
