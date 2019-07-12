@@ -96,7 +96,7 @@ impl Algorithm {
                         .collect::<Vec<_>>();
                     let count = entities.len();
                     match count {
-                        1..=7 => {
+                        1 | 3 | 5 | 8 => {
                             let map = &game.map;
                             let mut seed_positions: Vec<Position> = vec![];
                             if let Some(position) = &entity.position {
@@ -147,7 +147,8 @@ impl Algorithm {
                                 return Some(Command::MossSeed(direction));
                             }
                         },
-                        _ => {},
+                        _ => return Some(Command::MossDie),
+                        //_ => {},
                     }
                 }
                 None
@@ -164,7 +165,7 @@ impl Algorithm {
                         .collect::<Vec<_>>();
                     let count = entities.len();
                     match count {
-                        2..=4 => return Some(Command::MossBloom),
+                        3 | 5 | 7 => return Some(Command::MossBloom),
                         _ => return None,
                     }
                 }

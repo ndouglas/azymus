@@ -70,6 +70,13 @@ impl Effect {
             RemoveEntity => {
                 println!("Entering RemoveEntity() for id {}.", id);
                 let entity = &mut game.entities[id];
+                entity.species = None;
+                entity.body = None;
+                entity.actor = None;
+                entity.agent = None;
+                entity.field_of_view = None;
+                entity.light_source = None;
+                entity.renderable = None;
                 if let Some(position) = &entity.position {
                     game.map.remove_entity(id, position.x as usize, position.y as usize);
                 }
@@ -78,6 +85,7 @@ impl Effect {
                 println!("Entering UpdateEntityFov() for id {}.", id);
                 let entity = &mut game.entities[id];
                 if let Some(position) = &entity.position {
+                        println!("Updating FoV for {:?}.", entity);
                     if let Some(fov) = &mut entity.field_of_view.as_mut() {
                         fov.update(position.x, position.y);
                     }

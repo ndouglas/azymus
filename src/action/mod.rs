@@ -40,8 +40,8 @@ impl Action {
             MeleeAttack(_) => TIME_PER_TURN,
             Wait => TIME_PER_TURN,
             Stall => 0,
-            MossBloom => TIME_PER_TURN * 4,
-            MossSeed(_) => TIME_PER_TURN * 2,
+            MossBloom => TIME_PER_TURN * 14,
+            MossSeed(_) => TIME_PER_TURN * 20,
             MossDie => 1,
         }
     }

@@ -154,6 +154,9 @@ impl Command {
                 if let Some(position1) = entity.position {
                     let position2 = position1.to_direction(compass_direction);
                     vec![
+                        PositionsAreAdjacent(position1, position2),
+                        PositionIsNotOutOfBounds(position2),
+                        TileAtPositionDoesNotBlockMovement(position2),
                         NothingAtPositionIsOfSpecies(position2, Species::Moss),
                         NothingAtPositionIsOfSpecies(position2, Species::MossSeed),
                     ]

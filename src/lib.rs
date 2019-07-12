@@ -89,6 +89,9 @@ pub mod game;
 /// The map, the current slice of the game world.
 pub mod map;
 
+/// A crappy builtin math library.
+pub mod math;
+
 /// The message panel.
 pub mod messages;
 
