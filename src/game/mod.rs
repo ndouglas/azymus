@@ -1,3 +1,5 @@
+use crate::component;
+use component::position::Position;
 use crate::effect;
 use effect::Effect;
 use crate::entity;
@@ -78,7 +80,7 @@ pub fn run() {
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
     let mut entities = Vec::new();
-    let (map, position) = get_map(seed, &mut rng, width, height, 0, &mut entities);
+    let map = get_map(seed, &mut rng, width, height, 0, &mut entities);
     let mut player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
@@ -97,7 +99,12 @@ pub fn run() {
     let player_id = game.player_id;
     player.id = player_id;
     game.entities.push(player);
-    Effect::MoveEntity(player_position, position)
+    Effect::MoveEntity(player_position, Position {
+        w: seed.clone(),
+        x: 24,
+        y: 24,
+        z: 0,
+    })
         .execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
     ui.refresh();

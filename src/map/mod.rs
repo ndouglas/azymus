@@ -1,3 +1,9 @@
+/// The tile map.
+pub mod tile_map;
+use tile_map::Factory as TileMapFactory;
+
+
+
 use std::collections::{HashMap, HashSet};
 use std::cmp;
 use std::fmt;
@@ -21,9 +27,6 @@ use tile::Tile;
 use tcod::map::Map as FovMap;
 use crate::ui;
 use ui::Ui;
-
-/// The map generators.
-pub mod generator;
 
 /// The quad-tree for spatial trees.
 pub mod quadtree;
@@ -319,14 +322,8 @@ impl fmt::Debug for Map0 {
 }
 
 /// Get a new map.
-pub fn get_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map0, Position) {
-    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, rng, width, height, level, entities);
-    let mut map = Map0::new(inner_map);
-    for entity in entities {
-        entity.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
-        if let Some(position) = &entity.position {
-            map.insert_entity(entity.id, position.x as usize, position.y as usize);
-        }
-    }
-    (map, position)
+pub fn get_map(seed: SeedType, _rng: &mut RngType, width: i32, height: i32, _level: i32, _entities: &mut Vec<Entity>) -> Map0 {
+    let inner_map = TileMapFactory::Simple.create(seed, width as usize, height as usize);
+    let map = Map0::new(inner_map);
+    map
 }
