@@ -81,6 +81,16 @@ pub fn run() {
     let height = ui.settings.map.height;
     let mut entities = Vec::new();
     let map = get_map(seed, &mut rng, width, height, 0, &mut entities);
+    let mut start_x = 0;
+    let mut start_y = 0;
+    for y in 0..map.height {
+        for x in 0..map.width {
+            if map.tile_map[x][y].starting_position {
+                start_x = x as i32;
+                start_y = y as i32;
+            }
+        }
+    }
     let mut player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
@@ -101,8 +111,8 @@ pub fn run() {
     game.entities.push(player);
     Effect::MoveEntity(player_position, Position {
         w: seed.clone(),
-        x: 24,
-        y: 24,
+        x: start_x,
+        y: start_y,
         z: 0,
     })
         .execute(player_id, &mut game);

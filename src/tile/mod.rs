@@ -12,6 +12,8 @@ pub struct Tile {
     pub blocks_movement: bool,
     /// Whether this object is opaque.
     pub blocks_light: bool,
+    /// Whether this is a good starting position for the player.
+    pub starting_position: bool,
 }
 
 impl Tile {
@@ -41,6 +43,7 @@ impl Factory {
                 },
                 blocks_movement: false,
                 blocks_light: false,
+                starting_position: false,
             },
             Wall => Tile {
                 renderable: Renderable {
@@ -50,6 +53,7 @@ impl Factory {
                 },
                 blocks_movement: true,
                 blocks_light: true,
+                starting_position: false,
             },
         }
     }

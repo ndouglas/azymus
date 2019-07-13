@@ -1,5 +1,6 @@
 /// The tile map.
 pub mod tile_map;
+use tile_map::TileMapType;
 use tile_map::Factory as TileMapFactory;
 
 
@@ -36,13 +37,10 @@ use quadtree::QuadTreePoint;
 /// Our quad-tree type.
 pub type QuadTreeType = NTree<QuadTreeRegion, QuadTreePoint>;
 
-/// The map type.
-pub type MapType = Vec<Vec<Tile>>;
-
 /// The map object.
 pub struct Map0 {
     /// The actual inner map.
-    map: MapType,
+    pub tile_map: TileMapType,
     /// The height of the map.
     pub height: usize,
     /// The width of the map.
@@ -55,9 +53,9 @@ pub struct Map0 {
 impl Map0 {
 
     /// Constructor.
-    pub fn new(map: MapType) -> Self {
-        let height = map[0].len();
-        let width = map.len();
+    pub fn new(tile_map: TileMapType) -> Self {
+        let height = tile_map[0].len();
+        let width = tile_map.len();
         let mut spatial_hash = HashMap::new();
         for y in 0..height {
             for x in 0..width {
@@ -65,7 +63,7 @@ impl Map0 {
             }
         }
         Map0 {
-            map: map,
+            tile_map: tile_map,
             height: height,
             width: width,
             spatial_hash: spatial_hash,
@@ -79,8 +77,8 @@ impl Map0 {
         let mut map = FovMap::new(width as i32, height as i32);
         for y in 0..height {
             for x in 0..width {
-                let blocks_light = self.map[x][y].blocks_light;
-                let blocks_movement = self.map[x][y].blocks_movement;
+                let blocks_light = self.tile_map[x][y].blocks_light;
+                let blocks_movement = self.tile_map[x][y].blocks_movement;
                 map.set(x as i32, y as i32, !blocks_light, !blocks_movement);
             }
         }
@@ -173,7 +171,7 @@ impl Map0 {
                         .range_query(&region)
                         .map(|x| x.id)
                         .collect::<Vec<usize>>();
-                    let renderable = &self.map[x][y].renderable;
+                    let renderable = &self.tile_map[x][y].renderable;
                     self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     let mut occupant_found: bool = false;
                     for id in self.get_entities(x, y)
@@ -191,7 +189,7 @@ impl Map0 {
                     }
                 } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
                     let ls_vector = vec![];
-                    let renderable = &self.map[x][y].renderable;
+                    let renderable = &self.tile_map[x][y].renderable;
                     self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                 }
             }
@@ -256,7 +254,7 @@ impl Map0 {
 
     /// Indicates whether a pair of coordinates are in bounds of this map.
     pub fn get_tile(&self, x: usize, y: usize) -> &Tile {
-        &self.map[x][y]
+        &self.tile_map[x][y]
     }
 
     /// Indicates whether a pair of coordinates are in bounds of this map.
