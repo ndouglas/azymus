@@ -2,7 +2,7 @@ use super::compass::Direction;
 use super::rectangle::Rectangle;
 
 /// A cell offset.
-pub type CellOffsetType = (i8, i8);
+pub type CellOffsetType = (i64, i64);
 
 /// The Cell structure.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -29,11 +29,16 @@ impl Cell {
         (self.x, self.y)
     }
 
+    /// Gets the offset to another cell.
+    pub fn offset_to(&self, cell: &Cell) -> CellOffsetType {
+        ((cell.x as i64 - self.x as i64), (cell.y as i64 - self.y as i64))
+    }
+
     /// To a specified offset.
     pub fn to_offset(&self, offset: CellOffsetType, rectangle: &Rectangle) -> Option<Cell> {
         let (dx, dy) = offset;
-        let final_x = (self.x as i64 + dx as i64) as usize;
-        let final_y = (self.y as i64 + dy as i64) as usize;
+        let final_x = (self.x as i64 + dx) as usize;
+        let final_y = (self.y as i64 + dy) as usize;
         if rectangle.contains_coordinates(final_x, final_y) {
             Some(Cell::new(final_x, final_y))
         } else {
@@ -44,6 +49,15 @@ impl Cell {
     /// To a specified direction.
     pub fn to_compass_direction(&self, compass_direction: &Direction, rectangle: &Rectangle) -> Option<Cell> {
         self.to_offset(compass_direction.as_offset(), rectangle)
+    }
+
+    /// In the direction of a specific cell.
+    pub fn toward_cell(&self, cell: &Cell, rectangle: &Rectangle) -> Option<Cell> {
+        if let Some(compass_direction) = Direction::from_offset(self.offset_to(cell)) {
+            self.to_compass_direction(&compass_direction, rectangle)
+        } else {
+            None
+        }
     }
 
     /// To northwest.
