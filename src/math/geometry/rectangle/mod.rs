@@ -26,6 +26,16 @@ impl Rectangle {
         }
     }
 
+    /// x2.
+    pub fn x2(&self) -> usize {
+        self.x + self.width
+    }
+
+    /// y2.
+    pub fn y2(&self) -> usize {
+        self.y + self.height
+    }
+
     /// Top-left corner as cell.
     pub fn top_left_cell(&self) -> Cell {
         Cell::new(self.x, self.y)
@@ -33,17 +43,17 @@ impl Rectangle {
 
     /// Top-right corner as cell.
     pub fn top_right_cell(&self) -> Cell {
-        Cell::new(self.x + self.width, self.y)
+        Cell::new(self.x2(), self.y)
     }
 
     /// Bottom left corner as cell.
     pub fn bottom_left_cell(&self) -> Cell {
-        Cell::new(self.x, self.y + self.height)
+        Cell::new(self.x, self.y2())
     }
 
     /// Bottom right corner as cell.
     pub fn bottom_right_cell(&self) -> Cell {
-        Cell::new(self.x + self.width, self.y + self.height)
+        Cell::new(self.x2(), self.y2())
     }
 
     /// From cells:
@@ -60,18 +70,18 @@ impl Rectangle {
 
     /// Overlaps:
     pub fn overlaps(&self, other: &Rectangle) -> bool {
-        (self.x < other.x + other.width)
-        && (self.x + self.width > other.x)
-        && (self.y < other.y + other.height)
-        && (self.y + self.height > other.y)
+        (self.x < other.x2())
+        && (self.x2() > other.x)
+        && (self.y < other.y2())
+        && (self.y2() > other.y)
     }
 
     /// Contains xy.
     pub fn contains_coordinates(&self, x: usize, y: usize) -> bool {
         (self.x <= x)
-        && (self.x + self.width >= x)
+        && (self.x2() >= x)
         && (self.y <= y)
-        && (self.y + self.height >= y)
+        && (self.y2() >= y)
     }
 
     /// Contains cell.
