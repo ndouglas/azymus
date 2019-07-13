@@ -13,6 +13,14 @@ pub struct Cell {
     pub y: usize,
 }
 
+/// A trait that permits deriving a cell from anything with x and y fields.
+pub trait Cellular {
+
+    /// Create a cell from this object.
+    fn as_cell(&self) -> Cell;
+
+}
+
 /// The Cell structure.
 impl Cell {
 

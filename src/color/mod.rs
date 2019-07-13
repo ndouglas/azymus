@@ -2,7 +2,7 @@ use tcod::colors::Color as TcodColor;
 use bear_lib_terminal::Color as BltColor;
 
 /// The color structure.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Color {
     /// Red.
     pub red: u8,

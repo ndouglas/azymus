@@ -12,14 +12,14 @@ use crate::species;
 use species::Species;
 
 /// Something that can act autonomously.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Agent {
     /// The algorithm used by this agent.
     pub algorithm: Algorithm,
 }
 
 /// Algorithms used to vend commands when given a context.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Algorithm {
     /// Just move South.
     JustMoveSouth,

@@ -1,4 +1,6 @@
+use ntree::Region;
 use super::cell::Cell;
+use super::cell::Cellular;
 
 /// The Rectangle structure.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
@@ -87,6 +89,62 @@ impl Rectangle {
     /// Contains cell.
     pub fn contains_cell(&self, cell: &Cell) -> bool {
         self.contains_coordinates(cell.x, cell.y)
+    }
+
+}
+
+/// Make this usable in quad-trees.
+impl<T> Region<T> for Rectangle where T: Cellular {
+
+    /// Does this region contain this point?
+    fn contains(&self, point: &T) -> bool {
+        let point = point.as_cell();
+        let result = self.x <= point.x
+            && self.y <= point.y
+            && (self.x + self.width) >= point.x
+            && (self.y + self.height) >= point.y;
+        result
+    }
+
+    /// Tear my tree into pieces, this is my subdivide()
+    fn split(&self) -> Vec<Rectangle> {
+        assert!(self.height >= 2);
+        assert!(self.width >= 2);
+        let halfwidth = self.width / 2;
+        let halfheight = self.height / 2;
+        vec![
+            Rectangle {
+                x: self.x,
+                y: self.y,
+                width: halfwidth,
+                height: halfheight
+            },
+            Rectangle {
+                x: self.x,
+                y: self.y + halfheight,
+                width: halfwidth,
+                height: self.height - halfheight
+            },
+            Rectangle {
+                x: self.x + halfwidth,
+                y: self.y,
+                width: self.width - halfwidth,
+                height: halfheight
+            },
+            Rectangle {
+                x: self.x + halfwidth,
+                y: self.y + halfheight,
+                width: self.width - halfwidth,
+                height: self.height - halfheight
+            }
+        ]
+    }
+
+    fn overlaps(&self, other: &Rectangle) -> bool {
+        self.x < other.x + other.width
+        && self.x + self.width > other.x
+        && self.y < other.y + other.height
+        && self.y + self.height > other.y
     }
 
 }

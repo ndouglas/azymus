@@ -14,11 +14,13 @@ use crate::faction;
 use faction::Standing as FactionStanding;
 use crate::map;
 use map::Map0;
+use crate::math;
+use math::geometry::cell::{Cell, Cellular};
 use crate::species;
 use species::Species;
 
 /// The entity object that represents anything that functions in the game world.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Entity {
     /// A unique (hopefully) ID for this entity.
     pub id: usize,
@@ -119,6 +121,26 @@ impl Entity {
             return fov.is_in_fov(position.x, position.y);
         }
         false
+    }
+
+}
+
+/// Implement cellular for this point.
+impl Cellular for Entity {
+
+    /// Create a cell from this object.
+    fn as_cell(&self) -> Cell {
+        if let Some(position) = self.position {
+            Cell {
+                x: position.x as usize,
+                y: position.y as usize,
+            }
+        } else {
+            Cell {
+                x: 0,
+                y: 0,
+            }
+        }
     }
 
 }

@@ -4,7 +4,7 @@ use crate::seed;
 use seed::SeedType;
 
 /// Indicates a position of the entity within the game world.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Position {
     /// The w-coordinate of the object.  (World)
     pub w: SeedType,

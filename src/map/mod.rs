@@ -1,9 +1,20 @@
+/// The entity map.
+pub mod entity_map;
+use entity_map::EntityMap;
+//use entity_map::Factory as EntityMapFactory;
 /// The tile map.
 pub mod tile_map;
 use tile_map::TileMapType;
 use tile_map::Factory as TileMapFactory;
 
-
+/// The map -- the world, as far as we're concerned.
+#[derive(Debug)]
+pub struct Map {
+    /// The actual tile map.
+    pub tile_map: TileMapType,
+    /// The entity map.
+    pub entity_map: EntityMap,
+}
 
 use std::collections::{HashMap, HashSet};
 use std::cmp;

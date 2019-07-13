@@ -1,3 +1,4 @@
+use std::hash::{Hash, Hasher};
 use tcod::map::FovAlgorithm;
 use tcod::map::Map;
 use std::sync::{Arc, Mutex};
@@ -75,6 +76,32 @@ impl FieldOfView {
     }
 
 }
+
+impl Hash for FieldOfView {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.radius.hash(state);
+        self.explored_map.hash(state);
+        self.light_walls.hash(state);
+        self.x.hash(state);
+        self.y.hash(state);
+        self.width.hash(state);
+        self.height.hash(state);
+    }
+}
+
+impl PartialEq for FieldOfView {
+    fn eq(&self, other: &Self) -> bool {
+        (self.radius == other.radius)
+        && (self.light_walls == other.light_walls)
+        && (self.x == other.x)
+        && (self.y == other.y)
+        && (self.width == other.width)
+        && (self.height == other.height)
+        && (self.explored_map == other.explored_map)
+    }
+}
+
+impl Eq for FieldOfView {}
 
 /// Allows us to show this object in tests, etc.
 impl fmt::Debug for FieldOfView {

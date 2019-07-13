@@ -2,7 +2,7 @@ use crate::species;
 use species::Species;
 
 /// Faction class.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Faction {
     /// The player faction.
     Player,
@@ -11,7 +11,7 @@ pub enum Faction {
 }
 
 /// Penalties given by the faction when laws are broken.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Penalty {
     /// The member is a permanent outcast of the faction and is attacked on sight.
     Pariah,
@@ -24,7 +24,7 @@ pub enum Penalty {
 }
 
 /// Penalties/Rewards given by the faction when laws are broken.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Consequence {
     /// Standing with the faction changes by X.
     ChangeStanding(i32),
@@ -43,7 +43,7 @@ pub enum Consequence {
 }
 
 /// Laws governing the behavior of this faction.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Laws {
     /// Must always maintain a minimum standing.
     MinimumStanding(i32, Consequence),
@@ -54,7 +54,7 @@ pub enum Laws {
 }
 
 /// Faction membership.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Standing {
     /// The faction.
     pub faction: Faction,

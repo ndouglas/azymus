@@ -4,7 +4,7 @@ use crate::component;
 use component::renderable::Renderable;
 
 /// The tiles that form the map and structure of the game world.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Tile {
     /// Indicates how the given object is rendered on a map.
     pub renderable: Renderable,

@@ -11,7 +11,7 @@ use crate::entity;
 use entity::Entity;
 
 /// The species that we support.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum Species {
     /// Human.
     Human,

@@ -1,5 +1,5 @@
 /// Something that gets dispensed time and has an opportunity to act.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Actor {
     /// The current time of the entity.
     pub time: i32,

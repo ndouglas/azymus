@@ -2,7 +2,7 @@ use crate::color;
 use color::Color;
 
 /// Indicates how the given object is rendered on a map.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Renderable {
     /// The character used to render the object.
     pub char: Option<char>,
