@@ -1,3 +1,9 @@
+use super::compass::Direction;
+use super::rectangle::Rectangle;
+
+/// A cell offset.
+pub type CellOffsetType = (i8, i8);
+
 /// The Cell structure.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub struct Cell {
@@ -18,9 +24,105 @@ impl Cell {
         }
     }
 
-    /// To tuple.
-    pub fn to_tuple(&self) -> (usize, usize) {
+    /// Convert to a tuple.
+    pub fn as_tuple(&self) -> (usize, usize) {
         (self.x, self.y)
+    }
+
+    /// To a specified offset.
+    pub fn to_offset(&self, offset: CellOffsetType, rectangle: &Rectangle) -> Option<Cell> {
+        let (dx, dy) = offset;
+        let final_x = (self.x as i64 + dx as i64) as usize;
+        let final_y = (self.y as i64 + dy as i64) as usize;
+        if rectangle.contains_coordinates(final_x, final_y) {
+            Some(Cell::new(final_x, final_y))
+        } else {
+            None
+        }
+    }
+
+    /// To a specified direction.
+    pub fn to_compass_direction(&self, compass_direction: &Direction, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_offset(compass_direction.as_offset(), rectangle)
+    }
+
+    /// To northwest.
+    pub fn to_northwest(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::Northwest, rectangle)
+    }
+
+    /// To north.
+    pub fn to_north(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::North, rectangle)
+    }
+
+    /// To northeast.
+    pub fn to_northeast(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::Northeast, rectangle)
+    }
+
+    /// To southwest.
+    pub fn to_southwest(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::Southwest, rectangle)
+    }
+
+    /// To south.
+    pub fn to_south(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::South, rectangle)
+    }
+
+    /// To southeast.
+    pub fn to_southeast(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::Southeast, rectangle)
+    }
+
+    /// To west.
+    pub fn to_west(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::West, rectangle)
+    }
+
+    /// To east.
+    pub fn to_east(&self, rectangle: &Rectangle) -> Option<Cell> {
+        self.to_compass_direction(&Direction::East, rectangle)
+    }
+
+    /// Is in bounds.
+    pub fn is_contained_by_rectangle(&self, rectangle: &Rectangle) -> bool {
+        rectangle.contains_cell(self)
+    }
+
+    /// Get Von Neumann Neighborhood.
+    pub fn get_von_neumann_neighborhood(&self, rectangle: &Rectangle) -> Vec<Cell> {
+        use Direction::*;
+        let mut result: Vec<Cell> = vec![];
+        for compass_direction in &[
+                North,
+                South,
+                East,
+                West,
+            ] {
+            if let Some(neighbor) = self.to_compass_direction(compass_direction, rectangle) {
+                result.push(neighbor);
+            }
+        }
+        result
+    }
+
+    /// Get Moore Neighborhood.
+    pub fn get_moore_neighborhood(&self, rectangle: &Rectangle) -> Vec<Cell> {
+        use Direction::*;
+        let mut result = self.get_von_neumann_neighborhood(rectangle);
+        for compass_direction in &[
+                Northeast,
+                Southeast,
+                Southwest,
+                Northwest,
+            ] {
+            if let Some(neighbor) = self.to_compass_direction(compass_direction, rectangle) {
+                result.push(neighbor);
+            }
+        }
+        result
     }
 
 }
@@ -36,7 +138,15 @@ mod tests {
     fn new_cell() {
         assert_eq!(3, Cell::new(3, 4).x);
         assert_eq!(4, Cell::new(3, 4).y);
-        assert_eq!((3, 4), Cell::new(3, 4).to_tuple());
+        assert_eq!((3, 4), Cell::new(3, 4).as_tuple());
+    }
+
+    /// Ensure the directions work.
+    #[test]
+    fn to_offset() {
+        let rectangle = Rectangle::new(0, 0, 10, 10);
+        assert_eq!(Cell::new(3, 4), Cell::new(3, 4).to_northeast(&rectangle).unwrap().to_southwest(&rectangle).unwrap());
+        assert_eq!(Cell::new(3, 4), Cell::new(3, 4).to_southeast(&rectangle).unwrap().to_west(&rectangle).unwrap().to_north(&rectangle).unwrap());
     }
 
 }

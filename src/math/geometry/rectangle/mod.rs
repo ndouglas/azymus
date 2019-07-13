@@ -46,8 +46,8 @@ impl Rectangle {
         Cell::new(self.x + self.width, self.y + self.height)
     }
 
-    /// From poinds:
-    pub fn from_points(tl: &Cell, br: &Cell) -> Rectangle {
+    /// From cells:
+    pub fn from_cells(tl: &Cell, br: &Cell) -> Rectangle {
         assert!(br.x > tl.x);
         assert!(br.y > tl.y);
         Rectangle::new(tl.x, tl.y, br.x - tl.x, br.y - tl.y)
@@ -64,6 +64,19 @@ impl Rectangle {
         && (self.x + self.width > other.x)
         && (self.y < other.y + other.height)
         && (self.y + self.height > other.y)
+    }
+
+    /// Contains xy.
+    pub fn contains_coordinates(&self, x: usize, y: usize) -> bool {
+        (self.x <= x)
+        && (self.x + self.width >= x)
+        && (self.y <= y)
+        && (self.y + self.height >= y)
+    }
+
+    /// Contains cell.
+    pub fn contains_cell(&self, cell: &Cell) -> bool {
+        self.contains_coordinates(cell.x, cell.y)
     }
 
 }
@@ -108,10 +121,10 @@ mod tests {
         assert_eq!(Cell::new(7, 12), Rectangle::new(3, 4, 4, 8).bottom_right_cell());
     }
 
-    /// From points.
+    /// From cells.
     #[test]
-    fn from_points() {
-        assert_eq!(Rectangle::new(3, 4, 4, 8), Rectangle::from_points(&Cell::new(3, 4), &Cell::new(7, 12)));
+    fn from_cells() {
+        assert_eq!(Rectangle::new(3, 4, 4, 8), Rectangle::from_cells(&Cell::new(3, 4), &Cell::new(7, 12)));
     }
 
     /// Center.
@@ -132,6 +145,20 @@ mod tests {
         assert!(Rectangle::new(3, 4, 4, 8).overlaps(&Rectangle::new(2, 3, 6, 10)));
         assert!(Rectangle::new(3, 4, 4, 8).overlaps(&Rectangle::new(5, 6, 3, 3)));
         assert!(!Rectangle::new(3, 4, 4, 4).overlaps(&Rectangle::new(13, 14, 4, 4)));
+    }
+
+    /// Contains cell.
+    #[test]
+    fn contains_cell() {
+        assert!(Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(3, 4)));
+        assert!(Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(7, 4)));
+        assert!(Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(3, 12)));
+        assert!(Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(7, 12)));
+        assert!(!Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(2, 14)));
+        assert!(!Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(8, 4)));
+        assert!(!Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(2, 4)));
+        assert!(!Rectangle::new(3, 4, 4, 8).contains_cell(&Cell::new(7, 13)));
+        assert!(!Rectangle::new(3, 4, 4, 4).contains_cell(&Cell::new(30, 40)));
     }
 
 }
