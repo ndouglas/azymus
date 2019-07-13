@@ -1,5 +1,8 @@
 use crate::component;
-use component::renderable::{Renderable, Factory as RenderableFactory};
+use component::renderable::Renderable;
+
+/// The factory.
+pub mod factory;
 
 /// The tiles that form the map and structure of the game world.
 #[derive(Clone, Debug)]
@@ -13,23 +16,5 @@ pub struct Tile {
 }
 
 impl Tile {
-
-    /// Create a floor tile.
-    pub fn floor() -> Self {
-        Tile {
-            renderable: RenderableFactory::Floor.create(),
-            blocks_movement: false,
-            blocks_light: false,
-        }
-    }
-
-    /// Create a wall tile.
-    pub fn wall() -> Self {
-        Tile {
-            renderable: RenderableFactory::Wall.create(),
-            blocks_movement: true,
-            blocks_light: true,
-        }
-    }
 
 }

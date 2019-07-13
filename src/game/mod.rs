@@ -4,7 +4,7 @@ use crate::entity;
 use entity::Entity;
 use entity::get_player;
 use crate::map;
-use map::Map;
+use map::Map0;
 use map::get_map;
 use crate::scheduler;
 use scheduler::Scheduler;
@@ -25,7 +25,7 @@ pub struct Game {
     /// The input domain.
     pub input_domain: InputDomain,
     /// The game map.
-    pub map: Map,
+    pub map: Map0,
     /// All entities in the game.
     pub entities: Vec<Entity>,
     /// The player entity ID.

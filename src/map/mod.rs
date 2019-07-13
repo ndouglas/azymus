@@ -37,7 +37,7 @@ pub type QuadTreeType = NTree<QuadTreeRegion, QuadTreePoint>;
 pub type MapType = Vec<Vec<Tile>>;
 
 /// The map object.
-pub struct Map {
+pub struct Map0 {
     /// The actual inner map.
     map: MapType,
     /// The height of the map.
@@ -49,7 +49,7 @@ pub struct Map {
 }
 
 /// The map object.
-impl Map {
+impl Map0 {
 
     /// Constructor.
     pub fn new(map: MapType) -> Self {
@@ -61,7 +61,7 @@ impl Map {
                 spatial_hash.insert((x, y), HashSet::new());
             }
         }
-        Map {
+        Map0 {
             map: map,
             height: height,
             width: width,
@@ -205,10 +205,10 @@ impl Map {
         let mut fg_color = blt::pick_foreground_color(point, 0);
         let mut the_char = ' ';
         if let Some(color) = renderable.background_color {
-            bg_color = color;
+            bg_color = color.to_blt();
         }
         if let Some(color) = renderable.foreground_color {
-            fg_color = color;
+            fg_color = color.to_blt();
         }
         if let Some(char) = renderable.char {
             the_char = char;
@@ -239,10 +239,10 @@ impl Map {
         let mut fg_color = blt::pick_foreground_color(point, 0);
         let mut the_char = ' ';
         if let Some(color) = renderable.background_color {
-            bg_color = color;
+            bg_color = color.to_blt();
         }
         if let Some(color) = renderable.foreground_color {
-            fg_color = color;
+            fg_color = color.to_blt();
         }
         if let Some(char) = renderable.char {
             the_char = char;
@@ -312,16 +312,16 @@ impl Map {
 
 }
 
-impl fmt::Debug for Map {
+impl fmt::Debug for Map0 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Map")
+        write!(f, "Map0")
     }
 }
 
 /// Get a new map.
-pub fn get_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
+pub fn get_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map0, Position) {
     let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, rng, width, height, level, entities);
-    let mut map = Map::new(inner_map);
+    let mut map = Map0::new(inner_map);
     for entity in entities {
         entity.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));
         if let Some(position) = &entity.position {

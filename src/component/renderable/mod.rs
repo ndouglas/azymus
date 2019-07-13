@@ -1,4 +1,5 @@
-use bear_lib_terminal::Color;
+use crate::color;
+use color::Color;
 
 /// Indicates how the given object is rendered on a map.
 #[derive(Clone, Debug)]

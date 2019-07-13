@@ -13,7 +13,7 @@ use crate::faction;
 //use faction::Faction;
 use faction::Standing as FactionStanding;
 use crate::map;
-use map::Map;
+use map::Map0;
 use crate::species;
 use species::Species;
 
@@ -124,7 +124,7 @@ impl Entity {
 }
 
 /// Get a "player" entity.
-pub fn get_player(map: &Map) -> Entity {
+pub fn get_player(map: &Map0) -> Entity {
     trace!("Entering get_player().");
     let mut player = Entity::new("Player".to_string());
     player.actor = Some(Actor {
