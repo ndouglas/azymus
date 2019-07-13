@@ -170,9 +170,8 @@ impl Map {
                         .range_query(&region)
                         .map(|x| x.id)
                         .collect::<Vec<usize>>();
-                    if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                    }
+                    let renderable = &self.map[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     let mut occupant_found: bool = false;
                     for id in self.get_entities(x, y)
                         .unwrap_or(HashSet::new())
@@ -189,9 +188,8 @@ impl Map {
                     }
                 } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
                     let ls_vector = vec![];
-                    if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                    }
+                    let renderable = &self.map[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                 }
             }
         }

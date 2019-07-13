@@ -1,16 +1,11 @@
 use crate::component;
-use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
-use crate::seed;
-use seed::SeedType;
 
 /// The tiles that form the map and structure of the game world.
 #[derive(Clone, Debug)]
 pub struct Tile {
-    /// Indicates a position of the object within the game world.
-    pub position: Option<Position>,
     /// Indicates how the given object is rendered on a map.
-    pub renderable: Option<Renderable>,
+    pub renderable: Renderable,
     /// Whether this object prevents movement.
     pub blocks_movement: bool,
     /// Whether this object is opaque.
@@ -19,31 +14,19 @@ pub struct Tile {
 
 impl Tile {
 
-    /// Constructor.
-    pub fn new() -> Self {
-        Tile {
-            position: None,
-            renderable: None,
-            blocks_movement: false,
-            blocks_light: false,
-        }
-    }
-
     /// Create a floor tile.
-    pub fn floor(w: SeedType, x: i32, y: i32, z: i32) -> Self {
+    pub fn floor() -> Self {
         Tile {
-            position: Some(Position::new(w, x, y, z)),
-            renderable: Some(RenderableFactory::Floor.create()),
+            renderable: RenderableFactory::Floor.create(),
             blocks_movement: false,
             blocks_light: false,
         }
     }
 
     /// Create a wall tile.
-    pub fn wall(w: SeedType, x: i32, y: i32, z: i32) -> Self {
+    pub fn wall() -> Self {
         Tile {
-            position: Some(Position::new(w, x, y, z)),
-            renderable: Some(RenderableFactory::Wall.create()),
+            renderable: RenderableFactory::Wall.create(),
             blocks_movement: true,
             blocks_light: true,
         }
