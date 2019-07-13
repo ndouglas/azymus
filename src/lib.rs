@@ -62,6 +62,9 @@ pub mod agent;
 /// Bodies are the forms of "living" entities.
 pub mod body;
 
+/// Colors are very important, since this is a graphical game.
+pub mod color;
+
 /// Combat manages any sort of attack.
 pub mod combat;
 
