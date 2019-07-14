@@ -1,3 +1,4 @@
+use std::fmt;
 use tcod::map::Map as FovMap;
 use crate::agent;
 use agent::Agent;
@@ -170,4 +171,11 @@ pub fn get_player(map: &Map) -> Entity {
     player.renderable = Some(RenderableFactory::Player.create());
     player.blocks_movement = true;
     player
+}
+
+/// Format this object for user display.
+impl fmt::Display for Entity {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "'{}' {}", self.name, self.cell)
+    }
 }

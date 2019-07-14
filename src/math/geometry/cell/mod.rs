@@ -1,3 +1,4 @@
+use std::fmt;
 use super::compass::Direction;
 use super::rectangle::Rectangle;
 
@@ -160,6 +161,13 @@ impl Default for Cell {
         }
     }
 
+}
+
+/// Format this object for user display.
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
 }
 
 #[cfg(test)]
