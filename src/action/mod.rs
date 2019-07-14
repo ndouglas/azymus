@@ -1,11 +1,10 @@
-use crate::command;
-use command::CompassDirection;
 use crate::effect;
 use effect::Effect;
 use crate::game;
 use game::Game;
 use crate::math;
 use math::geometry::cell::Cellular;
+use math::geometry::compass::Direction as CompassDirection;
 use crate::species;
 use species::Factory as SpeciesFactory;
 

@@ -1,5 +1,3 @@
-use rand::Rng;
-use rand::distributions::{Distribution, Standard};
 use crate::action;
 use action::Action;
 use crate::component;
@@ -8,45 +6,10 @@ use crate::game;
 use game::Game;
 use crate::math;
 use math::geometry::cell::Cellular;
+use math::geometry::compass::Direction as CompassDirection;
 use math::geometry::rectangle::Rectangular;
 use crate::species;
 use species::Species;
-
-/// Compass directions.
-#[derive(Clone, Copy, Debug)]
-pub enum CompassDirection {
-    /// North.
-    North,
-    /// Northeast.
-    Northeast,
-    /// Northwest.
-    Northwest,
-    /// South.
-    South,
-    /// Southeast.
-    Southeast,
-    /// Southwest.
-    Southwest,
-    /// East.
-    East,
-    /// West.
-    West,
-}
-
-impl Distribution<CompassDirection> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CompassDirection {
-        match rng.gen_range(0, 8) {
-            0 => CompassDirection::North,
-            1 => CompassDirection::Northeast,
-            2 => CompassDirection::Northwest,
-            3 => CompassDirection::South,
-            4 => CompassDirection::Southeast,
-            5 => CompassDirection::Southwest,
-            6 => CompassDirection::East,
-            _ => CompassDirection::West,
-        }
-    }
-}
 
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]

@@ -1,7 +1,6 @@
-use crate::command;
-use command::CompassDirection;
 use crate::math;
 use math::geometry::cell::{Cell, Cellular};
+use math::geometry::compass::Direction as CompassDirection;
 use crate::seed;
 use seed::SeedType;
 

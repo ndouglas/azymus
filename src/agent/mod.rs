@@ -1,7 +1,6 @@
 use rand::*;
 use crate::command;
 use command::Command;
-use command::CompassDirection;
 use crate::component;
 use component::position::Position;
 //use crate::entity;
@@ -10,6 +9,7 @@ use crate::game;
 use game::Game;
 use crate::math;
 use math::geometry::cell::Cell;
+use math::geometry::compass::Direction as CompassDirection;
 use math::geometry::rectangle::Rectangular;
 use crate::species;
 use species::Species;
