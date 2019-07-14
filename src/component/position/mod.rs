@@ -1,5 +1,7 @@
 use crate::command;
 use command::CompassDirection;
+use crate::math;
+use math::geometry::cell::{Cell, Cellular};
 use crate::seed;
 use seed::SeedType;
 
@@ -136,6 +138,19 @@ impl Position {
     /// Returns the distance to another object.
     pub fn distance_to(&self, position: &Position) -> f32 {
         (((position.x - self.x).pow(2) + (position.y - self.y).pow(2)) as f32).sqrt()
+    }
+
+}
+
+/// Implement cellular for this point.
+impl Cellular for Position {
+
+    /// Create a cell from this object.
+    fn as_cell(&self) -> Cell {
+        Cell {
+            x: self.x as usize,
+            y: self.y as usize,
+        }
     }
 
 }

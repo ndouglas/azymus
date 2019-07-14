@@ -4,6 +4,8 @@ use crate::effect;
 use effect::Effect;
 use crate::game;
 use game::Game;
+use crate::math;
+use math::geometry::cell::Cellular;
 use crate::species;
 use species::Factory as SpeciesFactory;
 
@@ -56,7 +58,7 @@ impl Action {
                 if let Some(position1) = &entity.position {
                     let position2 = position1.to_direction(*compass_direction);
                     debug!("Entity {} elected to move ({:?}).", entity.name, compass_direction);
-                    return Some(Effect::MoveEntity(position1.clone(), position2));
+                    return Some(Effect::MoveEntity(position1.as_cell(), position2.as_cell()));
                 }
                 None
             },

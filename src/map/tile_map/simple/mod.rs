@@ -1,6 +1,7 @@
 use rand::prelude::*;
 use std::cmp;
 use crate::math;
+use math::geometry::cell::Cell;
 use math::geometry::rectangle::Rectangle;
 use crate::seed;
 use seed::SeedType;
@@ -43,10 +44,11 @@ fn create_v_tunnel(y1: usize, y2: usize, x: usize, map: &mut TileMapType) {
 }
 
 /// Generate the map.
-pub fn generate_tile_map(seed: SeedType, width: usize, height: usize) -> TileMapType {
+pub fn generate_tile_map(seed: SeedType, width: usize, height: usize) -> (TileMapType, Cell) {
     let mut rng: StdRng = SeedableRng::from_seed(seed);
     let mut map = vec![vec![TileFactory::Wall.create(); height]; width];
     let mut rooms = vec![];
+    let mut start: Cell = Cell::new(0, 0);
     for _ in 0..width / 2 {
         let w = rng.gen_range(ROOM_MIN_SIZE, ROOM_MAX_SIZE + 1);
         let h = rng.gen_range(ROOM_MIN_SIZE, ROOM_MAX_SIZE + 1);
@@ -60,7 +62,7 @@ pub fn generate_tile_map(seed: SeedType, width: usize, height: usize) -> TileMap
             create_room(new_room, &mut map);
             let (new_x, new_y) = new_room.center().as_tuple();
             if rooms.is_empty() {
-                map[new_x][new_y].starting_position = true;
+                start = Cell::new(new_x, new_y);
             } else {
                 let (prev_x, prev_y) = rooms[rooms.len() - 1].center().as_tuple();
                 if rng.gen() {
@@ -74,5 +76,5 @@ pub fn generate_tile_map(seed: SeedType, width: usize, height: usize) -> TileMap
             rooms.push(new_room);
         }
     }
-    map
+    (map, start)
 }

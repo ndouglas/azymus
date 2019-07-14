@@ -149,6 +149,19 @@ impl Cell {
 
 }
 
+/// Creates a default instance.
+impl Default for Cell {
+
+    /// Creates a default instance.
+    fn default() -> Self {
+        Cell {
+            x: std::usize::MAX,
+            y: std::usize::MAX,
+        }
+    }
+
+}
+
 #[cfg(test)]
 mod tests {
 

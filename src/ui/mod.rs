@@ -10,6 +10,9 @@ use command::Command;
 use command::CompassDirection;
 use crate::game;
 use game::Game;
+use crate::math;
+use math::geometry::cell::Cell;
+use math::geometry::rectangle::Rectangular;
 use crate::settings;
 use settings::Settings;
 
@@ -73,13 +76,14 @@ impl Ui {
         let map = &game.map;
         let player = &game.entities[player_id];
         if let Some(fov) = &player.field_of_view {
-            map.draw(&self, fov, game);
+            //map.draw(&self, fov, game);
             let position = blt::state::mouse::position();
             let fov_map = fov.map.lock().unwrap();
-            if map.is_in_bounds(position.x as usize, position.y as usize) {
+            if map.as_rectangle().contains_coordinates(position.x as usize, position.y as usize) {
                 if fov_map.is_in_fov(position.x, position.y) {
                     blt::with_colors(Color::from_rgb(255, 255, 255), Color::from_rgb(0, 0, 0), || {
-                        let xy_entities = map.get_entities(position.x as usize, position.y as usize)
+                        let xy_entities = map.entity_map
+                            .hash_get_entity_ids(&Cell::new(position.x as usize, position.y as usize))
                             .unwrap_or(HashSet::new());
                         let entities = xy_entities
                             .iter()

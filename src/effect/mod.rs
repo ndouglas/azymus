@@ -2,6 +2,9 @@ use crate::component;
 use component::position::Position;
 use crate::game;
 use game::Game;
+use crate::math;
+use math::geometry::cell::Cell;
+use math::geometry::cell::Cellular;
 use crate::species;
 use species::Factory as SpeciesFactory;
 
@@ -9,7 +12,7 @@ use species::Factory as SpeciesFactory;
 #[derive(Clone, Debug)]
 pub enum Effect {
     /// Move the specified entity from one position to another.
-    MoveEntity(Position, Position),
+    MoveEntity(Cell, Cell),
     /// Damage the entity by some amount.
     DamageEntityBody(usize, i32),
     /// Remove the entity entirely.
@@ -31,11 +34,11 @@ impl Effect {
     pub fn execute(&self, id: usize, game: &mut Game) {
         use Effect::*;
         match self {
-            MoveEntity(position1, position2) => {
+            MoveEntity(cell1, cell2) => {
                 let mut entity = &mut game.entities[id];
-                debug!("Moving entity {} from ({}, {}) to ({}, {}).", entity.name, position1.x, position1.y, position2.x, position2.y);
-                game.map.move_entity(entity.id, position1.x as usize, position1.y as usize, position2.x as usize, position2.y as usize);
-                entity.position = Some(*position2);
+                debug!("Moving entity {} from {:?} to {:?}.", entity.name, cell1, cell2);
+                game.map.entity_map.hash_move_entity_id(entity.id, &cell1, &cell2);
+                entity.cell = *cell2;
                 UpdateEntityFov.execute(id, game);
             },
             DamageEntityBody(target_id, hp) => {
@@ -78,7 +81,7 @@ impl Effect {
                 entity.light_source = None;
                 entity.renderable = None;
                 if let Some(position) = &entity.position {
-                    game.map.remove_entity(id, position.x as usize, position.y as usize);
+                    game.map.entity_map.hash_remove_entity_id(id, &position.as_cell());
                 }
             },
             UpdateEntityFov => {
@@ -98,7 +101,7 @@ impl Effect {
                 let id = game.entities.len();
                 entity.id = id;
                 game.entities.push(entity);
-                game.map.insert_entity(id, position.x as usize, position.y as usize);
+                game.map.entity_map.hash_insert_entity_id(id, &position.as_cell());
             },
             ChangeEntitySpecies(species_factory) => {
                 println!("Entering ChangeEntitySpecies({:?}) for id {}.", species_factory, id);

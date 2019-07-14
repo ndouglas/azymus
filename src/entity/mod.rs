@@ -13,7 +13,7 @@ use crate::faction;
 //use faction::Faction;
 use faction::Standing as FactionStanding;
 use crate::map;
-use map::Map0;
+use map::Map;
 use crate::math;
 use math::geometry::cell::{Cell, Cellular};
 use crate::species;
@@ -42,6 +42,8 @@ pub struct Entity {
     pub light_source: Option<LightSource>,
     /// Indicates a position of the object within the game world.
     pub position: Option<Position>,
+    /// Indicates the cell of the object.
+    pub cell: Cell,
     /// Indicates how the given object is rendered on a map.
     pub renderable: Option<Renderable>,
     /// Whether this object prevents movement.
@@ -65,6 +67,7 @@ impl Entity {
             field_of_view: None,
             light_source: None,
             position: None,
+            cell: Cell::default(),
             renderable: None,
             blocks_movement: false,
         }
@@ -146,7 +149,7 @@ impl Cellular for Entity {
 }
 
 /// Get a "player" entity.
-pub fn get_player(map: &Map0) -> Entity {
+pub fn get_player(map: &Map) -> Entity {
     trace!("Entering get_player().");
     let mut player = Entity::new("Player".to_string());
     player.actor = Some(Actor {

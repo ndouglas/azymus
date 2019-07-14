@@ -1,13 +1,14 @@
-use crate::component;
-use component::position::Position;
 use crate::effect;
 use effect::Effect;
 use crate::entity;
 use entity::Entity;
 use entity::get_player;
 use crate::map;
-use map::Map0;
+use map::Map;
 use map::get_map;
+use crate::math;
+use math::geometry::cell::Cell;
+use math::geometry::cell::Cellular;
 use crate::scheduler;
 use scheduler::Scheduler;
 use crate::seed;
@@ -27,7 +28,7 @@ pub struct Game {
     /// The input domain.
     pub input_domain: InputDomain,
     /// The game map.
-    pub map: Map0,
+    pub map: Map,
     /// All entities in the game.
     pub entities: Vec<Entity>,
     /// The player entity ID.
@@ -51,7 +52,8 @@ impl Game {
     /// Get the entities at the specified location.
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
         self.map
-            .get_entities(x as usize, y as usize)
+            .entity_map
+            .hash_get_entity_ids(&Cell::new(x as usize, y as usize))
             .unwrap_or(std::collections::HashSet::new())
             .iter()
             .map(|&x| &self.entities[x] )
@@ -72,28 +74,19 @@ pub fn run() {
         1, 2, 3, 4,
         5, 6, 7, 8,
     ];
-    let mut rng = get_rng(seed);
+    let rng = get_rng(seed);
     let settings = get_settings();
     let mut ui = Ui::new(&settings);
     ui.open();
     let scheduler = Scheduler::new();
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
-    let mut entities = Vec::new();
-    let map = get_map(seed, &mut rng, width, height, 0, &mut entities);
-    let mut start_x = 0;
-    let mut start_y = 0;
-    for y in 0..map.height {
-        for x in 0..map.width {
-            if map.tile_map[x][y].starting_position {
-                start_x = x as i32;
-                start_y = y as i32;
-            }
-        }
-    }
+    let entities = Vec::new();
+    let map = get_map(seed, width, height);
     let mut player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
+    let start_cell = map.tile_map.start;
     let mut game = Game {
         input_domain: InputDomain::Explore,
         map: map,
@@ -109,12 +102,7 @@ pub fn run() {
     let player_id = game.player_id;
     player.id = player_id;
     game.entities.push(player);
-    Effect::MoveEntity(player_position, Position {
-        w: seed.clone(),
-        x: start_x,
-        y: start_y,
-        z: 0,
-    })
+    Effect::MoveEntity(player_position.as_cell(), start_cell)
         .execute(player_id, &mut game);
     scheduler.feed(&mut game.entities);
     ui.refresh();

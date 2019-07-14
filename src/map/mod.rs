@@ -1,21 +1,88 @@
+use tcod::map::Map as FovMap;
+use crate::math;
+use math::geometry::rectangle::Rectangle;
+use math::geometry::rectangle::Rectangular;
+use crate::seed;
+use seed::SeedType;
+
 /// The entity map.
 pub mod entity_map;
 use entity_map::EntityMap;
-//use entity_map::Factory as EntityMapFactory;
+
 /// The tile map.
 pub mod tile_map;
-use tile_map::TileMapType;
+use tile_map::TileMap;
 use tile_map::Factory as TileMapFactory;
 
 /// The map -- the world, as far as we're concerned.
 #[derive(Debug)]
 pub struct Map {
+    /// The width.
+    pub width: usize,
+    /// The height.
+    pub height: usize,
     /// The actual tile map.
-    pub tile_map: TileMapType,
+    pub tile_map: TileMap,
     /// The entity map.
     pub entity_map: EntityMap,
 }
 
+/// The map.
+impl Map {
+
+    /// Constructor.
+    pub fn new(tile_map: TileMap) -> Self {
+        let width = tile_map.width;
+        let height = tile_map.height;
+        Map {
+            width: width,
+            height: height,
+            tile_map: tile_map,
+            entity_map: EntityMap::new(width, height),
+        }
+    }
+
+    /// Initialize a field-of-view object.
+    pub fn get_fov(&self) -> FovMap {
+        let width = self.width;
+        let height = self.height;
+        let mut map = FovMap::new(width as i32, height as i32);
+        for y in 0..height {
+            for x in 0..width {
+                let blocks_light = self.tile_map.vector[x][y].blocks_light;
+                let blocks_movement = self.tile_map.vector[x][y].blocks_movement;
+                map.set(x as i32, y as i32, !blocks_light, !blocks_movement);
+            }
+        }
+        map
+    }
+
+}
+
+
+/// Allows us to create a rectangle representation of this map.
+impl Rectangular for Map {
+
+    /// Create a rectangle from this object.
+    fn as_rectangle(&self) -> Rectangle {
+        Rectangle {
+            x: 0,
+            y: 0,
+            width: self.width,
+            height: self.height,
+        }
+    }
+
+}
+
+/// Get a new map.
+pub fn get_map(seed: SeedType, width: i32, height: i32) -> Map {
+    let inner_map = TileMapFactory::Simple.create(seed, width as usize, height as usize);
+    let map = Map::new(inner_map);
+    map
+}
+
+/*
 use std::collections::{HashMap, HashSet};
 use std::cmp;
 use std::fmt;
@@ -36,14 +103,8 @@ use crate::species;
 use species::Species;
 use crate::tile;
 use tile::Tile;
-use tcod::map::Map as FovMap;
 use crate::ui;
 use ui::Ui;
-
-/// The quad-tree for spatial trees.
-pub mod quadtree;
-use quadtree::QuadTreeRegion;
-use quadtree::QuadTreePoint;
 
 /// Our quad-tree type.
 pub type QuadTreeType = NTree<QuadTreeRegion, QuadTreePoint>;
@@ -79,21 +140,6 @@ impl Map0 {
             width: width,
             spatial_hash: spatial_hash,
         }
-    }
-
-    /// Initialize a field-of-view object.
-    pub fn get_fov(&self) -> FovMap {
-        let height = self.height;
-        let width = self.width;
-        let mut map = FovMap::new(width as i32, height as i32);
-        for y in 0..height {
-            for x in 0..width {
-                let blocks_light = self.tile_map[x][y].blocks_light;
-                let blocks_movement = self.tile_map[x][y].blocks_movement;
-                map.set(x as i32, y as i32, !blocks_light, !blocks_movement);
-            }
-        }
-        map
     }
 
     /// Indicates whether a position is in bounds of this map.
@@ -330,9 +376,5 @@ impl fmt::Debug for Map0 {
     }
 }
 
-/// Get a new map.
-pub fn get_map(seed: SeedType, _rng: &mut RngType, width: i32, height: i32, _level: i32, _entities: &mut Vec<Entity>) -> Map0 {
-    let inner_map = TileMapFactory::Simple.create(seed, width as usize, height as usize);
-    let map = Map0::new(inner_map);
-    map
-}
+
+*/

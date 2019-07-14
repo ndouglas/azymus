@@ -8,6 +8,9 @@ use component::position::Position;
 //use entity::Entity;
 use crate::game;
 use game::Game;
+use crate::math;
+use math::geometry::cell::Cell;
+use math::geometry::rectangle::Rectangular;
 use crate::species;
 use species::Species;
 
@@ -88,7 +91,8 @@ impl Algorithm {
                 let entity = &game.entities[id];
                 if let Some(position) = entity.position {
                     let entities = &game.map
-                        .get_entities_around(position.x as usize, position.y as usize)
+                        .entity_map
+                        .hash_get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
                         .iter()
                         .map(|&id| &game.entities[id])
                         .cloned()
@@ -108,15 +112,17 @@ impl Algorithm {
                                         }
                                         let final_x = (position.x + dx) as usize;
                                         let final_y = (position.y + dy) as usize;
-                                        if !map.is_in_bounds(final_x, final_y) {
+                                        let cell = Cell::new(final_x, final_y);
+                                        if !map.as_rectangle().contains_cell(&cell) {
                                             continue;
                                         }
                                         let mut seed_here: bool = true;
-                                        let tile = map.get_tile(final_x, final_y);
-                                        if tile.blocks_movement || tile.blocks_light {
-                                            seed_here = false;
+                                        if let Some(tile) = map.tile_map.get_tile(&cell) {
+                                            if tile.blocks_movement || tile.blocks_light {
+                                                seed_here = false;
+                                            }
                                         }
-                                        if let Some(entities) = map.get_entities(final_x, final_y) {
+                                        if let Some(entities) = map.entity_map.hash_get_entity_ids(&cell) {
                                             for id in entities {
                                                 let entity = &game.entities[id];
                                                 if let Some(species) = entity.species {
@@ -157,7 +163,8 @@ impl Algorithm {
                 let moss_seed = &game.entities[id];
                 if let Some(position) = moss_seed.position {
                     let entities = &game.map
-                        .get_entities_around(position.x as usize, position.y as usize)
+                        .entity_map
+                        .hash_get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
                         .iter()
                         .map(|&id| &game.entities[id])
                         .cloned()

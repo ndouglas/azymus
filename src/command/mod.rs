@@ -6,6 +6,9 @@ use crate::component;
 use component::position::Position;
 use crate::game;
 use game::Game;
+use crate::math;
+use math::geometry::cell::Cellular;
+use math::geometry::rectangle::Rectangular;
 use crate::species;
 use species::Species;
 
@@ -318,7 +321,7 @@ impl CommandPrecondition {
             PositionIsNotOutOfBounds(position) => {
                 trace!("Entering precondition {:?}.", PositionIsNotOutOfBounds(position));
                 let map = &game.map;
-                if !map.is_position_in_bounds(&position) {
+                if !map.as_rectangle().contains_cell(&position.as_cell()) {
                     debug!("Position {:?} is not in bounds of the map.", position);
                     return Denied("Requested an out-of-bounds position.".to_string());
                 }
@@ -327,8 +330,10 @@ impl CommandPrecondition {
             TileAtPositionDoesNotBlockMovement(position) => {
                 trace!("Entering precondition {:?}.", TileAtPositionDoesNotBlockMovement(position));
                 let map = &game.map;
-                if map.get_tile_at_position(&position).blocks_movement {
-                    return Denied("The destination position contains a tile that blocks movement.".to_string());
+                if let Some(tile) = map.tile_map.get_tile(&position.as_cell()) {
+                    if tile.blocks_movement {
+                        return Denied("The destination position contains a tile that blocks movement.".to_string());
+                    }
                 }
                 Neutral
             },
