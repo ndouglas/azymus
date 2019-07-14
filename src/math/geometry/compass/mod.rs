@@ -1,3 +1,5 @@
+use rand::Rng;
+use rand::distributions::{Distribution, Standard};
 use std::f64::consts::PI;
 use super::cell::CellOffsetType;
 
@@ -75,6 +77,21 @@ impl Direction {
         }
     }
 
+}
+
+impl Distribution<Direction> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Direction {
+        match rng.gen_range(0, 8) {
+            0 => Direction::North,
+            1 => Direction::Northeast,
+            2 => Direction::East,
+            3 => Direction::Southeast,
+            4 => Direction::South,
+            5 => Direction::Southwest,
+            6 => Direction::West,
+            _ => Direction::Northwest,
+        }
+    }
 }
 
 #[cfg(test)]
