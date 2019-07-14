@@ -1,3 +1,4 @@
+use std::fmt;
 use ntree::Region;
 use super::cell::Cell;
 use super::cell::Cellular;
@@ -155,6 +156,13 @@ impl<T> Region<T> for Rectangle where T: Cellular {
         && self.y + self.height > other.y
     }
 
+}
+
+/// Format this object for user display.
+impl fmt::Display for Rectangle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(({}, {}), ({}, {}))", self.x, self.y, self.x2(), self.y2())
+    }
 }
 
 #[cfg(test)]
