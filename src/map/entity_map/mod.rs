@@ -84,13 +84,14 @@ impl EntityMap {
     }
 
     /// Insert an entity into the vector.
-    pub fn vector_insert_entity(&mut self, mut entity: Entity) {
+    pub fn insert_entity(&mut self, mut entity: Entity) {
         entity.id = self.vector.len();
+        self.insert_entity_id(entity.id, &entity.cell);
         self.vector.push(entity);
     }
 
     /// Remove an entity from the vector.
-    pub fn vector_remove_entity(&mut self, entity: &Entity) {
+    pub fn remove_entity(&mut self, entity: &Entity) {
         let entity_id = entity.id;
         self.vector.swap_remove(entity_id);
         let mut moved_entity = &mut self.vector[entity_id];
@@ -98,7 +99,7 @@ impl EntityMap {
     }
 
     /// Get entities for identifiers.
-    pub fn vector_get_entities(&self, ids: &[usize]) -> Vec<&Entity> {
+    pub fn get_entities(&self, ids: &[usize]) -> Vec<&Entity> {
         let mut result = Vec::new();
         for id in ids {
             result.push(&self.vector[*id]);
@@ -107,27 +108,27 @@ impl EntityMap {
     }
 
     /// Insert an entity identifier into the spatial hash map.
-    pub fn hash_insert_entity_id(&mut self, id: usize, cell: &Cell) {
+    pub fn insert_entity_id(&mut self, id: usize, cell: &Cell) {
         if let Some(set) = self.spatial_hash.get_mut(cell) {
             set.insert(id);
         }
     }
 
     /// Remove an entity identifier from the spatial hash map.
-    pub fn hash_remove_entity_id(&mut self, id: usize, cell: &Cell) {
+    pub fn remove_entity_id(&mut self, id: usize, cell: &Cell) {
         if let Some(set) = self.spatial_hash.get_mut(cell) {
             set.remove(&id);
         }
     }
 
     /// Moves an entity from one cell to another.
-    pub fn hash_move_entity_id(&mut self, id: usize, cell1: &Cell, cell2: &Cell) {
-        self.hash_remove_entity_id(id, cell1);
-        self.hash_insert_entity_id(id, cell2);
+    pub fn move_entity_id(&mut self, id: usize, cell1: &Cell, cell2: &Cell) {
+        self.remove_entity_id(id, cell1);
+        self.insert_entity_id(id, cell2);
     }
 
     /// Retrieve the entity identifiers at a specific cell.
-    pub fn hash_get_entity_ids(&self, cell: &Cell) -> Option<EntitySetType> {
+    pub fn get_entity_ids_cell(&self, cell: &Cell) -> Option<EntitySetType> {
         if self.as_rectangle().contains_cell(cell) {
             if let Some(set) = self.spatial_hash.get(cell) {
                 return Some(set.clone());
@@ -137,10 +138,10 @@ impl EntityMap {
     }
 
     /// Retrieve the entity identifiers at multiple cells.
-    pub fn hash_get_entity_ids_cells(&self, cells: &[Cell]) -> EntitySetType {
+    pub fn get_entity_ids_cells(&self, cells: &[Cell]) -> EntitySetType {
         let mut result = HashSet::new();
         for cell in cells {
-            if let Some(ids) = self.hash_get_entity_ids(cell) {
+            if let Some(ids) = self.get_entity_ids_cell(cell) {
                 result.extend(ids);
             }
         }
@@ -148,15 +149,15 @@ impl EntityMap {
     }
 
     /// Retrieve the entity identifiers in the Von Neumann neighborhood.
-    pub fn hash_get_entity_ids_in_von_neumann_neighborhood(&self, cell: &Cell) -> EntitySetType {
+    pub fn get_entity_ids_in_von_neumann_neighborhood(&self, cell: &Cell) -> EntitySetType {
         let cells = cell.get_von_neumann_neighborhood(&self.as_rectangle());
-        self.hash_get_entity_ids_cells(&cells)
+        self.get_entity_ids_cells(&cells)
     }
 
     /// Retrieve the entity identifiers in the Von Neumann neighborhood.
-    pub fn hash_get_entity_ids_in_moore_neighborhood(&self, cell: &Cell) -> EntitySetType {
+    pub fn get_entity_ids_in_moore_neighborhood(&self, cell: &Cell) -> EntitySetType {
         let cells = cell.get_moore_neighborhood(&self.as_rectangle());
-        self.hash_get_entity_ids_cells(&cells)
+        self.get_entity_ids_cells(&cells)
     }
 
 }

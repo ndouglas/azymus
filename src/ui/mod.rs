@@ -83,7 +83,7 @@ impl Ui {
                 if fov_map.is_in_fov(position.x, position.y) {
                     blt::with_colors(Color::from_rgb(255, 255, 255), Color::from_rgb(0, 0, 0), || {
                         let xy_entities = map.entity_map
-                            .hash_get_entity_ids(&Cell::new(position.x as usize, position.y as usize))
+                            .get_entity_ids_cell(&Cell::new(position.x as usize, position.y as usize))
                             .unwrap_or(HashSet::new());
                         let entities = xy_entities
                             .iter()

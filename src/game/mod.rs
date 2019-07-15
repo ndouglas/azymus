@@ -53,7 +53,7 @@ impl Game {
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
         self.map
             .entity_map
-            .hash_get_entity_ids(&Cell::new(x as usize, y as usize))
+            .get_entity_ids_cell(&Cell::new(x as usize, y as usize))
             .unwrap_or(std::collections::HashSet::new())
             .iter()
             .map(|&x| &self.entities[x] )

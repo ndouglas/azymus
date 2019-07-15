@@ -92,7 +92,7 @@ impl Algorithm {
                 if let Some(position) = entity.position {
                     let entities = &game.map
                         .entity_map
-                        .hash_get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
+                        .get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
                         .iter()
                         .map(|&id| &game.entities[id])
                         .cloned()
@@ -122,7 +122,7 @@ impl Algorithm {
                                                 seed_here = false;
                                             }
                                         }
-                                        if let Some(entities) = map.entity_map.hash_get_entity_ids(&cell) {
+                                        if let Some(entities) = map.entity_map.get_entity_ids_cell(&cell) {
                                             for id in entities {
                                                 let entity = &game.entities[id];
                                                 if let Some(species) = entity.species {
@@ -164,7 +164,7 @@ impl Algorithm {
                 if let Some(position) = moss_seed.position {
                     let entities = &game.map
                         .entity_map
-                        .hash_get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
+                        .get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
                         .iter()
                         .map(|&id| &game.entities[id])
                         .cloned()
