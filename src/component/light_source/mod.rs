@@ -69,6 +69,8 @@ pub enum Factory {
     Candle,
     /// A torch provides more and stronger light.
     Torch,
+    /// A patch of phosphorescent moss.
+    Moss,
     /// A completely random light source.
     Random,
 }
@@ -82,6 +84,7 @@ impl Factory {
         match self {
             Candle => LightSource::new(Color::from_rgb(255, 127, 255), 6, 64),
             Torch => LightSource::new(Color::from_rgb(255, 127, 0), 10, 96),
+            Moss => LightSource::new(Color::from_rgb(173, 223, 173), 5, 32),
             Random => {
                 let mut rng = rand::thread_rng();
                 LightSource::new(Color::from_rgb(

@@ -1,11 +1,13 @@
 use crate::command;
 use command::CompassDirection;
+use crate::seed;
+use seed::SeedType;
 
 /// Indicates a position of the entity within the game world.
 #[derive(Clone, Copy, Debug)]
 pub struct Position {
     /// The w-coordinate of the object.  (World)
-    pub w: i64,
+    pub w: SeedType,
     /// The x-coordinate of the object.  (Horizontal)
     pub x: i32,
     /// The y-coordinate of the object.  (Vertical)
@@ -18,7 +20,7 @@ pub struct Position {
 impl Position {
 
     /// Constructor.
-    pub fn new(w: i64, x: i32, y: i32, z: i32) -> Position {
+    pub fn new(w: SeedType, x: i32, y: i32, z: i32) -> Position {
         trace!("Entering Position::new().");
         Position {
             w,
@@ -144,7 +146,16 @@ impl Default for Position {
     /// Creates a default instance.
     fn default() -> Self {
         Position {
-            w: 0,
+            w: [
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+            ],
             x: 0,
             y: 0,
             z: 0,

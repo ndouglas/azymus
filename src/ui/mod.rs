@@ -1,18 +1,24 @@
 use std::fmt;
+use std::collections::HashSet;
 use bear_lib_terminal::terminal as blt;
+use bear_lib_terminal::Color;
 use blt::config::font as blt_font;
+use blt::Event;
 use bear_lib_terminal::geometry::Size;
+use crate::command;
+use command::Command;
+use command::CompassDirection;
 use crate::game;
 use game::Game;
 use crate::settings;
 use settings::Settings;
 
-/// Input.
-pub mod input;
-/// The map console.
-pub mod map_console;
-/// The root console.
-pub mod root_console;
+/// Different scenarios where we handle input.
+#[derive(Clone, Copy, Debug)]
+pub enum Domain {
+    /// Hack 'n' Slash
+    Explore,
+}
 
 /// The User Interface abstraction.
 pub struct Ui {
@@ -34,6 +40,16 @@ impl Ui {
     pub fn open(&self) {
         blt::open("Azymus", self.settings.display.width as u32, self.settings.display.height as u32);
         blt::set(blt_font::true_type(blt_font::Origin::Root, "resources/azymus/fonts/symbola.ttf", Size::new(0, 10)));
+        blt::set(vec![
+            blt::config::InputFilter::Group {
+                group: blt::config::InputFilterGroup::Keyboard,
+                both: false
+            },
+            blt::config::InputFilter::Group {
+                group: blt::config::InputFilterGroup::Mouse,
+                both: false
+            },
+        ]);
     }
 
     /// Close the window.
@@ -58,58 +74,83 @@ impl Ui {
         let player = &game.entities[player_id];
         if let Some(fov) = &player.field_of_view {
             map.draw(&self, fov, game);
+            let position = blt::state::mouse::position();
+            let fov_map = fov.map.lock().unwrap();
+            if map.is_in_bounds(position.x as usize, position.y as usize) {
+                if fov_map.is_in_fov(position.x, position.y) {
+                    blt::with_colors(Color::from_rgb(255, 255, 255), Color::from_rgb(0, 0, 0), || {
+                        let xy_entities = map.get_entities(position.x as usize, position.y as usize)
+                            .unwrap_or(HashSet::new());
+                        let entities = xy_entities
+                            .iter()
+                            .map(|&id| game.entities[id].clone());
+                        if let Some(top_entity) = entities.last() {
+                            blt::print_xy(position.x + 1, position.y, &format!("{} (#{}) ({}, {})", &top_entity.name, &top_entity.id, position.x, position.y));
+                        }
+                    });
+                }
+            }
         }
         self.refresh();
-
-
-
-
-        /*
-        self.map_console.set_default_foreground(WHITE);
-        self.map_console.clear();
-        let map = &game.map;
-        let player = &game.entities[player_id];
-        if let Some(fov) = &player.field_of_view {
-            if let Some(ls) = &player.light_source {
-                map.draw_fov_ls(&mut self.map_console, fov, ls);
-            } else {
-                map.draw_fov(&mut self.map_console, fov);
-            }
-            let fov_map = fov.map.lock().unwrap();
-            let entities_to_draw: Vec<_> = game.entities
-                .iter()
-                .filter(|e| e.position.is_some())
-                .filter(|e| e.is_in_fov(&fov_map))
-                .collect();
-            for entity in entities_to_draw {
-                entity.draw(&mut self.map_console);
-            }
-        }
-        blit(
-            &mut self.map_console,
-            (0, 0),
-            (self.settings.map.width, self.settings.map.height),
-            &mut self.root_console,
-            (0, 0),
-            1.0,
-            1.0,
-        );
-        if let Some(body) = &game.entities[player_id].body {
-            self.root_console.print_ex(
-                1,
-                self.root_console.height() - 2,
-                BackgroundFlag::None,
-                TextAlignment::Left,
-                format!("HP: {}/{} ", body.current_hit_points, body.total_hit_points),
-            );
-        }
-        self.root_console.flush();
-        */
     }
 
     /// Handle input.
-    pub fn handle_input(&mut self, player_id: usize, game: &mut Game) -> bool {
-        input::handle_keys(player_id, game)
+    pub fn handle_input(&mut self, player_id: usize, game: &mut Game) {
+        let event = blt::wait_event();
+        use Event::*;
+        match event {
+            Some(Close) => {
+                game.should_continue = false;
+            },
+            Some(KeyPressed {
+                key,
+                ctrl: _ctrl,
+                shift: _shift,
+            }) => {
+                use Domain::*;
+                match game.input_domain {
+                    Explore => {
+                        use blt::KeyCode;
+                        use KeyCode::*;
+                        match key {
+                            Escape => {
+                                game.should_continue = false;
+                            },
+                            Up => Command::Walk(CompassDirection::North).execute(player_id, game),
+                            Down => Command::Walk(CompassDirection::South).execute(player_id, game),
+                            Left => Command::Walk(CompassDirection::West).execute(player_id, game),
+                            Right => Command::Walk(CompassDirection::East).execute(player_id, game),
+                            Period => Command::Wait.execute(player_id, game),
+                            _ => {
+                                println!("{:?}", key);
+                            },
+                        }
+                    },
+                }
+            },
+            Some(MouseScroll {
+                delta,
+            }) => {
+                use Domain::*;
+                match game.input_domain {
+                    Explore => {
+                        let position = blt::state::mouse::position();
+                        blt::print(position, &format!("{}", delta));
+                    },
+                }
+            },
+            Some(MouseMove {
+                x: _,
+                y: _,
+            }) => {
+                use Domain::*;
+                match game.input_domain {
+                    Explore => {
+                    }
+                }
+            },
+            _ => {},
+        }
     }
 
 }

@@ -8,12 +8,16 @@ use map::Map;
 use map::get_map;
 use crate::scheduler;
 use scheduler::Scheduler;
+use crate::seed;
+use seed::SeedType;
+use seed::RngType;
+use seed::get_rng;
 use crate::settings;
 use settings::Settings;
 use settings::get_settings;
 use crate::ui;
 use ui::Ui;
-use ui::input::Domain as InputDomain;
+use ui::Domain as InputDomain;
 
 /// The game object.
 #[derive(Debug)]
@@ -29,7 +33,15 @@ pub struct Game {
     /// The game settings.
     pub settings: Settings,
     /// The current seed.
-    pub seed: i64,
+    pub seed: SeedType,
+    /// The random number generator.
+    pub rng: RngType,
+    /// Which turn of the game we're on.
+    pub turns: usize,
+    /// Whether or not we should advance the clock.
+    pub should_advance: bool,
+    /// Whether or not we should continue.
+    pub should_continue: bool,
 }
 
 impl Game {
@@ -38,6 +50,7 @@ impl Game {
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
         self.map
             .get_entities(x as usize, y as usize)
+            .unwrap_or(std::collections::HashSet::new())
             .iter()
             .map(|&x| &self.entities[x] )
             .collect()
@@ -47,7 +60,17 @@ impl Game {
 
 /// Setup and run the main game loop.
 pub fn run() {
-    let seed: i64 = 0;
+    let seed: SeedType = [
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+        1, 2, 3, 4,
+        5, 6, 7, 8,
+    ];
+    let mut rng = get_rng(seed);
     let settings = get_settings();
     let mut ui = Ui::new(&settings);
     ui.open();
@@ -55,8 +78,8 @@ pub fn run() {
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
     let mut entities = Vec::new();
-    let (map, position) = get_map(seed, width, height, 0, &mut entities);
-    let player = get_player(&map);
+    let (map, position) = get_map(seed, &mut rng, width, height, 0, &mut entities);
+    let mut player = get_player(&map);
     let player_position = player.position.unwrap();
     let next_id = entities.len();
     let mut game = Game {
@@ -65,9 +88,14 @@ pub fn run() {
         entities: entities,
         player_id: next_id,
         settings: get_settings(),
-        seed: 0,
+        seed: seed,
+        rng: rng,
+        turns: 0,
+        should_advance: false,
+        should_continue: true,
     };
     let player_id = game.player_id;
+    player.id = player_id;
     game.entities.push(player);
     Effect::MoveEntity(player_position, position)
         .execute(player_id, &mut game);
@@ -78,11 +106,13 @@ pub fn run() {
             if next_id == player_id {
                 ui.render(player_id, &game);
                 debug!("Player ID = Next ID.");
-                let exit = ui.handle_input(player_id, &mut game);
-                if exit {
+                game.should_advance = false;
+                game.should_continue = true;
+                ui.handle_input(player_id, &mut game);
+                if !game.should_continue {
                     ui.close();
                     return;
-                } else {
+                } else if game.should_advance {
                     debug!("Feeding.");
                     scheduler.feed(&mut game.entities);
                 }

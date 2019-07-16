@@ -1,5 +1,4 @@
 use tcod::map::Map as FovMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use crate::agent;
 use agent::Agent;
 use crate::body;
@@ -10,6 +9,9 @@ use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
 use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
+use crate::faction;
+//use faction::Faction;
+use faction::Standing as FactionStanding;
 use crate::map;
 use map::Map;
 use crate::species;
@@ -24,6 +26,8 @@ pub struct Entity {
     pub name: String,
     /// The species of this entity.
     pub species: Option<Species>,
+    /// The factions of this entity.
+    pub faction_standings: Option<Vec<FactionStanding>>,
     /// The body of this entity.
     pub body: Option<Body>,
     /// Something that gets dispensed time and has an opportunity to act.
@@ -48,13 +52,11 @@ impl Entity {
     /// Constructor.
     pub fn new(name: String) -> Self {
         trace!("Entering Entity::new().");
-        static ID: AtomicUsize = AtomicUsize::new(0);
-        let id = ID.load(Ordering::SeqCst);
-        ID.fetch_add(1, Ordering::SeqCst);
         Entity {
-            id: id,
+            id: std::usize::MAX,
             name: name,
             species: None,
+            faction_standings: None,
             body: None,
             actor: None,
             agent: None,
@@ -66,9 +68,28 @@ impl Entity {
         }
     }
 
+    /// Set properties from another entity.
+    pub fn set(&mut self, entity: &Entity) {
+        // Skip ID.
+        self.name = entity.name.clone();
+        self.species = entity.species;
+        // Skip faction standings.
+        self.body = entity.body;
+        self.actor = entity.actor;
+        self.agent = entity.agent;
+        self.field_of_view = entity.field_of_view.clone();
+        self.light_source = entity.light_source;
+        // Skip position.
+        self.renderable = entity.renderable.clone();
+        self.blocks_movement = entity.blocks_movement;
+    }
+
     /// If the entity would attack another entity.
     pub fn would_attack(&self, entity: &Entity) -> bool {
         use Species::*;
+        if !entity.blocks_movement {
+            return false;
+        }
         match (self.species, entity.species) {
             (Some(Orc), Some(Troll)) => false,
             (Some(Troll), Some(Orc)) => false,
@@ -78,7 +99,16 @@ impl Entity {
             (Some(Troll), Some(Human)) => true,
             (Some(Troll), Some(Troll)) => false,
             (Some(Orc), Some(Orc)) => false,
-            (Some(Human), Some(Human)) => false,
+            (Some(Goblin), Some(Chicken)) => false,
+            (Some(Kobold), Some(Chicken)) => false,
+            (Some(Goblin), Some(Moss)) => false,
+            (Some(Kobold), Some(Moss)) => false,
+            (Some(Goblin), _ ) => true,
+            (Some(Kobold), _ ) => true,
+            (Some(Chicken), Some(Moss)) => true,
+            (Some(Human), _) => true,
+            (_, Some(Goblin)) => true,
+            (_, Some(Kobold)) => true,
             (_, _) => false,
         }
     }
@@ -105,11 +135,14 @@ pub fn get_player(map: &Map) -> Entity {
         total_hit_points: 32767,
         current_hit_points: 32767,
     });
+    player.species = Some(Species::Human);
     player.field_of_view = Some(FieldOfView::new(map.get_fov(), 12));
+    if let Some(fov) = player.field_of_view.as_mut() {
+        fov.light_walls = true;
+    }
     player.light_source = Some(LightSourceFactory::Torch.create());
     player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
     player.blocks_movement = true;
-    player.species = Some(Species::Human);
     player
 }

@@ -1,9 +1,13 @@
+use rand::Rng;
+use rand::distributions::{Distribution, Standard};
 use crate::action;
 use action::Action;
 use crate::component;
 use component::position::Position;
 use crate::game;
 use game::Game;
+use crate::species;
+use species::Species;
 
 /// Compass directions.
 #[derive(Clone, Copy, Debug)]
@@ -26,6 +30,21 @@ pub enum CompassDirection {
     West,
 }
 
+impl Distribution<CompassDirection> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CompassDirection {
+        match rng.gen_range(0, 8) {
+            0 => CompassDirection::North,
+            1 => CompassDirection::Northeast,
+            2 => CompassDirection::Northwest,
+            3 => CompassDirection::South,
+            4 => CompassDirection::Southeast,
+            5 => CompassDirection::Southwest,
+            6 => CompassDirection::East,
+            _ => CompassDirection::West,
+        }
+    }
+}
+
 /// Actions are processes that modify the game world.
 #[derive(Clone, Copy, Debug)]
 pub enum Command {
@@ -37,6 +56,12 @@ pub enum Command {
     Wait,
     /// Stall -- don't waste turn, but don't do anything.
     Stall,
+    /// Moss: Bloom,
+    MossBloom,
+    /// Moss: Seed,
+    MossSeed(CompassDirection),
+    /// Moss: Die,
+    MossDie,
 }
 
 /// Actions are processes that modify the game world.
@@ -58,6 +83,15 @@ impl Command {
             },
             Stall => {
                 Some(Action::Stall)
+            },
+            MossBloom => {
+                Some(Action::MossBloom)
+            },
+            MossSeed(compass_direction) => {
+                Some(Action::MossSeed(compass_direction))
+            },
+            MossDie => {
+                Some(Action::MossDie)
             },
         }
     }
@@ -106,6 +140,33 @@ impl Command {
                 ]
             },
             Stall => {
+                vec![
+                    Permit,
+                ]
+            },
+            MossBloom => {
+                vec![
+                    Permit,
+                ]
+            },
+            MossSeed(compass_direction) => {
+                let entity = &game.entities[id];
+                if let Some(position1) = entity.position {
+                    let position2 = position1.to_direction(compass_direction);
+                    vec![
+                        PositionsAreAdjacent(position1, position2),
+                        PositionIsNotOutOfBounds(position2),
+                        TileAtPositionDoesNotBlockMovement(position2),
+                        NothingAtPositionIsOfSpecies(position2, Species::Moss),
+                        NothingAtPositionIsOfSpecies(position2, Species::MossSeed),
+                    ]
+                } else {
+                    vec![
+                        Deny("Entity has no starting position!".to_string()),
+                    ]
+                }
+            },
+            MossDie => {
                 vec![
                     Permit,
                 ]
@@ -183,11 +244,16 @@ impl Command {
         let mut cost = Action::Wait.get_cost(id, game);
         if let Some(action) = self.get_final_action(id, game) {
             cost = action.get_cost(id, game);
-            action.execute(id, game);
+            if let Some(effect) = action.execute(id, game) {
+                effect.execute(id, game);
+            }
         };
         if let Some(actor) = game.entities[id].actor.as_mut() {
             actor.time -= cost;
         };
+        if id == game.player_id && cost > 0 {
+            game.should_advance = true;
+        }
         trace!("Exiting Command::execute() for command {:?}.", self);
     }
 
@@ -232,6 +298,8 @@ pub enum CommandPrecondition {
     NothingAtPositionIsValidMeleeAttackTarget(Position),
     /// Some entity at the location can be attacked.
     SomethingAtPositionIsValidMeleeAttackTarget(Position),
+    /// Don't seed where there's something of the same species.
+    NothingAtPositionIsOfSpecies(Position, Species),
 }
 
 
@@ -308,6 +376,19 @@ impl CommandPrecondition {
                     }
                 }
                 debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                Neutral
+            },
+            NothingAtPositionIsOfSpecies(position, bad_species) => {
+                trace!("Entering precondition {:?}.", NothingAtPositionIsOfSpecies(position, bad_species));
+                let entities = &game.get_entities(position.x, position.y);
+                for entity in entities {
+                    if let Some(species) = entity.species {
+                        if species == bad_species {
+                            return Denied(format!("Found entity {:?} of undesired species {:?} at position {:?}.", entity, bad_species, position));
+                        }
+                    }
+                }
+                debug!("Did not find entities of undesired species {:?} at position {:?}.", bad_species, position);
                 Neutral
             },
         }

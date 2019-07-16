@@ -11,6 +11,11 @@ use crate::entity;
 use entity::Entity;
 use crate::game;
 use game::Game;
+use crate::seed;
+use seed::SeedType;
+use seed::RngType;
+use crate::species;
+use species::Species;
 use crate::tile;
 use tile::Tile;
 use tcod::map::Map as FovMap;
@@ -96,12 +101,42 @@ impl Map {
             y: 0,
             width: self.width as i32,
             height: self.height as i32,
+        }, 16);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let ids = self.get_entities(x, y)
+                    .unwrap_or(HashSet::new())
+                    .iter()
+                    .filter(|&id| game.entities[*id].light_source.is_some())
+                    .map(|&id| id)
+                    .collect::<Vec<usize>>();
+                for id in ids {
+                    ls_tree.insert(QuadTreePoint {
+                        id: id,
+                        x: x as i32,
+                        y: y as i32,
+                    });
+                }
+            }
+        }
+        ls_tree
+    }
+
+    /// Get a quadtree for all entities of a specific species for this map.
+    pub fn get_species_tree(&self, game: &Game, species: Species) -> QuadTreeType {
+        let mut ls_tree: QuadTreeType = NTree::new(QuadTreeRegion {
+            x: 0,
+            y: 0,
+            width: self.width as i32,
+            height: self.height as i32,
         }, 4);
         for y in 0..self.height {
             for x in 0..self.width {
                 let ids = self.get_entities(x, y)
+                    .unwrap_or(HashSet::new())
                     .iter()
-                    .filter(|&id| game.entities[*id].light_source.is_some())
+                    .filter(|&id| game.entities[*id].species.is_some())
+                    .filter(|&id| game.entities[*id].species.unwrap() == species)
                     .map(|&id| id)
                     .collect::<Vec<usize>>();
                 for id in ids {
@@ -135,12 +170,13 @@ impl Map {
                         .range_query(&region)
                         .map(|x| x.id)
                         .collect::<Vec<usize>>();
-                    //println!("({}, {}) -> {:?}", x, y, ls_vector);
-                    if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                    }
+                    let renderable = &self.map[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                     let mut occupant_found: bool = false;
-                    for id in self.get_entities(x, y).iter().collect::<Vec<&usize>>() {
+                    for id in self.get_entities(x, y)
+                        .unwrap_or(HashSet::new())
+                        .iter()
+                        .collect::<Vec<&usize>>() {
                         if occupant_found {
                             break;
                         }
@@ -152,9 +188,8 @@ impl Map {
                     }
                 } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
                     let ls_vector = vec![];
-                    if let Some(renderable) = &self.map[x][y].renderable {
-                        self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                    }
+                    let renderable = &self.map[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
                 }
             }
         }
@@ -182,7 +217,12 @@ impl Map {
             let entity = &game.entities[*id];
             if let Some(position) = entity.position {
                 if let Some(light_source) = entity.light_source {
-                    bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
+                    if let Some(fov) = &entity.field_of_view {
+                        let fov_map = fov.map.lock().unwrap();
+                        if fov_map.is_in_fov(x as i32, y as i32) {
+                            bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
+                        }
+                    }
                 }
             }
         }
@@ -242,8 +282,32 @@ impl Map {
     }
 
     /// Gets entity IDs at a specific location.
-    pub fn get_entities(&self, x: usize, y: usize) -> HashSet<usize> {
-        self.spatial_hash.get(&(x, y)).unwrap().clone()
+    pub fn get_entities(&self, x: usize, y: usize) -> Option<HashSet<usize>> {
+        if let Some(hashset) = self.spatial_hash.get(&(x, y)) {
+            return Some(hashset.clone());
+        }
+        None
+    }
+
+    /// Gets entity IDs at a specific location.
+    pub fn get_entities_around(&self, x: usize, y: usize) -> Vec<usize> {
+        let mut result: Vec<usize> = vec![];
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                if dx == dy && dx == 0 {
+                    continue;
+                }
+                let final_x = (x as i32 + dx) as usize;
+                let final_y = (y as i32 + dy) as usize;
+                if !self.is_in_bounds(final_x, final_y) {
+                    continue;
+                }
+                if let Some(entities) = self.get_entities(final_x, final_y) {
+                    result.extend(entities)
+                }
+            }
+        }
+        result
     }
 
 }
@@ -255,8 +319,8 @@ impl fmt::Debug for Map {
 }
 
 /// Get a new map.
-pub fn get_map(seed: i64, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
-    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, width, height, level, entities);
+pub fn get_map(seed: SeedType, rng: &mut RngType, width: i32, height: i32, level: i32, entities: &mut Vec<Entity>) -> (Map, Position) {
+    let (inner_map, position) = generator::algorithm::Algorithm::Simple.generate_map(seed, rng, width, height, level, entities);
     let mut map = Map::new(inner_map);
     for entity in entities {
         entity.field_of_view = Some(FieldOfView::new(map.get_fov(), 10));

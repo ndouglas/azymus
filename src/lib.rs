@@ -62,6 +62,9 @@ pub mod agent;
 /// Bodies are the forms of "living" entities.
 pub mod body;
 
+/// Colors are very important, since this is a graphical game.
+pub mod color;
+
 /// Combat manages any sort of attack.
 pub mod combat;
 
@@ -80,17 +83,26 @@ pub mod entity;
 /// Events that occur and are significant enough for a nearby object to react.
 pub mod event;
 
+/// Factions are the groups to which things belong.
+pub mod faction;
+
 /// The game structure, run loop, etc.
 pub mod game;
 
 /// The map, the current slice of the game world.
 pub mod map;
 
+/// A crappy builtin math library.
+pub mod math;
+
 /// The message panel.
 pub mod messages;
 
 /// The scheduler that determines when and who will be able to issue commands.
 pub mod scheduler;
+
+/// The seed input that we use for random number generation.
+pub mod seed;
 
 /// A settings system to allow some configuration.
 pub mod settings;
