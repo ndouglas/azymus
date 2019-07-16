@@ -1,10 +1,6 @@
 use rand::*;
 use crate::command;
 use command::Command;
-use crate::component;
-use component::position::Position;
-//use crate::entity;
-//use entity::Entity;
 use crate::game;
 use game::Game;
 use crate::math;
@@ -55,25 +51,20 @@ impl Algorithm {
                 Some(Command::Walk(CompassDirection::South))
             },
             ApproachPlayer => {
-                let player = &game.entities[game.player_id];
-                if let Some(player_position) = &player.position {
-                    return command_to_move_towards(id, player_position, game);
-                }
-                None
+                let player = &game.get_entity(game.player_id);
+                let player_cell = &player.cell;
+                command_to_move_towards(id, player_cell, game)
             },
             ApproachAndFightPlayer => {
-                let player = &game.entities[game.player_id];
-                if let Some(player_position) = &player.position {
-                    let entity = &game.entities[id];
-                    if let Some(entity_position) = &entity.position {
-                        if entity_position.distance_to(player_position) >= 2.0 {
-                            return command_to_move_towards(id, player_position, game)
-                        } else {
-                            return command_to_attack(id, player_position, game);
-                        }
-                    }
+                let entity = &game.get_entity(id);
+                let player = &game.get_entity(game.player_id);
+                let player_cell = &player.cell;
+                let entity_cell = &entity.cell;
+                if entity_cell.distance_to(player_cell) >= 2.0 {
+                    command_to_move_towards(id, player_cell, game)
+                } else {
+                    command_to_attack(id, player_cell, game)
                 }
-                None
             },
             BeChicken => {
                 let mut rng = thread_rng();
@@ -88,119 +79,86 @@ impl Algorithm {
                 None
             },
             BeMoss => {
-                let entity = &game.entities[id];
-                if let Some(position) = entity.position {
-                    let entities = &game.map
-                        .entity_map
-                        .get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
-                        .iter()
-                        .map(|&id| &game.entities[id])
-                        .cloned()
-                        .filter(|e| e.species.is_some() && e.species.unwrap() == Species::Moss)
-                        .collect::<Vec<_>>();
-                    let count = entities.len();
-                    match count {
-                        1 | 3 | 5 | 8 => {
-                            let map = &game.map;
-                            let mut seed_positions: Vec<Position> = vec![];
-                            if let Some(position) = &entity.position {
-                                debug!("Entity {} ({}, {}) is following the moss-seed rule.", entity.name, position.x, position.y);
-                                for dy in -1..=1 {
-                                    for dx in -1..=1 {
-                                        if dx == dy && dx == 0 {
-                                            continue;
-                                        }
-                                        let final_x = (position.x + dx) as usize;
-                                        let final_y = (position.y + dy) as usize;
-                                        let cell = Cell::new(final_x, final_y);
-                                        if !map.as_rectangle().contains_cell(&cell) {
-                                            continue;
-                                        }
-                                        let mut seed_here: bool = true;
-                                        if let Some(tile) = map.tile_map.get_tile(&cell) {
-                                            if tile.blocks_movement || tile.blocks_light {
-                                                seed_here = false;
-                                            }
-                                        }
-                                        if let Some(entities) = map.entity_map.get_entity_ids_cell(&cell) {
-                                            for id in entities {
-                                                let entity = &game.entities[id];
-                                                if let Some(species) = entity.species {
-                                                    if species == Species::MossSeed || species == Species::Moss {
-                                                        seed_here = false;
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        if seed_here {
-                                            seed_positions.push(Position {
-                                                w: position.w,
-                                                x: final_x as i32,
-                                                y: final_y as i32,
-                                                z: position.z,
-                                            });
+                let entity = &game.get_entity(id);
+                let cell = entity.cell;
+                let entities = &game.map
+                    .entity_map
+                    .get_entity_ids_in_moore_neighborhood(&cell)
+                    .iter()
+                    .map(|&id| game.get_entity(id).clone() )
+                    .filter(|e| e.species.is_some() && e.species.unwrap() == Species::Moss)
+                    .collect::<Vec<_>>();
+                let count = entities.len();
+                match count {
+                    1 | 3 | 5 | 8 => {
+                        let map = &game.map;
+                        let mut seed_cells: Vec<Cell> = vec![];
+                        let cell = &entity.cell;
+                        debug!("{} is following the moss-seed rule.", entity);
+                        for neighbor_cell in cell.get_moore_neighborhood(&map.as_rectangle()) {
+                            if !map.as_rectangle().contains_cell(&cell) {
+                                continue;
+                            }
+                            let mut seed_here: bool = true;
+                            if let Some(tile) = map.tile_map.get_tile(&cell) {
+                                if tile.blocks_movement || tile.blocks_light {
+                                    seed_here = false;
+                                }
+                            }
+                            if let Some(entities) = map.entity_map.get_entity_ids_cell(&cell) {
+                                for id in entities {
+                                    let entity = &game.get_entity(id);
+                                    if let Some(species) = entity.species {
+                                        if species == Species::MossSeed || species == Species::Moss {
+                                            seed_here = false;
+                                            break;
                                         }
                                     }
                                 }
                             }
-                            if seed_positions.len() == 0 {
-                                return None;
+                            if seed_here {
+                                seed_cells.push(*cell);
                             }
-                            let mut rng = thread_rng();
-                            let index = rng.gen_range(0, seed_positions.len());
-                            if let Some(direction) = position.direction_to(&seed_positions[index]) {
-                                return Some(Command::MossSeed(direction));
-                            }
-                        },
-                        _ => return Some(Command::MossDie),
-                        //_ => {},
-                    }
+                        }
+                        if seed_cells.len() == 0 {
+                            return None;
+                        }
+                        let mut rng = thread_rng();
+                        let index = rng.gen_range(0, seed_cells.len());
+                        let direction = cell.direction_to(&seed_cells[index]);
+                        return Some(Command::MossSeed(direction));
+                    },
+                    _ => return Some(Command::MossDie),
+                    //_ => {},
                 }
-                None
             },
             BeMossSeed => {
-                let moss_seed = &game.entities[id];
-                if let Some(position) = moss_seed.position {
-                    let entities = &game.map
-                        .entity_map
-                        .get_entity_ids_in_moore_neighborhood(&Cell::new(position.x as usize, position.y as usize))
-                        .iter()
-                        .map(|&id| &game.entities[id])
-                        .cloned()
-                        .filter(|e| e.species.is_some() && e.species.unwrap() == Species::Moss)
-                        .collect::<Vec<_>>();
-                    let count = entities.len();
-                    match count {
-                        3 | 5 | 7 => return Some(Command::MossBloom),
-                        _ => return None,
-                    }
+                let moss_seed = &game.get_entity(id);
+                let cell = moss_seed.cell;
+                let entities = &game.map
+                    .entity_map
+                    .get_entity_ids_in_moore_neighborhood(&cell)
+                    .iter()
+                    .map(|&id| game.get_entity(id).clone())
+                    .filter(|e| e.species.is_some() && e.species.unwrap() == Species::Moss)
+                    .collect::<Vec<_>>();
+                let count = entities.len();
+                match count {
+                    3 | 5 | 7 => return Some(Command::MossBloom),
+                    _ => return None,
                 }
-                None
             },
         }
     }
 
 }
 
-fn get_direction_to(id: usize, position: &Position, game: &Game) -> Option<CompassDirection> {
-    let entity = &game.entities[id];
-    if let Some(entity_position) = &entity.position {
-        return entity_position.direction_to(position);
-    }
-    None
+fn command_to_move_towards(id: usize, cell: &Cell, game: &Game) -> Option<Command> {
+    let compass_direction = &game.get_entity(id).cell.direction_to(cell);
+    Some(Command::Walk(*compass_direction))
 }
 
-fn command_to_move_towards(id: usize, position: &Position, game: &Game) -> Option<Command> {
-    if let Some(compass_direction) = get_direction_to(id, position, game) {
-        return Some(Command::Walk(compass_direction));
-    }
-    None
-}
-
-fn command_to_attack(id: usize, position: &Position, game: &Game) -> Option<Command> {
-    if let Some(compass_direction) = get_direction_to(id, position, game) {
-        return Some(Command::MeleeAttack(compass_direction));
-    }
-    None
+fn command_to_attack(id: usize, cell: &Cell, game: &Game) -> Option<Command> {
+    let compass_direction = &game.get_entity(id).cell.direction_to(cell);
+    Some(Command::MeleeAttack(*compass_direction))
 }

@@ -1,12 +1,7 @@
-use crate::component;
-use component::position::Position;
 use crate::game;
 use game::Game;
-//use crate::map;
-//use map::Map;
 use crate::math;
 use math::geometry::cell::Cell;
-use math::geometry::cell::Cellular;
 use crate::species;
 use species::Factory as SpeciesFactory;
 
@@ -16,7 +11,7 @@ pub mod move_entity;
 /// A direct modification of the game world.
 #[derive(Clone, Debug)]
 pub enum Effect {
-    /// Move the specified entity from one position to another.
+    /// Move the specified entity from one cell to another.
     MoveEntity(Cell, Cell),
     /// Damage the entity by some amount.
     DamageEntityBody(usize, i32),
@@ -26,8 +21,8 @@ pub enum Effect {
     KillEntity,
     /// Update the entity FOV.
     UpdateEntityFov,
-    /// Create a new entity at this position.
-    CreateEntity(Position, SpeciesFactory),
+    /// Create a new entity at this cell.
+    CreateEntity(Cell, SpeciesFactory),
     /// Change species of the specified entity.
     ChangeEntitySpecies(SpeciesFactory),
 }
@@ -41,11 +36,11 @@ impl Effect {
         match self {
             MoveEntity(cell1, cell2) => {
                 let move_entity = move_entity::MoveEntity::new(id, *cell1, *cell2);
-                move_entity.execute(&mut game.map);
+                move_entity.execute(game);
                 UpdateEntityFov.execute(id, game);
             },
             DamageEntityBody(target_id, hp) => {
-                let entity = &mut game.entities[*target_id];
+                let entity = &mut game.get_entity_mut(*target_id);
                 trace!("Entering DamageEntityBody() for {}.", entity);
                 if let Some(body) = entity.body.as_mut() {
                     // debug!("Damaging {} ({} -> {}).", entity, body.current_hit_points, body.current_hit_points - hp);
@@ -58,7 +53,7 @@ impl Effect {
                 trace!("Exiting DamageEntityBody() for id {}.", target_id);
             },
             KillEntity => {
-                let entity = &mut game.entities[id];
+                let entity = &mut game.get_entity_mut(id);
                 trace!("Killing entity {}", entity);
                 entity.species = None;
                 entity.body = None;
@@ -76,7 +71,8 @@ impl Effect {
             },
             RemoveEntity => {
                 println!("Entering RemoveEntity() for id {}.", id);
-                let entity = &mut game.entities[id];
+                game.map.entity_map.remove_entity_id(id, &game.get_entity_mut(id).cell);
+                let entity = &mut game.get_entity_mut(id);
                 entity.species = None;
                 entity.body = None;
                 entity.actor = None;
@@ -84,13 +80,11 @@ impl Effect {
                 entity.field_of_view = None;
                 entity.light_source = None;
                 entity.renderable = None;
-                if let Some(position) = &entity.position {
-                    game.map.entity_map.remove_entity_id(id, &position.as_cell());
-                }
             },
             UpdateEntityFov => {
                 println!("Entering UpdateEntityFov() for id {}.", id);
-                let entity = &mut game.entities[id];
+                let entity = &mut game.get_entity_mut(id);
+
                 if let Some(position) = &entity.position {
                         println!("Updating FoV for {:?}.", entity);
                     if let Some(fov) = &mut entity.field_of_view.as_mut() {
@@ -98,19 +92,17 @@ impl Effect {
                     }
                 }
             },
-            CreateEntity(position, species_factory) => {
-                println!("Entering CreateEntity({:?}, {:?}) for id {}.", position, species_factory, id);
+            CreateEntity(cell, species_factory) => {
+                println!("Entering CreateEntity({:?}, {:?}) for id {}.", cell, species_factory, id);
                 let mut entity = species_factory.create();
-                entity.position = Some(*position);
-                let id = game.entities.len();
-                entity.id = id;
-                game.entities.push(entity);
-                game.map.entity_map.insert_entity_id(id, &position.as_cell());
+                entity.cell = Some(*cell);
+                let id = game.world.entity_list.insert_entity(entity);
+                game.map.entity_map.insert_entity_id(id, &cell);
             },
             ChangeEntitySpecies(species_factory) => {
                 println!("Entering ChangeEntitySpecies({:?}) for id {}.", species_factory, id);
                 let new_entity = species_factory.create();
-                let old_entity = &mut game.entities[id];
+                let old_entity = &mut game.get_entity_mut(id);
                 old_entity.set(&new_entity);
             },
         }

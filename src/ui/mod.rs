@@ -74,9 +74,9 @@ impl Ui {
     pub fn render(&mut self, player_id: usize, game: &Game) {
         blt::clear(None);
         let map = &game.map;
-        let player = &game.entities[player_id];
+        let player = &game.get_entity(player_id);
         if let Some(fov) = &player.field_of_view {
-            //map.draw(&self, fov, game);
+            map.draw(&self, fov, game);
             let position = blt::state::mouse::position();
             let fov_map = fov.map.lock().unwrap();
             if map.as_rectangle().contains_coordinates(position.x as usize, position.y as usize) {
@@ -87,7 +87,7 @@ impl Ui {
                             .unwrap_or(HashSet::new());
                         let entities = xy_entities
                             .iter()
-                            .map(|&id| game.entities[id].clone());
+                            .map(|&id| game.get_entity(id).clone());
                         if let Some(top_entity) = entities.last() {
                             blt::print_xy(position.x + 1, position.y, &format!("{} (#{}) ({}, {})", &top_entity.name, &top_entity.id, position.x, position.y));
                         }

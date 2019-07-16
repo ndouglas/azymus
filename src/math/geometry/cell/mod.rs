@@ -56,13 +56,18 @@ impl Cell {
     }
 
     /// To a specified direction.
-    pub fn to_compass_direction(&self, compass_direction: &Direction, rectangle: &Rectangle) -> Option<Cell> {
+    pub fn to_direction(&self, compass_direction: &Direction, rectangle: &Rectangle) -> Option<Cell> {
         self.to_offset(compass_direction.as_offset(), rectangle)
+    }
+
+    /// Direction to a specific cell.
+    pub fn direction_to(&self, cell: &Cell) -> Direction {
+        Direction::from_offset(self.offset_to(cell))
     }
 
     /// In the direction of a specific cell.
     pub fn toward_cell(&self, cell: &Cell, rectangle: &Rectangle) -> Option<Cell> {
-        if let Some(compass_direction) = Direction::from_offset(self.offset_to(cell)) {
+        if let Some(compass_direction) = self.direction_to(cell) {
             self.to_compass_direction(&compass_direction, rectangle)
         } else {
             None
@@ -146,6 +151,11 @@ impl Cell {
             }
         }
         result
+    }
+
+    /// Returns the distance to another object.
+    pub fn distance_to(&self, cell: &Cell) -> f32 {
+        (((cell.x - self.x).pow(2) + (cell.y - self.y).pow(2)) as f32).sqrt()
     }
 
 }

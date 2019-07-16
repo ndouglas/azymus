@@ -12,17 +12,14 @@ const QUADTREE_CAPACITY: u8 = 16;
 
 /// Entity quad tree.
 pub mod quadtree;
-use quadtree::QuadTreePoint;
-use quadtree::QuadTreeType;
-
-/// The vector of entities.
-pub type EntityVectorType = Vec<Entity>;
+pub use quadtree::QuadTreePoint;
+pub use quadtree::QuadTreeType;
 
 /// The entity set type.
 pub type EntitySetType = HashSet<usize>;
 
 /// The spatial hash map type.
-pub type EntityVectorSpatialHashType = HashMap<Cell, EntitySetType>;
+pub type EntitySpatialHashType = HashMap<Cell, EntitySetType>;
 
 /// The entity map type.
 pub struct EntityMap {
@@ -30,10 +27,8 @@ pub struct EntityMap {
     pub width: usize,
     /// The map's height.
     pub height: usize,
-    /// The entity vector.
-    pub vector: EntityVectorType,
     /// The entity spatial hash map.
-    pub spatial_hash: EntityVectorSpatialHashType,
+    pub spatial_hash: EntitySpatialHashType,
     /// The entity quadtree.
     pub quadtree: QuadTreeType,
 }
@@ -58,21 +53,26 @@ impl EntityMap {
         EntityMap {
             width: width,
             height: height,
-            vector: Vec::new(),
             spatial_hash: spatial_hash,
             quadtree: quadtree,
         }
     }
 
-    /// Update the quadtree.
-    pub fn update_quadtree(&mut self) {
-        let mut quadtree = NTree::new(Rectangle {
+    /// Build a quadtree.
+    pub fn build_quadtree(&self) -> QuadTreeType {
+        let quadtree = NTree::new(Rectangle {
             x: 0,
             y: 0,
             width: self.width,
             height: self.height,
         }, QUADTREE_CAPACITY);
-        for entity in &self.vector {
+        quadtree
+    }
+
+    /// Update the quadtree.
+    pub fn update_quadtree(&mut self, vector: Vec<Entity>) {
+        let mut quadtree = self.build_quadtree();
+        for entity in vector {
             let cell = &entity.as_cell();
             quadtree.insert(QuadTreePoint {
                 id: entity.id,
@@ -81,30 +81,6 @@ impl EntityMap {
             });
         }
         self.quadtree = quadtree;
-    }
-
-    /// Insert an entity into the vector.
-    pub fn insert_entity(&mut self, mut entity: Entity) {
-        entity.id = self.vector.len();
-        self.insert_entity_id(entity.id, &entity.cell);
-        self.vector.push(entity);
-    }
-
-    /// Remove an entity from the vector.
-    pub fn remove_entity(&mut self, entity: &Entity) {
-        let entity_id = entity.id;
-        self.vector.swap_remove(entity_id);
-        let mut moved_entity = &mut self.vector[entity_id];
-        moved_entity.id = entity_id;
-    }
-
-    /// Get entities for identifiers.
-    pub fn get_entities(&self, ids: &[usize]) -> Vec<&Entity> {
-        let mut result = Vec::new();
-        for id in ids {
-            result.push(&self.vector[*id]);
-        }
-        result
     }
 
     /// Insert an entity identifier into the spatial hash map.

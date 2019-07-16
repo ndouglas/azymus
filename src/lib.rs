@@ -116,6 +116,9 @@ pub mod tile;
 /// The UI, specifically consoles, input, etc.
 pub mod ui;
 
+/// The game world.
+pub mod world;
+
 /// Perform some initialization stuff.
 pub fn init() {
     pretty_env_logger::init();

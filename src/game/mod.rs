@@ -21,6 +21,8 @@ use settings::get_settings;
 use crate::ui;
 use ui::Ui;
 use ui::Domain as InputDomain;
+use crate::world;
+use world::World;
 
 /// The game object.
 #[derive(Debug)]
@@ -29,8 +31,8 @@ pub struct Game {
     pub input_domain: InputDomain,
     /// The game map.
     pub map: Map,
-    /// All entities in the game.
-    pub entities: Vec<Entity>,
+    /// The game world.
+    pub world: World,
     /// The player entity ID.
     pub player_id: usize,
     /// The game settings.
@@ -49,6 +51,16 @@ pub struct Game {
 
 impl Game {
 
+    /// Get the entity with the specified ID.
+    pub fn get_entity(&self, id: usize) -> &Entity {
+        &self.world.entity_list.vector[id]
+    }
+
+    /// Get the entity mutably with the specified ID.
+    pub fn get_entity_mut(&mut self, id: usize) -> &mut Entity {
+        &mut self.world.entity_list.vector[id]
+    }
+
     /// Get the entities at the specified location.
     pub fn get_entities(&self, x: i32, y: i32) -> Vec<&Entity> {
         self.map
@@ -56,7 +68,7 @@ impl Game {
             .get_entity_ids_cell(&Cell::new(x as usize, y as usize))
             .unwrap_or(std::collections::HashSet::new())
             .iter()
-            .map(|&x| &self.entities[x] )
+            .map(|&id| self.get_entity(id) )
             .collect()
     }
 
@@ -81,17 +93,18 @@ pub fn run() {
     let scheduler = Scheduler::new();
     let width = ui.settings.map.width;
     let height = ui.settings.map.height;
-    let entities = Vec::new();
+    let mut world = World::new();
     let map = get_map(seed, width, height);
-    let mut player = get_player(&map);
+    let player = get_player(&map);
     let player_position = player.position.unwrap();
-    let next_id = entities.len();
     let start_cell = map.tile_map.start;
+    println!("{}", start_cell);
+    let player_id = world.entity_list.insert_entity(player);
     let mut game = Game {
         input_domain: InputDomain::Explore,
         map: map,
-        entities: entities,
-        player_id: next_id,
+        world: world,
+        player_id: player_id,
         settings: get_settings(),
         seed: seed,
         rng: rng,
@@ -99,15 +112,12 @@ pub fn run() {
         should_advance: false,
         should_continue: true,
     };
-    let player_id = game.player_id;
-    player.id = player_id;
-    game.entities.push(player);
     Effect::MoveEntity(player_position.as_cell(), start_cell)
         .execute(player_id, &mut game);
-    scheduler.feed(&mut game.entities);
+    scheduler.feed(&mut game.world.entity_list.vector);
     ui.refresh();
     while !ui.is_closed() {
-        if let Some(next_id) = scheduler.next(&game.entities) {
+        if let Some(next_id) = scheduler.next(&game.world.entity_list.vector) {
             if next_id == player_id {
                 ui.render(player_id, &game);
                 debug!("Player ID = Next ID.");
@@ -119,7 +129,7 @@ pub fn run() {
                     return;
                 } else if game.should_advance {
                     debug!("Feeding.");
-                    scheduler.feed(&mut game.entities);
+                    scheduler.feed(&mut game.world.entity_list.vector);
                 }
             } else {
                 debug!("Cueing.");
@@ -127,7 +137,7 @@ pub fn run() {
             }
         } else {
             debug!("Feeding.");
-            scheduler.feed(&mut game.entities);
+            scheduler.feed(&mut game.world.entity_list.vector);
         }
     }
 }

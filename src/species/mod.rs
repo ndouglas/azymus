@@ -5,7 +5,6 @@ use body::Body;
 use crate::component;
 use component::actor::Actor;
 use component::light_source::Factory as LightSourceFactory;
-use component::position::Position;
 use component::renderable::Factory as RenderableFactory;
 use crate::entity;
 use entity::Entity;
@@ -127,7 +126,6 @@ impl Factory {
                 entity.agent = Some(Agent {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Orc.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Orc);
@@ -145,7 +143,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
                 entity.light_source = Some(LightSourceFactory::Random.create());
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Troll.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Troll);
@@ -163,7 +160,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
                 entity.light_source = None;
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Goblin.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Goblin);
@@ -181,7 +177,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::ApproachAndFightPlayer,
                 });
                 entity.light_source = None;
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Kobold.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Kobold);
@@ -199,7 +194,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::BeChicken,
                 });
                 entity.light_source = None;
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Chicken.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Chicken);
@@ -217,7 +211,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::BeMushroom,
                 });;
                 entity.light_source = None;
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Mushroom.create());
                 entity.blocks_movement = false;
                 entity.species = Some(Species::Mushroom);
@@ -235,7 +228,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::BeMoss,
                 });
                 entity.light_source = Some(LightSourceFactory::Moss.create());
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Moss.create());
                 entity.blocks_movement = false;
                 entity.species = Some(Species::Moss);
@@ -250,7 +242,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::BeMossSeed,
                 });
                 entity.light_source = None;
-                entity.position = Some(Position::default());
                 entity.renderable = None;
                 entity.blocks_movement = false;
                 entity.species = Some(Species::MossSeed);
@@ -268,7 +259,6 @@ impl Factory {
                     algorithm: AgentAlgorithm::ApproachPlayer,
                 });
                 entity.light_source = Some(LightSourceFactory::Torch.create());
-                entity.position = Some(Position::default());
                 entity.renderable = Some(RenderableFactory::Human.create());
                 entity.blocks_movement = true;
                 entity.species = Some(Species::Human);

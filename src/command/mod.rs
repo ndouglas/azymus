@@ -1,10 +1,9 @@
 use crate::action;
 use action::Action;
-use crate::component;
-use component::position::Position;
 use crate::game;
 use game::Game;
 use crate::math;
+use math::geometry::cell::Cell;
 use math::geometry::cell::Cellular;
 use math::geometry::compass::Direction as CompassDirection;
 use math::geometry::rectangle::Rectangular;
@@ -69,34 +68,34 @@ impl Command {
         use CommandPrecondition::*;
         match self {
             Walk(compass_direction) => {
-                let entity = &game.entities[id];
-                if let Some(position1) = entity.position {
-                    let position2 = position1.to_direction(compass_direction);
+                let entity = &game.get_entity(id);
+                let cell1 = entity.cell;
+                if let Some(cell2) = cell1.to_direction(&compass_direction, &game.map.as_rectangle()) {
                     vec![
-                        PositionsAreAdjacent(position1, position2),
-                        PositionIsNotOutOfBounds(position2),
-                        TileAtPositionDoesNotBlockMovement(position2),
-                        NothingAtPositionIsValidMeleeAttackTarget(position2),
-                        NothingAtPositionBlocksMovement(position2),
+                        CellsAreAdjacent(cell1, cell2),
+                        CellIsNotOutOfBounds(cell2),
+                        TileAtCellDoesNotBlockMovement(cell2),
+                        NothingAtCellIsValidMeleeAttackTarget(cell2),
+                        NothingAtCellBlocksMovement(cell2),
                     ]
                 } else {
                     vec![
-                        Deny("Entity has no starting position!".to_string()),
+                        Deny("Entity has no destination cell!".to_string()),
                     ]
                 }
             },
             MeleeAttack(compass_direction) => {
-                let entity = &game.entities[id];
-                if let Some(position1) = entity.position {
-                    let position2 = position1.to_direction(compass_direction);
+                let entity = &game.get_entity(id);
+                let cell1 = entity.cell;
+                if let Some(cell2) = cell1.to_direction(compass_direction, &game.map.as_rectangle()) {
                     vec![
-                        PositionsAreAdjacent(position1, position2),
-                        PositionIsNotOutOfBounds(position2),
-                        SomethingAtPositionIsValidMeleeAttackTarget(position2),
+                        CellsAreAdjacent(cell1, cell2),
+                        CellIsNotOutOfBounds(cell2),
+                        SomethingAtCellIsValidMeleeAttackTarget(cell2),
                     ]
                 } else {
                     vec![
-                        Deny("Entity has no starting position!".to_string()),
+                        Deny("Entity has no starting cell!".to_string()),
                     ]
                 }
             },
@@ -116,19 +115,19 @@ impl Command {
                 ]
             },
             MossSeed(compass_direction) => {
-                let entity = &game.entities[id];
-                if let Some(position1) = entity.position {
-                    let position2 = position1.to_direction(compass_direction);
+                let entity = &game.get_entity(id);
+                if let Some(cell1) = entity.cell {
+                    let cell2 = cell1.to_direction(compass_direction);
                     vec![
-                        PositionsAreAdjacent(position1, position2),
-                        PositionIsNotOutOfBounds(position2),
-                        TileAtPositionDoesNotBlockMovement(position2),
-                        NothingAtPositionIsOfSpecies(position2, Species::Moss),
-                        NothingAtPositionIsOfSpecies(position2, Species::MossSeed),
+                        CellsAreAdjacent(cell1, cell2),
+                        CellIsNotOutOfBounds(cell2),
+                        TileAtCellDoesNotBlockMovement(cell2),
+                        NothingAtCellIsOfSpecies(cell2, Species::Moss),
+                        NothingAtCellIsOfSpecies(cell2, Species::MossSeed),
                     ]
                 } else {
                     vec![
-                        Deny("Entity has no starting position!".to_string()),
+                        Deny("Entity has no starting cell!".to_string()),
                     ]
                 }
             },
@@ -214,7 +213,7 @@ impl Command {
                 effect.execute(id, game);
             }
         };
-        if let Some(actor) = game.entities[id].actor.as_mut() {
+        if let Some(actor) = game.world.entity_list.vector[id].actor.as_mut() {
             actor.time -= cost;
         };
         if id == game.player_id && cost > 0 {
@@ -252,20 +251,20 @@ pub enum CommandPrecondition {
     Substitute(Command),
     /// Denies the command with the specified message.
     Deny(String),
-    /// Position is not out of bounds.
-    PositionIsNotOutOfBounds(Position),
-    /// Position does not block movement.
-    TileAtPositionDoesNotBlockMovement(Position),
-    /// The positions are adjacent.
-    PositionsAreAdjacent(Position, Position),
+    /// Cell is not out of bounds.
+    CellIsNotOutOfBounds(Cell),
+    /// Cell does not block movement.
+    TileAtCellDoesNotBlockMovement(Cell),
+    /// The cells are adjacent.
+    CellsAreAdjacent(Cell, Cell),
     /// No entity at the location blocks movement.
-    NothingAtPositionBlocksMovement(Position),
+    NothingAtCellBlocksMovement(Cell),
     /// No entity at the location can be attacked.
-    NothingAtPositionIsValidMeleeAttackTarget(Position),
+    NothingAtCellIsValidMeleeAttackTarget(Cell),
     /// Some entity at the location can be attacked.
-    SomethingAtPositionIsValidMeleeAttackTarget(Position),
+    SomethingAtCellIsValidMeleeAttackTarget(Cell),
     /// Don't seed where there's something of the same species.
-    NothingAtPositionIsOfSpecies(Position, Species),
+    NothingAtCellIsOfSpecies(Cell, Species),
 }
 
 
@@ -281,82 +280,82 @@ impl CommandPrecondition {
             Permit => Permitted,
             Deny(string) => Denied(string),
             Substitute(command) => Substituted(command),
-            PositionIsNotOutOfBounds(position) => {
-                trace!("Entering precondition {:?}.", PositionIsNotOutOfBounds(position));
+            CellIsNotOutOfBounds(cell) => {
+                trace!("Entering precondition {:?}.", CellIsNotOutOfBounds(cell));
                 let map = &game.map;
-                if !map.as_rectangle().contains_cell(&position.as_cell()) {
-                    debug!("Position {:?} is not in bounds of the map.", position);
-                    return Denied("Requested an out-of-bounds position.".to_string());
+                if !map.as_rectangle().contains_cell(&cell.as_cell()) {
+                    debug!("Cell {:?} is not in bounds of the map.", cell);
+                    return Denied("Requested an out-of-bounds cell.".to_string());
                 }
                 Neutral
             },
-            TileAtPositionDoesNotBlockMovement(position) => {
-                trace!("Entering precondition {:?}.", TileAtPositionDoesNotBlockMovement(position));
+            TileAtCellDoesNotBlockMovement(cell) => {
+                trace!("Entering precondition {:?}.", TileAtCellDoesNotBlockMovement(cell));
                 let map = &game.map;
-                if let Some(tile) = map.tile_map.get_tile(&position.as_cell()) {
+                if let Some(tile) = map.tile_map.get_tile(&cell.as_cell()) {
                     if tile.blocks_movement {
-                        return Denied("The destination position contains a tile that blocks movement.".to_string());
+                        return Denied("The destination cell contains a tile that blocks movement.".to_string());
                     }
                 }
                 Neutral
             },
-            PositionsAreAdjacent(position1, position2) => {
-                trace!("Entering precondition {:?}.", PositionsAreAdjacent(position1, position2));
-                if (position1.x - position2.x).abs() > 1 || (position1.y - position2.y).abs() > 1 {
-                    return Denied("The destination position is not adjacent to the original position.".to_string());
+            CellsAreAdjacent(cell1, cell2) => {
+                trace!("Entering precondition {:?}.", CellsAreAdjacent(cell1, cell2));
+                if (cell1.x - cell2.x).abs() > 1 || (cell1.y - cell2.y).abs() > 1 {
+                    return Denied("The destination cell is not adjacent to the original cell.".to_string());
                 }
                 Neutral
             },
-            NothingAtPositionBlocksMovement(position) => {
-                trace!("Entering precondition {:?}.", NothingAtPositionBlocksMovement(position));
-                let entity = &game.entities[id];
-                let occupants = &game.get_entities(position.x, position.y);
+            NothingAtCellBlocksMovement(cell) => {
+                trace!("Entering precondition {:?}.", NothingAtCellBlocksMovement(cell));
+                let entity = &game.get_entity(id);
+                let occupants = &game.get_entities(cell.x, cell.y);
                 for occupant in occupants {
                     if occupant.blocks_movement {
-                        debug!("Entity {} ({}, {}) is blocked by entity {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
-                        return Denied("The destination position contains an entity that blocks movement.".to_string());
+                        debug!("Entity {} ({}, {}) is blocked by entity {} ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, occupant.name, cell.x, cell.y);
+                        return Denied("The destination cell contains an entity that blocks movement.".to_string());
                     }
                 }
-                debug!("Entity {} ({}, {}) is not blocked by anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                debug!("Entity {} ({}, {}) is not blocked by anything at ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, cell.x, cell.y);
                 Neutral
             },
-            SomethingAtPositionIsValidMeleeAttackTarget(position) => {
-                trace!("Entering precondition {:?}.", SomethingAtPositionIsValidMeleeAttackTarget(position));
-                let entity = &game.entities[id];
-                let occupants = &game.get_entities(position.x, position.y);
+            SomethingAtCellIsValidMeleeAttackTarget(cell) => {
+                trace!("Entering precondition {:?}.", SomethingAtCellIsValidMeleeAttackTarget(cell));
+                let entity = &game.get_entity(id);
+                let occupants = &game.get_entities(cell.x, cell.y);
                 for occupant in occupants {
                     if entity.would_attack(occupant) {
-                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, occupant.name, cell.x, cell.y);
                         return Neutral;
                     }
                 }
-                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
-                Substituted(Command::Walk(entity.position.unwrap().direction_to(&position).unwrap()))
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, cell.x, cell.y);
+                Substituted(Command::Walk(entity.cell.unwrap().direction_to(&cell).unwrap()))
             },
-            NothingAtPositionIsValidMeleeAttackTarget(position) => {
-                trace!("Entering precondition {:?}.", NothingAtPositionIsValidMeleeAttackTarget(position));
-                let entity = &game.entities[id];
-                let occupants = &game.get_entities(position.x, position.y);
+            NothingAtCellIsValidMeleeAttackTarget(cell) => {
+                trace!("Entering precondition {:?}.", NothingAtCellIsValidMeleeAttackTarget(cell));
+                let entity = &game.get_entity(id);
+                let occupants = &game.get_entities(cell.x, cell.y);
                 for occupant in occupants {
                     if entity.would_attack(occupant) {
-                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, occupant.name, position.x, position.y);
-                        return Substituted(Command::MeleeAttack(entity.position.unwrap().direction_to(&position).unwrap()));
+                        debug!("Entity {} ({}, {}) would attack {} ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, occupant.name, cell.x, cell.y);
+                        return Substituted(Command::MeleeAttack(entity.cell.unwrap().direction_to(&cell).unwrap()));
                     }
                 }
-                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.position.unwrap().x, entity.position.unwrap().y, position.x, position.y);
+                debug!("Entity {} ({}, {}) would not attack anything at ({}, {}).", entity.name, entity.cell.unwrap().x, entity.cell.unwrap().y, cell.x, cell.y);
                 Neutral
             },
-            NothingAtPositionIsOfSpecies(position, bad_species) => {
-                trace!("Entering precondition {:?}.", NothingAtPositionIsOfSpecies(position, bad_species));
-                let entities = &game.get_entities(position.x, position.y);
+            NothingAtCellIsOfSpecies(cell, bad_species) => {
+                trace!("Entering precondition {:?}.", NothingAtCellIsOfSpecies(cell, bad_species));
+                let entities = &game.get_entities(cell.x, cell.y);
                 for entity in entities {
                     if let Some(species) = entity.species {
                         if species == bad_species {
-                            return Denied(format!("Found entity {:?} of undesired species {:?} at position {:?}.", entity, bad_species, position));
+                            return Denied(format!("Found entity {:?} of undesired species {:?} at cell {:?}.", entity, bad_species, cell));
                         }
                     }
                 }
-                debug!("Did not find entities of undesired species {:?} at position {:?}.", bad_species, position);
+                debug!("Did not find entities of undesired species {:?} at cell {:?}.", bad_species, cell);
                 Neutral
             },
         }

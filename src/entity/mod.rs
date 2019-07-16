@@ -8,7 +8,6 @@ use crate::component;
 use component::actor::Actor;
 use component::field_of_view::FieldOfView;
 use component::light_source::{LightSource, Factory as LightSourceFactory};
-use component::position::Position;
 use component::renderable::{Renderable, Factory as RenderableFactory};
 use crate::faction;
 //use faction::Faction;
@@ -41,8 +40,6 @@ pub struct Entity {
     pub field_of_view: Option<FieldOfView>,
     /// A light source attached to or possessed by this entity.
     pub light_source: Option<LightSource>,
-    /// Indicates a position of the object within the game world.
-    pub position: Option<Position>,
     /// Indicates the cell of the object.
     pub cell: Cell,
     /// Indicates how the given object is rendered on a map.
@@ -67,7 +64,6 @@ impl Entity {
             agent: None,
             field_of_view: None,
             light_source: None,
-            position: None,
             cell: Cell::default(),
             renderable: None,
             blocks_movement: false,
@@ -121,10 +117,7 @@ impl Entity {
 
     /// If this entity is in the FOV.
     pub fn is_in_fov(&self, fov: &FovMap) -> bool {
-        if let Some(position) = &self.position {
-            return fov.is_in_fov(position.x, position.y);
-        }
-        false
+        fov.is_in_fov(self.cell.x, self.cell.y)
     }
 
 }
@@ -167,7 +160,6 @@ pub fn get_player(map: &Map) -> Entity {
         fov.light_walls = true;
     }
     player.light_source = Some(LightSourceFactory::Torch.create());
-    player.position = Some(Position::default());
     player.renderable = Some(RenderableFactory::Player.create());
     player.blocks_movement = true;
     player

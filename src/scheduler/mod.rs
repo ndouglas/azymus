@@ -53,7 +53,7 @@ impl Scheduler {
     pub fn cue(&self, id: usize, game: &mut Game) {
         trace!("Entering Scheduler::cue().");
         let mut command_option = None;
-        let entity = &mut game.entities[id];
+        let entity = &mut game.get_entity_mut(id);
         if let Some(actor) = entity.actor {
             if let Some(agent) = entity.agent {
                 command_option = agent.algorithm.get_command(actor.time, id, game);

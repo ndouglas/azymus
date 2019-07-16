@@ -1,13 +1,26 @@
+use bear_lib_terminal::terminal as blt;
+use std::cmp;
+use std::collections::HashSet;
 use tcod::map::Map as FovMap;
+use crate::component;
+use component::field_of_view::FieldOfView;
+use component::renderable::Renderable;
+use crate::game;
+use game::Game;
 use crate::math;
+use math::geometry::cell::Cell;
 use math::geometry::rectangle::Rectangle;
 use math::geometry::rectangle::Rectangular;
 use crate::seed;
 use seed::SeedType;
+use crate::ui;
+use ui::Ui;
 
 /// The entity map.
 pub mod entity_map;
 use entity_map::EntityMap;
+use entity_map::QuadTreeType;
+use entity_map::QuadTreePoint;
 
 /// The tile map.
 pub mod tile_map;
@@ -57,6 +70,129 @@ impl Map {
         map
     }
 
+    /// Get a light source quadtree for the map.
+    pub fn get_ls_tree(&self, game: &Game) -> QuadTreeType {
+        let mut ls_tree = self.entity_map.build_quadtree();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let ids = self.entity_map.get_entity_ids_cell(&Cell::new(x, y))
+                    .unwrap_or(HashSet::new())
+                    .iter()
+                    .filter(|&id| game.get_entity(*id).light_source.is_some())
+                    .map(|&id| id)
+                    .collect::<Vec<usize>>();
+                for id in ids {
+                    ls_tree.insert(QuadTreePoint {
+                        id: id,
+                        x: x,
+                        y: y,
+                    });
+                }
+            }
+        }
+        ls_tree
+    }
+
+    /// Render this map, taking into account the provided field of view.
+    pub fn draw(&self, _ui: &Ui, fov: &FieldOfView, game: &Game) {
+        trace!("Entering Map::draw().");
+        let fov_map = fov.map.lock().unwrap().clone();
+        let ls_tree = self.get_ls_tree(game);
+        let radius: usize = 12;
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if fov_map.is_in_fov(x as i32, y as i32) {
+                    let region = Rectangle {
+                        x: cmp::max(x - radius, 0),
+                        y: cmp::max(y - radius, 0),
+                        width: cmp::min(x + radius, self.width - 1),
+                        height: cmp::min(y + radius, self.height - 1),
+                    };
+                    let ls_vector = ls_tree
+                        .range_query(&region)
+                        .map(|x| x.id)
+                        .collect::<Vec<usize>>();
+                    let renderable = &self.tile_map.vector[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
+                    let mut occupant_found: bool = false;
+                    for id in self.entity_map.get_entity_ids_cell(&Cell::new(x, y))
+                        .unwrap_or(HashSet::new())
+                        .iter()
+                        .collect::<Vec<&usize>>() {
+                        if occupant_found {
+                            break;
+                        }
+                        let entity = &game.get_entity(*id);
+                        occupant_found = entity.blocks_movement;
+                        if let Some(renderable) = &entity.renderable {
+                            self.draw_entity_renderable(x, y, &renderable);
+                        }
+                    }
+                } else if self.as_rectangle().contains_coordinates(x, y) && fov.explored_map[x][y] {
+                    let ls_vector = vec![];
+                    let renderable = &self.tile_map.vector[x][y].renderable;
+                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
+                }
+            }
+        }
+        trace!("Exiting Map::draw().");
+    }
+
+    /// Render this object at the specified position.
+    pub fn draw_tile_renderable(&self, x: usize, y: usize, renderable: &Renderable, game: &Game, ls_vector: &Vec<usize>) {
+        trace!("Entering Renderable::draw_tile_renderable().");
+        use bear_lib_terminal::geometry::Point;
+        let point = Point::new(x as i32, y as i32);
+        let mut bg_color = blt::pick_background_color(point);
+        let mut fg_color = blt::pick_foreground_color(point, 0);
+        let mut the_char = ' ';
+        if let Some(color) = renderable.background_color {
+            bg_color = color.to_blt();
+        }
+        if let Some(color) = renderable.foreground_color {
+            fg_color = color.to_blt();
+        }
+        if let Some(char) = renderable.char {
+            the_char = char;
+        }
+        for id in ls_vector {
+            let entity = &game.get_entity(*id);
+            let cell = entity.cell;
+            if let Some(light_source) = entity.light_source {
+                if let Some(fov) = &entity.field_of_view {
+                    let fov_map = fov.map.lock().unwrap();
+                    if fov_map.is_in_fov(x as i32, y as i32) {
+                        bg_color = light_source.transform_color_at(bg_color, cell.x as i32, cell.y as i32, x as i32, y as i32);
+                    }
+                }
+            }
+        }
+        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
+        trace!("Exiting Renderable::draw_entity_renderable().");
+    }
+
+    /// Draw an entity renderable.
+    pub fn draw_entity_renderable(&self, x: usize, y: usize, renderable: &Renderable) {
+        trace!("Entering Renderable::draw_entity_renderable().");
+        use bear_lib_terminal::geometry::Point;
+        let point = Point::new(x as i32, y as i32);
+        let mut bg_color = blt::pick_background_color(point);
+        let mut fg_color = blt::pick_foreground_color(point, 0);
+        let mut the_char = ' ';
+        if let Some(color) = renderable.background_color {
+            bg_color = color.to_blt();
+        }
+        if let Some(color) = renderable.foreground_color {
+            fg_color = color.to_blt();
+        }
+        if let Some(char) = renderable.char {
+            the_char = char;
+        }
+        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
+        trace!("Exiting Renderable::draw_entity_renderable().");
+    }
+
+
 }
 
 
@@ -83,19 +219,12 @@ pub fn get_map(seed: SeedType, width: i32, height: i32) -> Map {
 }
 
 /*
-use std::collections::{HashMap, HashSet};
 use std::cmp;
 use std::fmt;
-use bear_lib_terminal::terminal as blt;
 use ::ntree::NTree;
-use crate::component;
-use component::field_of_view::FieldOfView;
 use component::position::Position;
-use component::renderable::Renderable;
 use crate::entity;
 use entity::Entity;
-use crate::game;
-use game::Game;
 use crate::seed;
 use seed::SeedType;
 use seed::RngType;
@@ -103,8 +232,6 @@ use crate::species;
 use species::Species;
 use crate::tile;
 use tile::Tile;
-use crate::ui;
-use ui::Ui;
 
 /// Our quad-tree type.
 pub type QuadTreeType = NTree<QuadTreeRegion, QuadTreePoint>;
@@ -152,34 +279,6 @@ impl Map0 {
         (x < self.width - 1 && y < self.height - 1)
     }
 
-    /// Get a light source quadtree for the map.
-    pub fn get_ls_tree(&self, game: &Game) -> QuadTreeType {
-        let mut ls_tree: QuadTreeType = NTree::new(QuadTreeRegion {
-            x: 0,
-            y: 0,
-            width: self.width as i32,
-            height: self.height as i32,
-        }, 16);
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let ids = self.get_entities(x, y)
-                    .unwrap_or(HashSet::new())
-                    .iter()
-                    .filter(|&id| game.entities[*id].light_source.is_some())
-                    .map(|&id| id)
-                    .collect::<Vec<usize>>();
-                for id in ids {
-                    ls_tree.insert(QuadTreePoint {
-                        id: id,
-                        x: x as i32,
-                        y: y as i32,
-                    });
-                }
-            }
-        }
-        ls_tree
-    }
-
     /// Get a quadtree for all entities of a specific species for this map.
     pub fn get_species_tree(&self, game: &Game, species: Species) -> QuadTreeType {
         let mut ls_tree: QuadTreeType = NTree::new(QuadTreeRegion {
@@ -207,106 +306,6 @@ impl Map0 {
             }
         }
         ls_tree
-    }
-
-    /// Render this map, taking into account the provided field of view.
-    pub fn draw(&self, _ui: &Ui, fov: &FieldOfView, game: &Game) {
-        trace!("Entering Map::draw().");
-        let fov_map = fov.map.lock().unwrap().clone();
-        let ls_tree = self.get_ls_tree(game);
-        let radius: i32 = 12;
-        for y in 0..self.height {
-            for x in 0..self.width {
-                if fov_map.is_in_fov(x as i32, y as i32) {
-                    let region = QuadTreeRegion {
-                        x: cmp::max(x as i32 - radius, 0),
-                        y: cmp::max(y as i32 - radius, 0),
-                        width: cmp::min(x  as i32 + radius, self.width as i32 - 1),
-                        height: cmp::min(y as i32 + radius, self.height as i32 - 1),
-                    };
-                    let ls_vector = ls_tree
-                        .range_query(&region)
-                        .map(|x| x.id)
-                        .collect::<Vec<usize>>();
-                    let renderable = &self.tile_map[x][y].renderable;
-                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                    let mut occupant_found: bool = false;
-                    for id in self.get_entities(x, y)
-                        .unwrap_or(HashSet::new())
-                        .iter()
-                        .collect::<Vec<&usize>>() {
-                        if occupant_found {
-                            break;
-                        }
-                        let entity = &game.entities[*id];
-                        occupant_found = entity.blocks_movement;
-                        if let Some(renderable) = &entity.renderable {
-                            self.draw_entity_renderable(x, y, &renderable);
-                        }
-                    }
-                } else if self.is_in_bounds(x, y) && fov.explored_map[x][y] {
-                    let ls_vector = vec![];
-                    let renderable = &self.tile_map[x][y].renderable;
-                    self.draw_tile_renderable(x, y, &renderable, game, &ls_vector);
-                }
-            }
-        }
-        trace!("Exiting Map::draw().");
-    }
-
-    /// Render this object at the specified position.
-    pub fn draw_tile_renderable(&self, x: usize, y: usize, renderable: &Renderable, game: &Game, ls_vector: &Vec<usize>) {
-        trace!("Entering Renderable::draw_tile_renderable().");
-        use bear_lib_terminal::geometry::Point;
-        let point = Point::new(x as i32, y as i32);
-        let mut bg_color = blt::pick_background_color(point);
-        let mut fg_color = blt::pick_foreground_color(point, 0);
-        let mut the_char = ' ';
-        if let Some(color) = renderable.background_color {
-            bg_color = color.to_blt();
-        }
-        if let Some(color) = renderable.foreground_color {
-            fg_color = color.to_blt();
-        }
-        if let Some(char) = renderable.char {
-            the_char = char;
-        }
-        for id in ls_vector {
-            let entity = &game.entities[*id];
-            if let Some(position) = entity.position {
-                if let Some(light_source) = entity.light_source {
-                    if let Some(fov) = &entity.field_of_view {
-                        let fov_map = fov.map.lock().unwrap();
-                        if fov_map.is_in_fov(x as i32, y as i32) {
-                            bg_color = light_source.transform_color_at(bg_color, position.x, position.y, x as i32, y as i32);
-                        }
-                    }
-                }
-            }
-        }
-        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
-        trace!("Exiting Renderable::draw_entity_renderable().");
-    }
-
-    /// Draw an entity renderable.
-    pub fn draw_entity_renderable(&self, x: usize, y: usize, renderable: &Renderable) {
-        trace!("Entering Renderable::draw_entity_renderable().");
-        use bear_lib_terminal::geometry::Point;
-        let point = Point::new(x as i32, y as i32);
-        let mut bg_color = blt::pick_background_color(point);
-        let mut fg_color = blt::pick_foreground_color(point, 0);
-        let mut the_char = ' ';
-        if let Some(color) = renderable.background_color {
-            bg_color = color.to_blt();
-        }
-        if let Some(color) = renderable.foreground_color {
-            fg_color = color.to_blt();
-        }
-        if let Some(char) = renderable.char {
-            the_char = char;
-        }
-        blt::with_colors(fg_color, bg_color, || blt::put_xy(x as i32, y as i32, the_char));
-        trace!("Exiting Renderable::draw_entity_renderable().");
     }
 
     /// Indicates whether a pair of coordinates are in bounds of this map.

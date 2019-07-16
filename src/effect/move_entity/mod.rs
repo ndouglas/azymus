@@ -1,5 +1,5 @@
-use crate::map;
-use map::Map;
+use crate::game;
+use game::Game;
 use crate::math;
 use math::geometry::cell::Cell;
 
@@ -27,12 +27,12 @@ impl MoveEntity {
     }
 
     /// Execute the move.
-    pub fn execute(&self, map: &mut Map) {
+    pub fn execute(&self, game: &mut Game) {
         trace!("Entering MoveEntity::execute().");
-        map.entity_map
+        game.map.entity_map
             .move_entity_id(self.id, &self.cell1, &self.cell2);
-        map.entity_map
-            .vector[self.id].cell = self.cell2;
+        let mut entity = &mut game.get_entity_mut(self.id);
+        entity.cell = self.cell2;
         trace!("Exiting MoveEntity::execute().");
     }
 

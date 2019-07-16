@@ -3,8 +3,8 @@ use effect::Effect;
 use crate::game;
 use game::Game;
 use crate::math;
-use math::geometry::cell::Cellular;
 use math::geometry::compass::Direction as CompassDirection;
+use math::geometry::rectangle::Rectangular;
 use crate::species;
 use species::Factory as SpeciesFactory;
 
@@ -53,52 +53,50 @@ impl Action {
         use Action::*;
         match self {
             Walk(compass_direction) => {
-                let entity = &game.entities[id];
-                if let Some(position1) = &entity.position {
-                    let position2 = position1.to_direction(*compass_direction);
-                    debug!("Entity {} elected to move ({:?}).", entity.name, compass_direction);
-                    return Some(Effect::MoveEntity(position1.as_cell(), position2.as_cell()));
+                let entity = &game.get_entity(id);
+                let cell = &entity.cell;
+                if let Some(cell2) = cell.to_direction(compass_direction, &game.map.as_rectangle()) {
+                    debug!("{} elected to move ({:?}).", entity, compass_direction);
+                    return Some(Effect::MoveEntity(*cell, cell2));
                 }
                 None
             },
             MeleeAttack(compass_direction) => {
-                let entity = &game.entities[id];
-                if let Some(entity_position) = &entity.position {
-                    let target_position = entity_position.to_direction(*compass_direction);
+                let entity = &game.get_entity(id);
+                let cell = &entity.cell;
+                if let Some(target_cell) = cell.to_direction(compass_direction, &game.map.as_rectangle()) {
                     debug!("Entity {} elected to attack ({:?}).", entity.name, compass_direction);
-                    if let Some(target_entity) = &game.get_entities(target_position.x, target_position.y)
+                    if let Some(target_entity) = &game.get_entities(target_cell.x as i32, target_cell.y as i32)
                         .iter()
                         .filter(|x| x.body.is_some()).nth(0) {
-                            println!("Entity {} ({}, {}) attacks target entity {} ({}, {})!", entity.name, entity_position.x, entity_position.y, target_entity.name, target_position.x, target_position.y);
+                            println!("Entity {} attacks target entity {}!", entity, target_entity);
                             return Some(Effect::DamageEntityBody(target_entity.id, 7));
                     }
                 }
                 None
             },
             Wait => {
-                let entity = &game.entities[id];
+                let entity = &game.get_entity(id);
                 debug!("Entity {} elected to wait ({}).", entity.name, entity.actor.unwrap().time);
                 None
             },
             Stall => {
-                let entity = &game.entities[id];
+                let entity = &game.get_entity(id);
                 debug!("Entity {} elected to stall for time ({}).", entity.name, entity.actor.unwrap().time);
                 None
             },
             MossBloom => {
-                let entity = &game.entities[id];
-                if let Some(position) = &entity.position {
-                    debug!("Entity {} ({}, {}) is following the moss-bloom rule.", entity.name, position.x, position.y);
-                    return Some(Effect::ChangeEntitySpecies(SpeciesFactory::Moss));
-                }
-                None
+                let entity = &game.get_entity(id);
+                let cell = &entity.cell;
+                debug!("{} is following the moss-bloom rule.", entity);
+                Some(Effect::ChangeEntitySpecies(SpeciesFactory::Moss))
             },
             MossSeed(compass_direction) => {
-                let entity = &game.entities[id];
+                let entity = &game.get_entity(id);
                 debug!("Entity {} is following moss lifecycle rules!", entity.name);
-                if let Some(entity_position) = &entity.position {
-                    let target_position = entity_position.to_direction(*compass_direction);
-                    return Some(Effect::CreateEntity(target_position, SpeciesFactory::MossSeed));
+                let entity_cell = &entity.cell;
+                if let Some(target_cell) = entity_cell.to_direction(compass_direction, &game.map.as_rectangle()) {
+                    return Some(Effect::CreateEntity(target_cell, SpeciesFactory::MossSeed));
                 }
                 None
             },
