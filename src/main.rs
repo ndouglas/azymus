@@ -36,7 +36,7 @@ extern crate pretty_env_logger;
 fn main() {
     azymus::init();
     trace!("Entering main().");
-    azymus::game::run();
+    //azymus::game::run();
     trace!("Exiting main().");
 }
 
