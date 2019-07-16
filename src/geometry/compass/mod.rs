@@ -44,6 +44,21 @@ impl Direction {
         directions[index]
     }
 
+    /// To angle.
+    pub fn as_angle(&self) -> i32 {
+        use Direction::*;
+        match self {
+            North => 0,
+            Northeast => 45,
+            East => 90,
+            Southeast => 135,
+            South => 180,
+            Southwest => 225,
+            West => 270,
+            Northwest => 315,
+        }
+    }
+
     /// Compass direction corresponding to offset.
     pub fn from_offset(offset: CellOffsetType) -> Self {
         use Direction::*;
