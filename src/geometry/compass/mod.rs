@@ -82,14 +82,14 @@ impl Direction {
     pub fn as_offset(&self) -> CellOffsetType {
         use Direction::*;
         match self {
-            Northwest => (-1, -1),
             North => (0, -1),
             Northeast => (1, -1),
-            Southwest => (-1, 1),
-            South => (0, 1),
+            East => (1, 0),
             Southeast => (1, 1),
+            South => (0, 1),
+            Southwest => (-1, 1),
             West => (-1, 0),
-            East => (0, -1),
+            Northwest => (-1, -1),
         }
     }
 
@@ -114,6 +114,27 @@ impl Distribution<Direction> for Standard {
 mod tests {
 
     use super::*;
+
+    /// Ensure our constructor makes sense.
+    #[test]
+    fn as_offset() {
+        assert_eq!(Direction::North, Direction::from_offset(Direction::North.as_offset()));
+        assert_eq!(Direction::Northeast, Direction::from_offset(Direction::Northeast.as_offset()));
+        assert_eq!(Direction::East, Direction::from_offset(Direction::East.as_offset()));
+        assert_eq!(Direction::Southeast, Direction::from_offset(Direction::Southeast.as_offset()));
+        assert_eq!(Direction::South, Direction::from_offset(Direction::South.as_offset()));
+        assert_eq!(Direction::Southwest, Direction::from_offset(Direction::Southwest.as_offset()));
+        assert_eq!(Direction::West, Direction::from_offset(Direction::West.as_offset()));
+        assert_eq!(Direction::Northwest, Direction::from_offset(Direction::Northwest.as_offset()));
+        assert_eq!(Direction::North, Direction::from_offset((0,-2)));
+        assert_eq!(Direction::Northeast, Direction::from_offset((2,-2)));
+        assert_eq!(Direction::East, Direction::from_offset((2,0)));
+        assert_eq!(Direction::Southeast, Direction::from_offset((2,2)));
+        assert_eq!(Direction::South, Direction::from_offset((0,2)));
+        assert_eq!(Direction::Southwest, Direction::from_offset((-2,2)));
+        assert_eq!(Direction::West, Direction::from_offset((-2,0)));
+        assert_eq!(Direction::Northwest, Direction::from_offset((-2,-2)));
+    }
 
     /// Ensure our constructor makes sense.
     #[test]
